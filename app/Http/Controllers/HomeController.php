@@ -99,7 +99,7 @@ class HomeController extends Controller
             ],
             [
                 'name' => 'Bapak Agustinus Suryanto, S.Sos',
-                'role' => 'Ketua RT.8',
+                'role' => 'Ketua RT.08 Desa Muntang',
                 'content' => 'Sebagai ketua RT, saya melihat langsung bagaimana Bank Sampah Cipta Muri mengubah perilaku warga. Lingkungan jadi lebih bersih dan warga termotivasi!',
                 'avatar' => 'https://limbahpustaka.com/storage/public/01JXW8H6Y6ARTT04J6K9137W3F.jpeg',
                 'rating' => 5

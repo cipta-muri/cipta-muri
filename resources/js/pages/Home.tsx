@@ -756,8 +756,7 @@ export default function Home({ stats, programs, testimonials, latestNews }: Home
                             <h3 className="mb-4 text-xl font-semibold text-gray-800">Bank Sampah "Sampah Sahabatku"</h3>
                             <p className="text-gray-600">Rt. 08, Rw. 03, Desa Muntang, Kec. Kemangkon, Kab. Purbalingga, Jawa Tengah 53381</p>
                             <div className="mt-4 flex justify-center gap-6 text-sm text-gray-500">
-                                <span>📞 (+62) 81513214364</span>
-                                <span>📧 info@ciptamuri.co.id</span>
+                                <span>+62 815-1321-4364 (Roro Hendarti, S.Sos.)</span>
                             </div>
                         </div>
                     </motion.div>

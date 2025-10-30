@@ -275,30 +275,20 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <h3 className="mb-4 font-semibold text-white transition-colors duration-300 hover:text-green-400">Kontak</h3>
                             <div className="space-y-2 text-gray-300">
                                 <p className="group flex cursor-pointer items-center transition-all duration-300 hover:translate-x-2 hover:text-green-400">
-                                    <span className="mr-2 transition-transform duration-300 group-hover:scale-125">📧</span>
                                     <span className="relative">
                                         info@ciptamuri.co.id
                                         <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
                                     </span>
                                 </p>
                                 <p className="group flex cursor-pointer items-center transition-all duration-300 hover:translate-x-2 hover:text-green-400">
-                                    <span className="mr-2 transition-transform duration-300 group-hover:scale-125">📱</span>
                                     <span className="relative">
-                                        +62 812-3456-7890
+                                        +62 815-1321-4364
                                         <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
                                     </span>
                                 </p>
                                 <p className="group flex cursor-pointer items-center transition-all duration-300 hover:translate-x-2 hover:text-green-400">
-                                    <span className="mr-2 transition-transform duration-300 group-hover:scale-125">📞</span>
                                     <span className="relative">
-                                        (021) 1234-5678
-                                        <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
-                                    </span>
-                                </p>
-                                <p className="group flex cursor-pointer items-center transition-all duration-300 hover:translate-x-2 hover:text-green-400">
-                                    <span className="mr-2 transition-transform duration-300 group-hover:scale-125">🏢</span>
-                                    <span className="relative">
-                                        Jl. Raya Cilacap, Jawa Tengah
+                                        Rt. 08, Rw. 03, Desa Muntang, Kec. Kemangkon, Kab. Purbalingga, Jawa Tengah 53381
                                         <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
                                     </span>
                                 </p>
@@ -308,7 +298,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                     <div className="mt-8 border-t border-gray-800 pt-8 text-center text-gray-400">
                         <p className="transition-colors duration-300 hover:text-gray-300">
-                            &copy; 2024 Bank Sampah Cipta Muri. Semua hak dilindungi.
+                            &copy; 2025 Bank Sampah Cipta Muri. Semua hak dilindungi.
                         </p>
                     </div>
                 </div>

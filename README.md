@@ -8,8 +8,8 @@ e-Bank Sampah Cipta Muri adalah platform digital modern yang mengubah pengelolaa
 
 ## 🏗️ Arsitektur
 
-### Backend (Laravel 11 + Filament 3)
-- **Framework**: Laravel 11 dengan fitur PHP 8.2+ modern
+### Backend (Laravel 12 + Filament 3)
+- **Framework**: Laravel 12 dengan fitur PHP 8.2+ modern
 - **Admin Panel**: Filament 3 untuk antarmuka administratif yang intuitif
 - **Database**: SQLite (development) / MySQL (production) dengan primary key ULID
 - **Authentication**: Laravel Sanctum dengan permission berbasis peran
