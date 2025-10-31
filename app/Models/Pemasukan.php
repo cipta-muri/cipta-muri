@@ -22,10 +22,10 @@ class Pemasukan extends Model
             ->setDescriptionForEvent(fn(string $eventName) => "Pemasukan has been {$eventName}");
     }
 
-    protected $fillable = ['name','text'];
-
     protected $table = 'pemasukan';
+
     protected $guarded = ['id'];
+    
     protected $casts = [
         'nominal' => 'decimal:2',
     ];

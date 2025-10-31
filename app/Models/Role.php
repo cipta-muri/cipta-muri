@@ -20,7 +20,7 @@ class Role extends SpatieRole
             ->setDescriptionForEvent(fn(string $eventName) => "Role has been {$eventName}");
     }
 
-    protected $fillable = ['name', 'text'];
+    protected $guarded = ['id'];
     
     public $incrementing = false;
     protected $keyType = 'string';

@@ -26,21 +26,7 @@ class SampahKeluar extends Model
     protected $table = 'sampah_keluar';
 
 
-    protected $guarded = [];
-
-    protected $fillable = [
-        'name',
-        'text',
-        'rekening_id',
-        'jenis_keluar',
-        'total_berat_keluar',
-        'total_saldo_dihasilkan',
-        'status',
-        'tanggal_keluar',
-        'user_id',
-        'description',
-        'berat_keluar',
-    ];  
+    protected $guarded = ['id'];
 
     public function rekening()
     {

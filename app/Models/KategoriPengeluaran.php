@@ -12,7 +12,7 @@ class KategoriPengeluaran extends Model
 {
     use HasUlids, HasFactory, LogsActivity;
 
-    protected $fillable = ['name','text'];
+    protected $guarded = ['id'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -23,7 +23,6 @@ class KategoriPengeluaran extends Model
     }
     
     protected $table = 'kategori_pengeluaran';
-    protected $guarded = ['id'];
 
     public function pengeluaran()
     {

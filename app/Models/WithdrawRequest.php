@@ -22,8 +22,6 @@ class WithdrawRequest extends Model
             ->setDescriptionForEvent(fn(string $eventName) => "Penarikan Saldo has been {$eventName}");
     }
 
-    protected $fillable = ['name', 'text'];
-
     protected $table = 'withdraw_requests';
 
     protected $guarded = ['id'];

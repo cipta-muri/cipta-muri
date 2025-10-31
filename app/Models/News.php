@@ -15,23 +15,7 @@ class News extends Model
 {
     use HasFactory, SoftDeletes, HasUlids, LogsActivity;
 
-    protected $fillable = [
-        'name',
-        'text',
-        'title',
-        'slug',
-        'excerpt',
-        'content',
-        'featured_image',
-        'status',
-        'published_at',
-        'author_id',
-        'category',
-        'tags',
-        'meta_title',
-        'meta_description',
-        'views_count'
-    ];
+    protected $guarded = ['id'];
 
     protected $casts = [
         'published_at' => 'datetime',

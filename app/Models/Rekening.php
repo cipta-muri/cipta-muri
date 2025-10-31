@@ -26,32 +26,11 @@ class Rekening extends Authenticatable
 
     protected $table = 'rekening';
 
-     protected $primaryKey = 'id';
+    protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
-     protected $fillable = [
-        'name',
-        'text',
-        'no_rekening',
-        'gender',
-        'alamat',
-        'dusun',
-        'rt',
-        'rw',
-        'pendidikan',
-        'nama',
-        'nik',
-        'no_kk',
-        'telepon',
-        'balance',
-        'tanggal_lahir',
-        'points_balance',
-        'status_pegadaian',
-        'status_lengkap',
-        'status_desa',
-        'user_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'remember_token', // kalau nanti ditambah

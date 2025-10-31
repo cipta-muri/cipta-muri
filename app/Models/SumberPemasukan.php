@@ -19,8 +19,9 @@ class SumberPemasukan extends Model
             ->logAll()
             ->setDescriptionForEvent(fn(string $eventName) => "Sumber Pemasukan has been {$eventName}");
     }
-    protected $fillable = ['name','text'];
+    
     protected $table = 'sumber_pemasukan';
+
     protected $guarded = ['id'];
 
     public function pemasukan()

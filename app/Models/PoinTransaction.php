@@ -14,7 +14,7 @@ class PoinTransaction extends Model
 
     protected $table = 'poin_transactions';
 
-    protected $guarded = [];
+    protected $guarded = ['id'];
 
     public function rekening()
     {

@@ -22,15 +22,13 @@ class Sampah extends Model
             ->setDescriptionForEvent(fn(string $eventName) => "Sampah has been {$eventName}");
     }
 
-    protected $fillable = ['name','text'];
-
-
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $table = 'sampah';
 
-    protected $guarded = [];
+    protected $guarded = ['id'];
 
     public function user()
     {

@@ -24,21 +24,7 @@ class SetorSampah extends Model
 
     protected $table = 'setor_sampah';
 
-    protected $guarded = [];
-
-    protected $fillable = [
-        'name',
-        'text',
-        'rekening_id',
-        'total_berat',
-        'total_saldo_dihasilkan',
-        'status',
-        'jenis_setoran',
-        'tanggal',
-        'user_id',
-        'description',
-        'berat',
-    ];
+    protected $guarded = ['id'];
 
     public function rekening()
     {

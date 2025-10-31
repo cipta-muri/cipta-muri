@@ -18,7 +18,7 @@ class SaldoTransaction extends Model
         'amount' => 'decimal:2',
     ];
 
-    protected $guarded = [];
+    protected $guarded = ['id'];
 
     public function rekening()
     {

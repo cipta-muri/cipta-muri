@@ -12,18 +12,8 @@ class SampahTransactions extends Model
     use SoftDeletes, HasFactory;
 
     protected $table = 'sampah_transactions';
-    protected $guarded = [];
 
-    protected $fillable = [
-        'rekening_id',
-        'sampah_id',
-        'berat',
-        'user_id',
-        'description',
-        'type',
-        'transactable_id',
-        'transactable_type',
-    ];
+    protected $guarded = ['id'];
 
     protected $casts = [
         'berat' => 'decimal:2',

@@ -20,7 +20,7 @@ class Permission extends SpatiePermission
             ->setDescriptionForEvent(fn(string $eventName) => "Permission has been {$eventName}");
     }
 
-    protected $fillable = ['name', 'text'];
+    protected $guarded = ['id'];
     
     public $incrementing = false;
     protected $keyType = 'string';
