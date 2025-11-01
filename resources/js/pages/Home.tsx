@@ -509,10 +509,10 @@ export default function Home({ stats, programs, testimonials, latestNews }: Home
 
                         {/* Right Logo */}
                         <motion.div
-                            className="flex justify-center lg:justify-end"
-                            initial={{ opacity: 0, x: 50 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="flex justify-center lg:justify-end will-change-transform"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
                             viewport={{ once: true }}
                         >
                             <motion.div className="relative" whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>

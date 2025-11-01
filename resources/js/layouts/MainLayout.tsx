@@ -143,16 +143,25 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                         {/* Mobile Menu Button */}
                         <button
-                            className={`transition-colors duration-300 md:hidden ${isScrolled ? 'text-gray-700' : 'text-white'}`}
+                            className={`md:hidden focus:outline-none transition-transform duration-300 ease-out ${isScrolled ? 'text-gray-700' : 'text-white'} ${
+                                mobileMenuOpen ? 'rotate-90 scale-105' : 'rotate-0 scale-100'
+                            }`}
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            aria-expanded={mobileMenuOpen}
+                            aria-label="Toggle navigation"
                         >
-                            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                            {/* Icon smoothly scales/rotates when toggled */}
+                            {mobileMenuOpen ? (
+                                <X className={`h-6 w-6 transition-transform duration-300 ${mobileMenuOpen ? 'text-green-600' : ''}`} />
+                            ) : (
+                                <Menu className={`h-6 w-6 transition-transform duration-300`} />
+                            )}
                         </button>
                     </div>
 
                     {/* Mobile Navigation */}
                     {mobileMenuOpen && (
-                        <div className="border-t border-gray-200 pb-3 pt-2 md:hidden">
+                        <div className="border-t border-gray-200 pb-3 pt-2 md:hidden bg-white/70 backdrop-blur-md shadow-lg rounded-b-md transition-colors duration-300 ">
                             <div className="space-y-1">
                                 {navigation.map((item) => (
                                     <button
