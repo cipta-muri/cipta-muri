@@ -397,9 +397,9 @@ export default function Home({ stats, programs, testimonials, latestNews }: Home
             <section className="section-padding relative bg-white">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                        <StatCard value={stats.members} label="Anggota Aktif" suffix="+" icon={<Users />} delay={0.1} />
+                        <StatCard value={stats.members} label="Nasabah Aktif" icon={<Users />} delay={0.1} />
                         <StatCard value={stats.recycled_tons} label="Jumlah Setoran Sampah" icon={<Recycle />} delay={0.2} />
-                        <StatCard value={stats.savings_total} label="Total Tabungan" prefix="Rp " icon={<PiggyBank />} delay={0.3} />
+                        <StatCard value={stats.savings_total} label="Total Saldo Tabungan Nasabah" prefix="Rp " icon={<PiggyBank />} delay={0.3} />
                     </div>
                 </div>
             </section>
