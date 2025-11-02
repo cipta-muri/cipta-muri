@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 //use App\Models\Nasabah;
 use App\Models\SetorSampah;
 use App\Models\SaldoTransaction;
+use App\Models\Rekening;
 use App\Models\News;
 //use App\Models\Umkm;//
 use Illuminate\Http\Request;
@@ -18,12 +19,22 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // Mock stats data untuk development
-        $stats = [
-            'members' => 176, // Ubah sesuai kebutuhan
-            'recycled_tons' => 1, // Ubah sesuai kebutuhan
-            'savings_total' => 2500000, // Ubah sesuai kebutuhan
-        ];
+        // Stats diambil dari database dan disimpan sementara di cache
+        $stats = Cache::remember('homepage_stats', 900, function () {
+            $members = Rekening::count();
+
+            // Jumlah setoran sampah non-donasi (hanya jenis_setoran = rekening)
+            $depositCount = SetorSampah::where('jenis_setoran', 'rekening')->count();
+
+            // Total tabungan (saldo) seluruh rekening
+            $savingsTotal = (float) (Rekening::sum('balance') ?? 0);
+
+            return [
+                'members' => $members,
+                'recycled_tons' => $depositCount,
+                'savings_total' => $savingsTotal,
+            ];
+        });
         
 
         // Mock data untuk programs
