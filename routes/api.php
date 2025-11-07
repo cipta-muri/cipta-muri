@@ -5,6 +5,11 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Rekening;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Api\AuthController;
+use App\Models\SaldoTransaction;
+use App\Models\SetorSampah;
+use App\Models\WithdrawRequest;
+use App\Models\News;
+use App\Models\Sampah;
 
 
 /*
@@ -40,10 +45,161 @@ Route::middleware('auth:rekening')->group(function () {
         ]);
     });
 
-    
+    // Rekening - profil & ringkasan saldo
+    Route::get('/rekening', function (Request $request) {
+        /** @var Rekening $rekening */
+        $rekening = $request->user();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'rekening' => $rekening,
+                'balance' => $rekening->balance,
+                'formatted_balance' => $rekening->formatted_balance,
+                'points_balance' => $rekening->points_balance,
+            ],
+        ]);
+    });
 
+    // Saldo transactions - daftar transaksi saldo milik rekening login
+    Route::get('/rekening/saldo-transactions', function (Request $request) {
+        /** @var Rekening $rekening */
+        $rekening = $request->user();
+        $type = $request->query('type'); // optional: credit / debit
+
+        $query = SaldoTransaction::where('rekening_id', $rekening->id)
+            ->latest();
+        if (in_array($type, ['credit', 'debit'])) {
+            $query->where('type', $type);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $query->get(),
+        ]);
+    });
+
+    // Setor sampah - daftar setoran milik rekening login
+    Route::get('/setor-sampah', function (Request $request) {
+        /** @var Rekening $rekening */
+        $rekening = $request->user();
+        $data = SetorSampah::with(['details.sampah'])
+            ->where('rekening_id', $rekening->id)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    });
+
+    // Tarik saldo - buat permintaan penarikan saldo
+    Route::post('/tarik-saldo', function (Request $request) {
+        /** @var Rekening $rekening */
+        $rekening = $request->user();
+
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:1'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $amount = (float) $validated['amount'];
+
+        if (!$rekening->hasSufficientBalance($amount)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Saldo tidak mencukupi untuk penarikan.',
+            ], 422);
+        }
+
+        $withdraw = WithdrawRequest::create([
+            'rekening_id' => $rekening->id,
+            'amount' => $amount,
+            'description' => $validated['description'] ?? 'Penarikan Saldo via API',
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Permintaan penarikan saldo berhasil dibuat.',
+            'data' => $withdraw,
+        ], 201);
+    });
+
+    // Tarik saldo - daftar permintaan penarikan saldo milik rekening login
+    Route::get('/tarik-saldo', function (Request $request) {
+        /** @var Rekening $rekening */
+        $rekening = $request->user();
+        $data = WithdrawRequest::where('rekening_id', $rekening->id)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    });
+});
+
+// Berita (publik)
+Route::get('/berita', function (Request $request) {
+    $query = News::published()->latest();
+
+    if ($category = $request->query('category')) {
+        $query->byCategory($category);
+    }
+
+    if ($q = $request->query('q')) {
+        $query->where(function ($sub) use ($q) {
+            $sub->where('title', 'like', "%$q%")
+                ->orWhere('content', 'like', "%$q%");
+        });
+    }
+
+    $data = $query->get([
+        'id', 'title', 'slug', 'excerpt', 'featured_image', 'published_at', 'category', 'views_count'
+    ]);
+
+    // Map to include featured_image_url accessor
+    $data->transform(function ($item) {
+        $item->featured_image_url = $item->featured_image_url; // ensure appended
+        return $item;
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => $data,
+    ]);
+});
+
+Route::get('/berita/{slug}', function (string $slug) {
+    $news = News::where('slug', $slug)->firstOrFail();
+    $news->incrementViews();
+
+    return response()->json([
+        'success' => true,
+        'data' => $news,
+    ]);
+});
+
+// Sampah (publik)
+Route::get('/sampah', function () {
+    $data = Sampah::orderBy('jenis_sampah')->get();
+    return response()->json([
+        'success' => true,
+        'data' => $data,
+    ]);
+});
+
+Route::get('/sampah/{id}', function (string $id) {
+    $item = Sampah::findOrFail($id);
+    return response()->json([
+        'success' => true,
+        'data' => $item,
+    ]);
 });
 
 Route::get('/tes-api', function () {
-    return response()->json(['message' => 'API aktif ✅']);
-    });
+    return response()->json(['message' => 'API aktif ✅.']);
+});
+
