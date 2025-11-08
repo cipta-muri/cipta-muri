@@ -69,6 +69,31 @@ class NewsResource extends Resource
         return hexa()->can('berita.create');
     }
 
+    public static function canView($record): bool
+    {
+        return hexa()->can('berita.index');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return hexa()->can('berita.update');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return hexa()->can('berita.delete');
+    }
+
+    public static function canForceDelete($record): bool
+    {
+        return hexa()->can('berita.delete');
+    }
+
+    public static function canRestore($record): bool
+    {
+        return hexa()->can('berita.delete');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -116,21 +141,8 @@ class NewsResource extends Resource
                             ->helperText('Upload gambar dengan ukuran maksimal 2MB (JPG, PNG, WebP)'),
                     ]),
 
-                Section::make('Publikasi')
+                Section::make('Pengaturan')
                     ->schema([
-                        Select::make('status')
-                            ->label('Status')
-                            ->required()
-                            ->default('draft')
-                            ->options(News::getStatusOptions())
-                            ->live(),
-
-                        DateTimePicker::make('published_at')
-                            ->label('Tanggal Publikasi')
-                            ->default(now())
-                            ->required(fn($get) => $get('status') === 'published')
-                            ->hidden(fn($get) => $get('status') === 'draft'),
-
                         Hidden::make('author_id')
                             ->default(auth()->id()),
 
@@ -186,14 +198,7 @@ class NewsResource extends Resource
                         return strlen($state) > 50 ? $state : null;
                     }),
 
-                TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->colors([
-                        'secondary' => 'draft',
-                        'success' => 'published',
-                        'warning' => 'scheduled',
-                    ]),
+                // Status dihilangkan dari tabel
 
                 TextColumn::make('category')
                     ->label('Kategori')
@@ -211,10 +216,7 @@ class NewsResource extends Resource
                     ->sortable()
                     ->alignment('center'),
 
-                TextColumn::make('published_at')
-                    ->label('Dipublikasi')
-                    ->dateTime('d M Y, H:i')
-                    ->sortable(),
+                // Kolom dipublikasi dihilangkan karena alur publikasi disederhanakan
 
                 TextColumn::make('created_at')
                     ->label('Dibuat')
@@ -223,9 +225,7 @@ class NewsResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->label('Status')
-                    ->options(News::getStatusOptions()),
+                // Filter status dihilangkan
 
                 SelectFilter::make('category')
                     ->label('Kategori')

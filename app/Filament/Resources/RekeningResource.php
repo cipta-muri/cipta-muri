@@ -50,7 +50,7 @@ class RekeningResource extends Resource
     public function defineGates()
     {
         return [
-            'rekening.index'  => __('Lihat Rekening Nasabah'),
+            'rekening.index' => __('Lihat Rekening Nasabah'),
             'rekening.create' => __('Buat Rekening Nasabah Baru'),
             'rekening.update' => __('Ubah Rekening Nasabah'),
             'rekening.delete' => __('Hapus Rekening Nasabah'),
@@ -270,6 +270,7 @@ class RekeningResource extends Resource
                 TextColumn::make('created_at')->label('Waktu Dibuat')->dateTime()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')->label('Terakhir Diubah')->dateTime()->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('no_rekening', 'asc')
             ->headerActions([
                 FilamentExportHeaderAction::make('export')
                     ->fileName('rekening_nasabah_lengkap')
@@ -322,34 +323,21 @@ class RekeningResource extends Resource
             ])
             ->filters([
                 // -- START PERUBAHAN --
-                SelectFilter::make('jenis_rekening')
-                    ->label('Jenis Rekening')
+                SelectFilter::make('status_pegadaian')
+                    ->label('Tabungan Emas Pegadaian')
                     ->options([
-                        'nasabah' => 'Rekening Nasabah',
-                        'donasi' => 'Rekening Donasi',
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        if (empty($data['value'])) {
-                            return $query;
-                        }
-
-                        return $query->when(
-                            $data['value'] === 'nasabah',
-                            fn(Builder $query) => $query->where('no_rekening', '!=', '00000000')
-                        )->when(
-                                $data['value'] === 'donasi',
-                                fn(Builder $query) => $query->where('no_rekening', '=', '00000000')
-                            );
-                    })
-                    ->default('nasabah'),
+                        1 => 'Memiliki Tabungan Emas',
+                        0 => 'Tidak Memiliki Tabungan Emas',
+                    ]),
                 // -- AKHIR PERUBAHAN --
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn($record) => hexa()->can('rekening.update') && ($record?->no_rekening !== '00000000')),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('rekening.delete')),
+                    ->visible(fn($record) => hexa()->can('rekening.delete') && ($record?->no_rekening !== '00000000')),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
             ])
@@ -400,7 +388,7 @@ class RekeningResource extends Resource
                         'updated_at' => fn($record) => $record->updated_at ? date('d/m/Y H:i', strtotime($record->updated_at)) : '',
                     ]),
                 Tables\Actions\DeleteBulkAction::make()
-                ->visible(fn() => hexa()->can('rekening.delete')),
+                    ->visible(fn() => hexa()->can('rekening.delete')),
                 Tables\Actions\RestoreBulkAction::make(),
                 Tables\Actions\ForceDeleteBulkAction::make(),
             ]);
@@ -410,7 +398,7 @@ class RekeningResource extends Resource
     {
         return [
             Actions\DeleteAction::make()
-            ->visible(fn() => hexa()->can('rekening.delete')),
+                ->visible(fn() => hexa()->can('rekening.delete')),
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),
         ];
@@ -438,3 +426,5 @@ class RekeningResource extends Resource
         ];
     }
 }
+
+

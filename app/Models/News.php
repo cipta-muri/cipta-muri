@@ -43,6 +43,13 @@ class News extends Model
         parent::boot();
 
         static::creating(function ($news) {
+            // Default publish immediately
+            if (empty($news->status)) {
+                $news->status = self::STATUS_PUBLISHED;
+            }
+            if (empty($news->published_at)) {
+                $news->published_at = now();
+            }
             // Auto-set author to current logged in user
             if (empty($news->author_id)) {
                 $news->author_id = auth()->id();
@@ -75,6 +82,13 @@ class News extends Model
         });
 
         static::updating(function ($news) {
+            // Ensure published flags present so edit is not blocked
+            if (empty($news->status)) {
+                $news->status = self::STATUS_PUBLISHED;
+            }
+            if (empty($news->published_at)) {
+                $news->published_at = now();
+            }
             // Auto-generate unique slug if not provided or title changed
             if (empty($news->slug) || $news->isDirty('title')) {
                 $slug = Str::slug($news->title);
