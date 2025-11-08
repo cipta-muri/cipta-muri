@@ -1,0 +1,213 @@
+Android (Kotlin) Guide — Ranking API (Top Berat & Top Setoran)
+
+Overview
+- Endpoint: GET /api/ranking
+- Base URL: https://ciptamuri.com/api
+- Auth: Not required (public). If you already use an Authorization interceptor, it can send the token; server ignores it for this route.
+- Purpose: Returns two leaderboards in one response:
+  - top_berat: accounts (rekening) with the largest effective deposited weight (Kg)
+  - top_setor: accounts with the most deposit events (count)
+- Business rules (server-side):
+  - top_berat only sums SampahTransactions where: type = "masuk", transactable_type = SetorSampah, and sampah.simpan_berat = true. Donation account (no_rekening = 00000000) is excluded by default.
+  - top_setor counts rows from setor_sampah per rekening_id (excluded donation by default).
+
+Query Parameters
+- limit: Int (default 10, max 100) — number of rows per leaderboard.
+- start_date, end_date: YYYY-MM-DD — optional date range filter based on setor_sampah.tanggal.
+- include_donasi: Boolean (default false) — if true, includes the donation account in results.
+
+Response Shape
+{
+  "success": true,
+  "data": {
+    "top_berat": [
+      {
+        "id": "<rekening_id>",
+        "nama": "Nama Rekening",
+        "no_rekening": "12345678",
+        "total_berat": "12.3456"   // decimal, string from backend
+      },
+      ...
+    ],
+    "top_setor": [
+      {
+        "id": "<rekening_id>",
+        "nama": "Nama Rekening",
+        "no_rekening": "12345678",
+        "total_setor": 17            // integer count
+      },
+      ...
+    ]
+  }
+}
+
+Gradle (Module: app)
+dependencies {
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+}
+
+Data Models (Moshi)
+// Generic envelope already used in your app
+data class ApiEnvelope<T>(val success: Boolean, val message: String? = null, val data: T? = null)
+
+data class RankingPayload(
+    val top_berat: List<TopBeratItem> = emptyList(),
+    val top_setor: List<TopSetorItem> = emptyList()
+)
+
+data class TopBeratItem(
+    val id: String,
+    val nama: String?,
+    val no_rekening: String?,
+    val total_berat: String // decimal as string — format to KG on UI
+)
+
+data class TopSetorItem(
+    val id: String,
+    val nama: String?,
+    val no_rekening: String?,
+    val total_setor: Int
+)
+
+Retrofit Service
+interface RankingService {
+    @GET("ranking")
+    suspend fun getRanking(
+        @Query("limit") limit: Int = 10,
+        @Query("start_date") startDate: String? = null,
+        @Query("end_date") endDate: String? = null,
+        @Query("include_donasi") includeDonasi: Boolean = false
+    ): ApiEnvelope<RankingPayload>
+}
+
+Retrofit Client (reuse from existing guide)
+val httpClient = createHttpClient { TokenStore.read(context) }
+val retrofit = createRetrofit(httpClient)
+val rankingApi = retrofit.create(RankingService::class.java)
+
+Repository Example
+class RankingRepository(private val api: RankingService) {
+    suspend fun getRanking(
+        limit: Int = 10,
+        startDate: String? = null,
+        endDate: String? = null,
+        includeDonasi: Boolean = false
+    ) = runCatching {
+        val res = api.getRanking(limit, startDate, endDate, includeDonasi)
+        if (!res.success) error(res.message ?: "Gagal memuat ranking")
+        res.data ?: RankingPayload()
+    }
+}
+
+ViewModel Example (StateFlow)
+data class RankingUiState(
+    val loading: Boolean = false,
+    val berat: List<TopBeratItem> = emptyList(),
+    val setor: List<TopSetorItem> = emptyList(),
+    val error: String? = null
+)
+
+class RankingViewModel(private val repo: RankingRepository) : ViewModel() {
+    private val _state = MutableStateFlow(RankingUiState())
+    val state: StateFlow<RankingUiState> = _state.asStateFlow()
+
+    fun load(limit: Int = 10, start: String? = null, end: String? = null, donasi: Boolean = false) =
+        viewModelScope.launch {
+            _state.update { it.copy(loading = true, error = null) }
+            repo.getRanking(limit, start, end, donasi)
+                .onSuccess { payload ->
+                    _state.update { it.copy(loading = false, berat = payload.top_berat, setor = payload.top_setor) }
+                }
+                .onFailure { e ->
+                    _state.update { it.copy(loading = false, error = e.message ?: "Gagal memuat ranking") }
+                }
+        }
+}
+
+Compose UI Example (two lists with ranking numbers)
+@Composable
+fun RankingScreen(vm: RankingViewModel) {
+    val state by vm.state.collectAsState()
+
+    LaunchedEffect(Unit) { vm.load(limit = 10) }
+
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Peringkat Berat Setoran", style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(8.dp))
+        LazyColumn(Modifier.fillMaxWidth().height(220.dp)) {
+            itemsIndexed(state.berat) { index, item ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("${index + 1}", Modifier.width(24.dp), textAlign = TextAlign.End)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(item.nama ?: "-")
+                        Text(item.no_rekening ?: "-", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    }
+                    Text(formatKg(item.total_berat))
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text("Peringkat Jumlah Setoran", style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(8.dp))
+        LazyColumn(Modifier.fillMaxWidth().height(220.dp)) {
+            itemsIndexed(state.setor) { index, item ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("${index + 1}", Modifier.width(24.dp), textAlign = TextAlign.End)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(item.nama ?: "-")
+                        Text(item.no_rekening ?: "-", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    }
+                    Text(item.total_setor.toString())
+                }
+            }
+        }
+
+        if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+        state.error?.let { Text(it, color = Color.Red) }
+    }
+}
+
+fun formatKg(value: String): String = try {
+    val d = value.toBigDecimal()
+    "${d.setScale(2, java.math.RoundingMode.HALF_UP)} Kg"
+} catch (_: Exception) { "-" }
+
+Optional: Date Filters UI
+- Let users pick start and end dates, then call vm.load(limit = 20, start = "2025-01-01", end = "2025-12-31").
+- For donation inclusion, pass donasi = true.
+
+cURL Tests
+curl -s "https://ciptamuri.com/api/ranking?limit=10" | jq
+curl -s "https://ciptamuri.com/api/ranking?limit=20&start_date=2025-01-01&end_date=2025-12-31" | jq
+curl -s "https://ciptamuri.com/api/ranking?include_donasi=true" | jq
+
+Performance & Caching
+- Keep limit small (e.g., 10–50) for mobile lists.
+- You can add OkHttp cache (Cache directory + Cache-Control) and/or a simple in-memory cache at ViewModel scope.
+- The server computes ranking; avoid client-side aggregation.
+
+Error Handling
+- Show graceful messages for network timeouts.
+- Retry or pull-to-refresh pattern is recommended.
+- Validate date input (YYYY-MM-DD) before calling API.
+
+Security Notes
+- Endpoint is public; if you later decide to restrict, you can move it behind auth:sanctum without changing the client much (your interceptor is already in place).
+
+Consistency With Backend Rules
+- top_berat respects sampah.simpan_berat (only true counts toward weight), matching Filament widget logic.
+- Donation account is excluded by default (include_donasi=false), but you can request inclusion if needed.
+
+File Locations (server)
+- Controller: app/Http/Controllers/Api/RankingController.php
+- Route: routes/api.php (GET /api/ranking)
+
