@@ -1,0 +1,130 @@
+Mobile API Guide — ciptamuri.com
+
+Base
+- Base URL: https://ciptamuri.com
+- Prefix: all endpoints under `/api`
+- Auth: Bearer token (Laravel Sanctum) obtained via login
+- Required headers: `Accept: application/json` (and `Content-Type: application/json` for JSON bodies)
+
+Auth Flow
+- Login nasabah to obtain token, store securely (e.g., Secure Storage on mobile).
+- Send `Authorization: Bearer <TOKEN>` for protected endpoints.
+- Logout to revoke the current token on the server.
+
+Endpoints
+- Auth
+  - POST `/api/nasabah/login`
+    - Body: { "nik": "<NIK>", "tanggal_lahir": "YYYY-MM-DD" }
+    - Response: { success, message, data: { token, nasabah { … } } }
+  - GET `/api/nasabah/profile` (Auth)
+  - POST `/api/nasabah/logout` (Auth)
+
+- Rekening (Auth)
+  - GET `/api/rekening`
+    - Returns: { rekening, balance, formatted_balance, points_balance }
+
+- Saldo Transactions (Auth)
+  - GET `/api/rekening/saldo-transactions?type=credit|debit`
+    - `type` optional; when provided filters by credit/debit
+
+- Setor Sampah (Auth)
+  - GET `/api/setor-sampah`
+    - Returns list of deposits with `details.sampah`
+
+- Tarik Saldo (Auth)
+  - POST `/api/tarik-saldo`
+    - Body: { "amount": number, "description": "optional" }
+    - 201 on success; 422 when validation fails (e.g., insufficient balance)
+  - GET `/api/tarik-saldo`
+    - Returns list of withdraw requests for the logged-in account
+
+- Berita (Public)
+  - GET `/api/berita?q=...&category=...`
+    - Returns published news list with `featured_image_url`
+  - GET `/api/berita/{slug}`
+
+- Sampah (Public)
+  - GET `/api/sampah`
+  - GET `/api/sampah/{id}`
+
+- Health Check (Public)
+  - GET `/api/tes-api`
+
+Standard Response Shapes
+- Success: { "success": true, "message": "optional", "data": { … } }
+- Validation error: HTTP 422 with JSON error details
+- Unauthenticated: HTTP 401
+- Not found: HTTP 404
+
+Sample Requests (cURL)
+- Login (get token):
+  curl -X POST https://ciptamuri.com/api/nasabah/login \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/json" \
+    -d "{\"nik\":\"<NIK>\",\"tanggal_lahir\":\"YYYY-MM-DD\"}"
+
+- Protected example (replace <TOKEN>):
+  curl https://ciptamuri.com/api/rekening \
+    -H "Accept: application/json" \
+    -H "Authorization: Bearer <TOKEN>"
+
+- Create withdraw request:
+  curl -X POST https://ciptamuri.com/api/tarik-saldo \
+    -H "Authorization: Bearer <TOKEN>" \
+    -H "Content-Type: application/json" \
+    -H "Accept: application/json" \
+    -d "{\"amount\":10000,\"description\":\"Penarikan via app\"}"
+
+PowerShell Notes (Windows)
+- In PowerShell, `curl` is an alias of Invoke-WebRequest. Use `curl.exe` or `Invoke-RestMethod`.
+- Example login and set token:
+  $BASE = 'https://ciptamuri.com'
+  $login = curl.exe -sS -X POST "$BASE/api/nasabah/login" -H "Content-Type: application/json" -H "Accept: application/json" -d "{\"nik\":\"<NIK>\",\"tanggal_lahir\":\"YYYY-MM-DD\"}"
+  $TOKEN = ($login | ConvertFrom-Json).data.token
+  curl.exe -sS -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" "$BASE/api/rekening"
+
+Flutter (Dio) Quickstart
+- Add deps: dio, flutter_secure_storage
+- Setup client:
+  final dio = Dio(BaseOptions(
+    baseUrl: 'https://ciptamuri.com/api',
+    headers: {'Accept': 'application/json'},
+    connectTimeout: const Duration(seconds: 15),
+    receiveTimeout: const Duration(seconds: 15),
+  ));
+
+- Login & store token:
+  final res = await dio.post('/nasabah/login', data: {
+    'nik': nik,
+    'tanggal_lahir': pin,
+  });
+  final token = res.data['data']['token'] as String;
+  await storage.write(key: 'token', value: token);
+  dio.options.headers['Authorization'] = 'Bearer $token';
+
+- Example calls:
+  await dio.get('/rekening');
+  await dio.get('/rekening/saldo-transactions', queryParameters: {'type': 'credit'});
+  await dio.get('/setor-sampah');
+  await dio.post('/tarik-saldo', data: {'amount': 10000, 'description': 'Penarikan via app'});
+  await dio.get('/berita', queryParameters: {'q': 'bank', 'category': 'general'});
+  await dio.get('/berita/$slug');
+  await dio.get('/sampah');
+  await dio.get('/sampah/$id');
+  await dio.post('/nasabah/logout');
+
+Error Handling (Client)
+- 401: token invalid/expired → redirect to login.
+- 422: show field errors/validation messages to user (e.g., insufficient balance).
+- 404: show empty state or not found.
+- 500: show generic error with retry option.
+
+Security
+- Store the token in secure storage (not shared preferences).
+- Never log the token.
+- Always use HTTPS; ensure proxies/CDNs forward the `Authorization` header.
+
+Changelog / Source
+- Route definitions: routes/api.php
+- Auth controller: app/Http/Controllers/Api/AuthController.php
+

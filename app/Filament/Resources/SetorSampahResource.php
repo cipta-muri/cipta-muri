@@ -139,6 +139,9 @@ class SetorSampahResource extends Resource
                                         if (empty($item['description'])) {
                                             $item['description'] = 'Setoran Sampah';
                                         }
+
+                                        // Berat asli tetap disimpan di detail transaksi.
+                                        // Penghitungan stok akan mengabaikan berat jika sampah.simpan_berat = false.
                                     }
                                     unset($item); // good practice setelah foreach by-ref
                     
@@ -160,6 +163,9 @@ class SetorSampahResource extends Resource
                                 if (empty($data['type'])) {
                                     $data['type'] = 'masuk';
                                 }
+
+                                // Berat asli tetap disimpan di detail transaksi.
+                                // Penghitungan stok akan mengabaikan berat jika sampah.simpan_berat = false.
 
                                 return $data;
                             })
@@ -297,6 +303,7 @@ class SetorSampahResource extends Resource
         $totalSaldo = 0;
         $totalBerat = 0;
         $rows = '';
+        $hasNonStoredWeight = false;
 
         foreach ($items as $item) {
             if (empty($item['sampah_id']) || empty($item['berat']) || !is_numeric($item['berat']))
@@ -304,15 +311,19 @@ class SetorSampahResource extends Resource
 
             $sampah = $sampahData->get($item['sampah_id']);
             if ($sampah) {
-                $berat = (float) $item['berat'];
-                $saldo = $sampah->saldo_per_kg * $berat;
+                $beratAsal = (float) $item['berat'];
+                $beratEfektif = ($sampah->simpan_berat ?? true) ? $beratAsal : 0.0;
+                if ($beratEfektif === 0.0 && $beratAsal > 0) {
+                    $hasNonStoredWeight = true;
+                }
+                $saldo = $sampah->saldo_per_kg * $beratAsal; // saldo tetap mengikuti berat asli yang dimasukkan
                 $rows .= "<tr>
                             <td style='padding:6px;'>{$sampah->jenis_sampah}</td>
-                            <td style='padding:6px; text-align:center;'>{$berat} Kg</td>
+                            <td style='padding:6px; text-align:center;'>{$beratEfektif} Kg" . (($beratEfektif === 0.0 && $beratAsal > 0) ? " <span style='color:#6b7280'>(tidak dihitung)</span>" : '') . "</td>
                             " . ($jenisSetoran !== 'donasi' ? "<td style='padding:6px; text-align:right;'>Rp " . number_format($saldo, 2, ',', '.') . "</td>" : '') . "
                         </tr>";
                 $totalSaldo += $saldo;
-                $totalBerat += $berat;
+                $totalBerat += $beratEfektif;
             }
         }
 
@@ -334,6 +345,10 @@ class SetorSampahResource extends Resource
 
         if ($jenisSetoran === 'donasi') {
             $html .= "<p class='text-sm text-green-600 mt-2'>Ini adalah transaksi donasi. Saldo tidak ditambahkan ke rekening, hanya berat yang dicatat sebagai aset bank sampah.</p>";
+        }
+
+        if ($hasNonStoredWeight) {
+            $html .= "<p class='text-sm text-gray-600 mt-2'>Catatan: Berat sampah tidak dihitung pada jenis sampah yang status 'simpan_berat' di non-aktifkan.</p>";
         }
 
         return new HtmlString($html);
@@ -371,17 +386,20 @@ class SetorSampahResource extends Resource
                 foreach ($validItems as $item) {
                     $sampah = $sampahData->get($item['sampah_id']);
                     if ($sampah) {
-                        $berat = (float) $item['berat'];
-                        $saldoItem = $sampah->saldo_per_kg * $berat;
-                        $poinItem = $sampah->poin_per_kg * $berat;
+                        $beratAsal = (float) ($item['berat']);
+                        $beratEfektif = ($sampah->simpan_berat ?? true) ? $beratAsal : 0.0;
+                        $saldoItem = $sampah->saldo_per_kg * $beratAsal; // saldo tetap mengikuti berat asli yang dimasukkan
+                        $poinItem = ($sampah->poin_per_kg ?? 0) * $beratAsal;
 
-                        $totalBerat += $berat;
+                        // Berat total hanya menjumlahkan jika simpan_berat = true
+                        $totalBerat += $beratEfektif;
                         $totalSaldo += $saldoItem;
                         $totalPoin += $poinItem;
 
                         \Log::info('Item Calculation', [
                             'sampah' => $sampah->jenis_sampah,
-                            'berat' => $berat,
+                            'berat_asal' => $beratAsal,
+                            'berat_efektif' => $beratEfektif,
                             'saldo_per_kg' => $sampah->saldo_per_kg,
                             'poin_per_kg' => $sampah->poin_per_kg,
                             'saldo_item' => $saldoItem,

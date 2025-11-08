@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\SetorSampah;
 use App\Models\Rekening;
+use App\Models\SaldoTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -47,6 +48,71 @@ class SetorSampahObserver
     {
         // Buat transaksi saldo hanya jika bukan donasi dan ada saldo
         if (!$setorSampah->isDonation() && $setorSampah->total_saldo_dihasilkan > 0) {
+            $setorSampah->rekening->saldoTransactions()->create([
+                'amount' => $setorSampah->total_saldo_dihasilkan,
+                'type' => 'credit',
+                'description' => 'Setoran Sampah',
+                'transactable_id' => $setorSampah->id,
+                'transactable_type' => SetorSampah::class,
+                'user_id' => $setorSampah->user_id,
+            ]);
+        }
+    }
+
+    /**
+     * Sinkronkan SaldoTransaction & detail setelah create/update.
+     */
+    public function saved(SetorSampah $setorSampah): void
+    {
+        // Pastikan semua detail punya rekening_id terbaru
+        $setorSampah->details()
+            ->where('rekening_id', '!=', $setorSampah->rekening_id)
+            ->update(['rekening_id' => $setorSampah->rekening_id]);
+
+        // Ambil transaksi saldo terkait (termasuk yang terhapus)
+        $existing = SaldoTransaction::withTrashed()
+            ->where('transactable_type', SetorSampah::class)
+            ->where('transactable_id', $setorSampah->id)
+            ->first();
+
+        // Jika donasi atau total saldo 0, hapus transaksi saldo bila ada
+        if ($setorSampah->isDonation() || $setorSampah->total_saldo_dihasilkan <= 0) {
+            if ($existing && !$existing->trashed()) {
+                $existing->delete();
+            }
+            return;
+        }
+
+        // Non-donasi dan ada saldo: pastikan transaksi saldo sesuai total & rekening
+        if ($existing) {
+            // Jika rekening berubah, hapus transaksi lama dan buat baru agar kedua saldo terbarui
+            if ($existing->rekening_id !== $setorSampah->rekening_id) {
+                if (!$existing->trashed()) {
+                    $existing->delete();
+                }
+                $setorSampah->rekening->saldoTransactions()->create([
+                    'amount' => $setorSampah->total_saldo_dihasilkan,
+                    'type' => 'credit',
+                    'description' => 'Setoran Sampah',
+                    'transactable_id' => $setorSampah->id,
+                    'transactable_type' => SetorSampah::class,
+                    'user_id' => $setorSampah->user_id,
+                ]);
+                return;
+            }
+
+            // Rekening sama: update amount, type, description, pulihkan jika terhapus
+            $existing->amount = $setorSampah->total_saldo_dihasilkan;
+            $existing->type = 'credit';
+            $existing->description = 'Setoran Sampah';
+            $existing->user_id = $setorSampah->user_id;
+            if ($existing->trashed()) {
+                $existing->restore();
+            } else {
+                $existing->save();
+            }
+        } else {
+            // Tidak ada transaksi: buat baru
             $setorSampah->rekening->saldoTransactions()->create([
                 'amount' => $setorSampah->total_saldo_dihasilkan,
                 'type' => 'credit',

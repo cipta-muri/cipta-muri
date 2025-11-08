@@ -37,7 +37,7 @@ return new class extends Migration {
                 ->constrained('rekening')
                 ->index()
                 ->name('fk_detail_setor_sampah_rekening');
-            $table->decimal('berat', 10, 4);
+            $table->decimal('berat', 10, 4)->default(0);
             $table->string('description', 255);
             $table->foreignUlid(column: 'user_id')->nullable()->constrained('users')->nullOnDelete()->index()->name('fk_detail_setor_sampah_user');
             $table->timestamps();

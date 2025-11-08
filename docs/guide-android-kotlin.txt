@@ -1,0 +1,202 @@
+Android (Kotlin) API Guide — ciptamuri.com
+
+Overview
+- Base URL: https://ciptamuri.com/api
+- Auth: Bearer token (Sanctum), obtained via login and sent in Authorization header.
+- Required headers: Accept: application/json (always), Content-Type: application/json (for POST JSON).
+- Common statuses: 200/201 success, 401 unauthenticated, 422 validation, 404 not found.
+
+Gradle (Module: app)
+dependencies {
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    // Optional: encrypted storage
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+}
+
+Token Storage (DataStore example)
+// Create a single DataStore instance (e.g., in an extension)
+val Context.dataStore by preferencesDataStore(name = "settings")
+
+object TokenStore {
+    private val KEY = stringPreferencesKey("auth_token")
+
+    suspend fun save(ctx: Context, token: String) = ctx.dataStore.edit { it[KEY] = token }
+    suspend fun clear(ctx: Context) = ctx.dataStore.edit { it.remove(KEY) }
+    suspend fun read(ctx: Context): String? = ctx.dataStore.data.first()[KEY]
+}
+
+OkHttp Interceptor + Retrofit
+class AuthInterceptor(private val tokenProvider: suspend () -> String?) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val req = chain.request()
+        val builder = req.newBuilder()
+            .addHeader("Accept", "application/json")
+        val token = runBlocking { tokenProvider() }
+        if (!token.isNullOrBlank()) builder.addHeader("Authorization", "Bearer $token")
+        return chain.proceed(builder.build())
+    }
+}
+
+fun createHttpClient(tokenProvider: suspend () -> String?): OkHttpClient =
+    OkHttpClient.Builder()
+        .addInterceptor(AuthInterceptor(tokenProvider))
+        .addInterceptor(HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+            else HttpLoggingInterceptor.Level.BASIC
+        })
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .build()
+
+fun createRetrofit(client: OkHttpClient): Retrofit =
+    Retrofit.Builder()
+        .baseUrl("https://ciptamuri.com/api/")
+        .addConverterFactory(MoshiConverterFactory.create())
+        .client(client)
+        .build()
+
+API Models (simplified)
+// Note: decimal/amount from Laravel may be strings; use BigDecimal when needed.
+data class ApiResponse<T>(val success: Boolean, val message: String? = null, val data: T? = null)
+
+data class LoginData(
+    val token: String,
+    val nasabah: Nasabah
+)
+
+data class Nasabah(
+    val id: String,
+    val nama: String?,
+    val nik: String?,
+    val no_rekening: String?,
+    val telepon: String?,
+    val balance: String?,              // parse as needed
+    val points_balance: Int?,
+    val formatted_balance: String?
+)
+
+data class RekeningSummary(
+    val rekening: Nasabah,
+    val balance: String?,
+    val formatted_balance: String?,
+    val points_balance: Int?
+)
+
+data class SaldoTransaction(
+    val id: String,
+    val rekening_id: String,
+    val amount: String,
+    val type: String,                  // "credit" | "debit"
+    val description: String?,
+    val created_at: String?
+)
+
+data class TarikSaldoRequest(val amount: Int, val description: String? = null)
+
+Retrofit Interface
+interface ApiService {
+    @POST("nasabah/login")
+    suspend fun login(@Body body: Map<String, String>): ApiResponse<LoginData>
+
+    @GET("nasabah/profile")
+    suspend fun profile(): ApiResponse<Nasabah>
+
+    @POST("nasabah/logout")
+    suspend fun logout(): ApiResponse<Unit>
+
+    @GET("rekening")
+    suspend fun rekening(): ApiResponse<RekeningSummary>
+
+    @GET("rekening/saldo-transactions")
+    suspend fun saldoTransactions(@Query("type") type: String? = null): ApiResponse<List<SaldoTransaction>>
+
+    @GET("setor-sampah")
+    suspend fun setorSampah(): ApiResponse<List<Any>>
+
+    @POST("tarik-saldo")
+    suspend fun tarikSaldo(@Body body: TarikSaldoRequest): ApiResponse<Any>
+
+    @GET("tarik-saldo")
+    suspend fun listTarikSaldo(): ApiResponse<List<Any>>
+
+    @GET("berita")
+    suspend fun berita(@Query("q") q: String? = null, @Query("category") category: String? = null): ApiResponse<List<Any>>
+
+    @GET("berita/{slug}")
+    suspend fun beritaDetail(@Path("slug") slug: String): ApiResponse<Any>
+
+    @GET("sampah")
+    suspend fun sampah(): ApiResponse<List<Any>>
+
+    @GET("sampah/{id}")
+    suspend fun sampahDetail(@Path("id") id: String): ApiResponse<Any>
+}
+
+Repository Example
+class ApiRepository(private val ctx: Context) {
+    private val api by lazy {
+        val client = createHttpClient { TokenStore.read(ctx) }
+        createRetrofit(client).create(ApiService::class.java)
+    }
+
+    suspend fun login(nik: String, tanggal: String): Result<Unit> = runCatching {
+        val res = api.login(mapOf("nik" to nik, "tanggal_lahir" to tanggal))
+        if (res.success && res.data != null) TokenStore.save(ctx, res.data.token)
+        else error(res.message ?: "Login gagal")
+    }
+
+    suspend fun logout(): Result<Unit> = runCatching {
+        api.logout(); TokenStore.clear(ctx)
+    }
+
+    suspend fun getRekening() = runCatching { api.rekening().data }
+    suspend fun getProfile()  = runCatching { api.profile().data }
+    suspend fun getSaldoTransactions(type: String? = null) =
+        runCatching { api.saldoTransactions(type).data.orEmpty() }
+
+    suspend fun createTarikSaldo(amount: Int, desc: String?) =
+        runCatching { api.tarikSaldo(TarikSaldoRequest(amount, desc)).data }
+}
+
+ViewModel Usage (example)
+@HiltViewModel
+class AuthViewModel @Inject constructor(private val repo: ApiRepository) : ViewModel() {
+    private val _state = MutableStateFlow<UiState>(UiState.Idle)
+    val state = _state.asStateFlow()
+
+    fun login(nik: String, ttl: String) = viewModelScope.launch {
+        _state.value = UiState.Loading
+        repo.login(nik, ttl)
+            .onSuccess { _state.value = UiState.Success }
+            .onFailure { _state.value = UiState.Error(it.message ?: "Gagal") }
+    }
+}
+
+sealed interface UiState {
+    data object Idle : UiState
+    data object Loading : UiState
+    data object Success : UiState
+    data class Error(val msg: String) : UiState
+}
+
+Testing Tips
+- Login sample: POST /nasabah/login with { nik: "<NIK>", tanggal_lahir: "YYYY-MM-DD" }.
+- Use returned token as Bearer for protected endpoints.
+- Validate 422 on tarik saldo when balance insufficient.
+- For manual tests, curl examples are in docs/guide.txt.
+
+Notes
+- Send dates as YYYY-MM-DD (login PIN = tanggal_lahir).
+- Decimal/amount may come as strings; use BigDecimal for money math.
+- No CORS issues on mobile; ensure all traffic uses HTTPS.
+- Make sure reverse proxies/CDNs forward Authorization header.
+
+References
+- API routes: routes/api.php
+- Auth controller: app/Http/Controllers/Api/AuthController.php
+

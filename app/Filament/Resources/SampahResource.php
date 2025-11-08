@@ -12,6 +12,7 @@ use App\Filament\Resources\SampahResource\RelationManagers;
 use Filament\Resources\Tables\Table;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
 use Hexters\HexaLite\HasHexaLite;
 
 class SampahResource extends Resource
@@ -56,10 +57,12 @@ class SampahResource extends Resource
                 Forms\Components\TextInput::make('saldo_per_kg')
                     ->label('Saldo per-Kg')
                     ->prefix('Rp')
-                    ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(['.', ','])
                     ->numeric()
                     ->required(),
+                Forms\Components\Toggle::make('simpan_berat')
+                    ->label('Simpan Berat Sampah')
+                    ->default(true)
+                    ->helperText('Nonaktifkan jika sampah ini tidak ingin disimpan beratnya saat setor sampah.'),
                 // Forms\Components\TextInput::make('poin_per_kg')
                 //     ->label('Poin per-gram')
                 //     ->prefix('Poin')
@@ -83,6 +86,14 @@ class SampahResource extends Resource
                         decimalSeparator: ',',
                         thousandsSeparator: '.'
                     )->sortable(),
+                IconColumn::make('simpan_berat')
+                    ->label('Simpan Berat?')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->sortable(),
                 // TextColumn::make('poin_per_kg')->label('Poin per-gram')->sortable(),
                 TextColumn::make('user.name')->label('Pembuat Data')->sortable()->searchable(),
             ])
@@ -91,13 +102,13 @@ class SampahResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                ->visible(fn() => hexa()->can('sampah.update')),
+                    ->visible(fn() => hexa()->can('sampah.update')),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('sampah.delete')),
+                    ->visible(fn() => hexa()->can('sampah.delete')),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()
-                ->visible(fn() => hexa()->can('sampah.delete')),
+                    ->visible(fn() => hexa()->can('sampah.delete')),
             ]);
     }
 

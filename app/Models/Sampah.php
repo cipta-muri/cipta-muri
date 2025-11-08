@@ -46,13 +46,20 @@ class Sampah extends Model
      */
     public function updateBerat(): void
     {
+        // Jika jenis sampah tidak menyimpan berat, stok selalu 0
+        if (!($this->simpan_berat ?? true)) {
+            $this->total_berat_terkumpul = 0;
+            $this->saveQuietly();
+            return;
+        }
+
         $masuk = $this->details()
-            ->where('deleted_at', null)
+            ->whereNull('deleted_at')
             ->where('type', 'masuk')
             ->sum('berat');
 
         $keluar = $this->details()
-            ->where('deleted_at', null)
+            ->whereNull('deleted_at')
             ->where('type', 'keluar')
             ->sum('berat');
 
@@ -62,13 +69,20 @@ class Sampah extends Model
 
     public function recalculateTotalBerat(): void
     {
+        // Jika jenis sampah tidak menyimpan berat, stok selalu 0
+        if (!($this->simpan_berat ?? true)) {
+            $this->total_berat_terkumpul = 0;
+            $this->saveQuietly();
+            return;
+        }
+
         $masuk = $this->details()
-            ->where('deleted_at', null) // hanya yang aktif
+            ->whereNull('deleted_at') // hanya yang aktif
             ->where('type', 'masuk')
             ->sum('berat');
 
         $keluar = $this->details()
-            ->where('deleted_at', null)
+            ->whereNull('deleted_at')
             ->where('type', 'keluar')
             ->sum('berat');
 
