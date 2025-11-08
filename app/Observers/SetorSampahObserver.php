@@ -36,8 +36,9 @@ class SetorSampahObserver
                 ]
             );
             $setorSampah->rekening_id = $rekening->id;
-            $setorSampah->total_saldo_dihasilkan = 0;
-            $setorSampah->total_poin_dihasilkan = 0;
+            // Untuk donasi, nilai saldo bisa > 0 jika ada item yang tidak menyimpan berat.
+            // Biarkan nilai total_saldo_dihasilkan dari form (updateTotals) agar dapat
+            // mencerminkan skenario tersebut.
         }
     }
 
@@ -75,8 +76,8 @@ class SetorSampahObserver
             ->where('transactable_id', $setorSampah->id)
             ->first();
 
-        // Jika donasi atau total saldo 0, hapus transaksi saldo bila ada
-        if ($setorSampah->isDonation() || $setorSampah->total_saldo_dihasilkan <= 0) {
+        // Jika total saldo 0, hapus transaksi saldo bila ada
+        if ($setorSampah->total_saldo_dihasilkan <= 0) {
             if ($existing && !$existing->trashed()) {
                 $existing->delete();
             }
@@ -93,7 +94,7 @@ class SetorSampahObserver
                 $setorSampah->rekening->saldoTransactions()->create([
                     'amount' => $setorSampah->total_saldo_dihasilkan,
                     'type' => 'credit',
-                    'description' => 'Setoran Sampah',
+                    'description' => $setorSampah->isDonation() ? 'Setoran Sampah (Donasi)' : 'Setoran Sampah',
                     'transactable_id' => $setorSampah->id,
                     'transactable_type' => SetorSampah::class,
                     'user_id' => $setorSampah->user_id,
@@ -104,7 +105,7 @@ class SetorSampahObserver
             // Rekening sama: update amount, type, description, pulihkan jika terhapus
             $existing->amount = $setorSampah->total_saldo_dihasilkan;
             $existing->type = 'credit';
-            $existing->description = 'Setoran Sampah';
+            $existing->description = $setorSampah->isDonation() ? 'Setoran Sampah (Donasi)' : 'Setoran Sampah';
             $existing->user_id = $setorSampah->user_id;
             if ($existing->trashed()) {
                 $existing->restore();
@@ -116,7 +117,7 @@ class SetorSampahObserver
             $setorSampah->rekening->saldoTransactions()->create([
                 'amount' => $setorSampah->total_saldo_dihasilkan,
                 'type' => 'credit',
-                'description' => 'Setoran Sampah',
+                'description' => $setorSampah->isDonation() ? 'Setoran Sampah (Donasi)' : 'Setoran Sampah',
                 'transactable_id' => $setorSampah->id,
                 'transactable_type' => SetorSampah::class,
                 'user_id' => $setorSampah->user_id,

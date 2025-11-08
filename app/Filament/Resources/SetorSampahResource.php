@@ -304,6 +304,8 @@ class SetorSampahResource extends Resource
         $totalBerat = 0;
         $rows = '';
         $hasNonStoredWeight = false;
+        $isDonasi = ($jenisSetoran === 'donasi');
+        $hasSaldoOnDonasi = false;
 
         foreach ($items as $item) {
             if (empty($item['sampah_id']) || empty($item['berat']) || !is_numeric($item['berat']))
@@ -316,11 +318,16 @@ class SetorSampahResource extends Resource
                 if ($beratEfektif === 0.0 && $beratAsal > 0) {
                     $hasNonStoredWeight = true;
                 }
-                $saldo = $sampah->saldo_per_kg * $beratAsal; // saldo tetap mengikuti berat asli yang dimasukkan
+                // Untuk donasi, saldo hanya dihitung jika sampah tidak menyimpan berat
+                $includeSaldo = $isDonasi ? !($sampah->simpan_berat ?? true) : true;
+                $saldo = $includeSaldo ? ($sampah->saldo_per_kg * $beratAsal) : 0;
+                if ($isDonasi && $includeSaldo && $saldo > 0) {
+                    $hasSaldoOnDonasi = true;
+                }
                 $rows .= "<tr>
                             <td style='padding:6px;'>{$sampah->jenis_sampah}</td>
                             <td style='padding:6px; text-align:center;'>{$beratEfektif} Kg" . (($beratEfektif === 0.0 && $beratAsal > 0) ? " <span style='color:#6b7280'>(tidak dihitung)</span>" : '') . "</td>
-                            " . ($jenisSetoran !== 'donasi' ? "<td style='padding:6px; text-align:right;'>Rp " . number_format($saldo, 2, ',', '.') . "</td>" : '') . "
+                            " . (($jenisSetoran !== 'donasi' || $includeSaldo) ? "<td style='padding:6px; text-align:right;'>Rp " . number_format($saldo, 2, ',', '.') . "</td>" : '') . "
                         </tr>";
                 $totalSaldo += $saldo;
                 $totalBerat += $beratEfektif;
@@ -330,21 +337,25 @@ class SetorSampahResource extends Resource
         $totalRow = "<tr style='font-weight:bold; border-top:2px solid #333;'>
                         <td style='padding:6px;'>Total</td>
                         <td style='padding:6px; text-align:center;'>" . number_format($totalBerat, 2, ',', '.') . " Kg</td>
-                        " . ($jenisSetoran !== 'donasi' ? "<td style='padding:6px; text-align:right;'>Rp " . number_format($totalSaldo, 2, ',', '.') . "</td>" : '') . "
+                        " . (($jenisSetoran !== 'donasi' || $hasSaldoOnDonasi) ? "<td style='padding:6px; text-align:right;'>Rp " . number_format($totalSaldo, 2, ',', '.') . "</td>" : '') . "
                     </tr>";
 
         $header = "<thead>
                     <tr text-align:left;'>
                         <th style='padding:6px;'>Jenis Sampah</th>
                         <th style='padding:6px; text-align:center;'>Berat</th>
-                        " . ($jenisSetoran !== 'donasi' ? "<th style='padding:6px; text-align:right;'>Saldo</th>" : '') . "
+                        " . (($jenisSetoran !== 'donasi' || $hasSaldoOnDonasi) ? "<th style='padding:6px; text-align:right;'>Saldo</th>" : '') . "
                     </tr>
                 </thead>";
 
         $html = "<table style='width:100%; border-collapse:collapse;'>{$header}<tbody>{$rows}{$totalRow}</tbody></table>";
 
         if ($jenisSetoran === 'donasi') {
-            $html .= "<p class='text-sm text-green-600 mt-2'>Ini adalah transaksi donasi. Saldo tidak ditambahkan ke rekening, hanya berat yang dicatat sebagai aset bank sampah.</p>";
+            if ($hasSaldoOnDonasi) {
+                $html .= "<p class='text-sm text-green-600 mt-2'>Donasi: beberapa item tidak menyimpan berat sehingga saldo ditambahkan ke kas donasi.</p>";
+            } else {
+                $html .= "<p class='text-sm text-green-600 mt-2'>Donasi: saldo tidak ditambahkan; hanya berat yang dicatat sebagai aset bank sampah.</p>";
+            }
         }
 
         if ($hasNonStoredWeight) {
@@ -358,6 +369,8 @@ class SetorSampahResource extends Resource
     public static function updateTotals(Get $get, Set $set): void
     {
         $items = $get('details');
+        $jenisSetoran = $get('jenis_setoran');
+        $isDonasi = ($jenisSetoran === 'donasi');
         $totalSaldo = 0;
         $totalPoin = 0;
         $totalBerat = 0;
@@ -388,7 +401,10 @@ class SetorSampahResource extends Resource
                     if ($sampah) {
                         $beratAsal = (float) ($item['berat']);
                         $beratEfektif = ($sampah->simpan_berat ?? true) ? $beratAsal : 0.0;
-                        $saldoItem = $sampah->saldo_per_kg * $beratAsal; // saldo tetap mengikuti berat asli yang dimasukkan
+                        // Untuk donasi, saldo hanya dihitung untuk item yang TIDAK menyimpan berat.
+                        // Untuk non-donasi, saldo dihitung dari semua item.
+                        $includeSaldo = $isDonasi ? !($sampah->simpan_berat ?? true) : true;
+                        $saldoItem = $includeSaldo ? ($sampah->saldo_per_kg * $beratAsal) : 0;
                         $poinItem = ($sampah->poin_per_kg ?? 0) * $beratAsal;
 
                         // Berat total hanya menjumlahkan jika simpan_berat = true
@@ -403,6 +419,7 @@ class SetorSampahResource extends Resource
                             'saldo_per_kg' => $sampah->saldo_per_kg,
                             'poin_per_kg' => $sampah->poin_per_kg,
                             'saldo_item' => $saldoItem,
+                            'include_saldo' => $includeSaldo,
                             'poin_item' => $poinItem
                         ]);
                     }
