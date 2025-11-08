@@ -40,6 +40,9 @@ class TopBeratSetoranWidget extends BaseWidget
     protected function getTableColumns(): array
     {
         return [
+            Tables\Columns\TextColumn::make('rank')
+                ->label('#')
+                ->rowIndex(),
             Tables\Columns\TextColumn::make('nama')
                 ->label('Rekening')
                 ->searchable()
@@ -59,4 +62,3 @@ class TopBeratSetoranWidget extends BaseWidget
         return true;
     }
 }
-

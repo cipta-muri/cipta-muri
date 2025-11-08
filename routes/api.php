@@ -10,6 +10,7 @@ use App\Models\SetorSampah;
 use App\Models\WithdrawRequest;
 use App\Models\News;
 use App\Models\Sampah;
+use App\Http\Controllers\Api\RankingController;
 
 
 /*
@@ -203,3 +204,5 @@ Route::get('/tes-api', function () {
     return response()->json(['message' => 'API aktif ✅.']);
 });
 
+// Ranking (publik) — hasil gabungan Top Berat & Top Jumlah
+Route::get('/ranking', [RankingController::class, 'index']);

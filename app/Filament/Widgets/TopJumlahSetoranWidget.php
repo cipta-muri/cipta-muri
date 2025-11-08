@@ -35,6 +35,9 @@ class TopJumlahSetoranWidget extends BaseWidget
     protected function getTableColumns(): array
     {
         return [
+            Tables\Columns\TextColumn::make('rank')
+                ->label('#')
+                ->rowIndex(),
             Tables\Columns\TextColumn::make('nama')
                 ->label('Rekening')
                 ->searchable()
@@ -53,4 +56,3 @@ class TopJumlahSetoranWidget extends BaseWidget
         return true;
     }
 }
-
