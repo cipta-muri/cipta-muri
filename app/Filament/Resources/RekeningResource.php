@@ -346,6 +346,7 @@ class RekeningResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                 ->visible(fn() => hexa()->can('rekening.delete')),
@@ -432,6 +433,7 @@ class RekeningResource extends Resource
         return [
             'index' => Pages\ListRekenings::route('/'),
             'create' => Pages\CreateRekening::route('/create'),
+            'view' => Pages\ViewRekening::route('/{record}'),
             'edit' => Pages\EditRekening::route('/{record}/edit'),
         ];
     }

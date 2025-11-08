@@ -64,6 +64,11 @@ class NewsResource extends Resource
         return hexa()->can('berita.index');
     }
 
+    public static function canCreate(): bool
+    {
+        return hexa()->can('berita.create');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

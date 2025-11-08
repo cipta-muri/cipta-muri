@@ -48,4 +48,9 @@ class SampahTransactionsRelationManager extends RelationManager
                 //
             ]);
     }
+
+    public static function canViewForRecord($ownerRecord, $page): bool
+    {
+        return hexa()->can('sampah.index');
+    }
 }

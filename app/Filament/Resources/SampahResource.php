@@ -101,6 +101,8 @@ class SampahResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->visible(fn() => hexa()->can('sampah.index')),
                 Tables\Actions\EditAction::make()
                     ->visible(fn() => hexa()->can('sampah.update')),
                 Tables\Actions\DeleteAction::make()
@@ -124,6 +126,7 @@ class SampahResource extends Resource
         return [
             'index' => Pages\ListSampahs::route('/'),
             'create' => Pages\CreateSampah::route('/create'),
+            'view' => Pages\ViewSampah::route('/{record}'),
             'edit' => Pages\EditSampah::route('/{record}/edit'),
         ];
     }

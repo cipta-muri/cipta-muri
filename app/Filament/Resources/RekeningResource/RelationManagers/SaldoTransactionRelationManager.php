@@ -127,4 +127,9 @@ class SaldoTransactionRelationManager extends RelationManager
                 //
             ]);
     }
+
+    public static function canViewForRecord($ownerRecord, $page): bool
+    {
+        return hexa()->can('rekening.index');
+    }
 }
