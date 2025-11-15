@@ -83,6 +83,10 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "test:dusk": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#fb7185\" \"php artisan serve --host=127.0.0.1 --port=8000\" \"php artisan dusk\" --names=server,dusk --kill-others-on-fail"
         ]
     },
     "extra": {
