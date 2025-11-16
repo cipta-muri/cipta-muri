@@ -33,6 +33,6 @@ Route::get('/permintaan/qr/{type}/{record}', PermintaanQrRedirectController::cla
     ->name('permintaan.qr.redirect')
     ->middleware('signed');
 
-Route::redirect('/registrasi', '/registrasi/rekening/create')->name('registrasi.form');
+Route::redirect('/registrasi', '/registrasi/rekening')->name('registrasi.form');
 
 require __DIR__.'/auth.php';

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Registration\Resources\RekeningRegistrationResource;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -29,7 +30,7 @@ class RegistrationPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Emerald,
             ])
-            ->homeUrl(fn (): string => url('/registrasi/rekening/create'))
+            ->homeUrl(fn (): string => RekeningRegistrationResource::getUrl('index', panel: 'registrasi'))
             ->viteTheme('resources/css/filament/registration/theme.css')
             ->discoverResources(in: app_path('Filament/Registration/Resources'), for: 'App\\Filament\\Registration\\Resources')
             ->discoverPages(in: app_path('Filament/Registration/Pages'), for: 'App\\Filament\\Registration\\Pages')

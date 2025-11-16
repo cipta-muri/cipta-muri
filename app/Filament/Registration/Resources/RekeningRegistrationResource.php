@@ -3,11 +3,12 @@
 namespace App\Filament\Registration\Resources;
 
 use App\Filament\Registration\Resources\RekeningRegistrationResource\Pages;
-use App\Filament\Resources\RekeningResource as BaseRekeningResource;
 use App\Models\Rekening;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Component;
 
 class RekeningRegistrationResource extends Resource
 {
@@ -53,21 +54,30 @@ class RekeningRegistrationResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return BaseRekeningResource::form($form);
-    }
+        $baseForm = \App\Filament\Resources\RekeningResource::form($form);
 
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([])
-            ->actions([])
-            ->bulkActions([]);
+        $schema = collect($baseForm->getComponents());
+
+        $filtered = $schema
+            ->reject(function (Component $component) {
+                if ($component instanceof Section) {
+                    $heading = $component->getHeading();
+
+                    return in_array($heading, ['Saldo Awal', 'Informasi Tabungan Emas Pegadaian'], true);
+                }
+
+                return false;
+            })
+            ->values()
+            ->all();
+
+        return $form->schema($filtered);
     }
 
     public static function getPages(): array
     {
         return [
-            'create' => Pages\CreateRekeningRegistration::route('/create'),
+            'index' => Pages\CreateRekeningRegistration::route('/'),
         ];
     }
 }

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Rekening;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PermintaanController;
 use App\Models\SaldoTransaction;
 use App\Models\SetorSampah;
 use App\Models\WithdrawRequest;
@@ -94,38 +95,8 @@ Route::middleware('auth:rekening')->group(function () {
         ]);
     });
 
-    // Tarik saldo - buat permintaan penarikan saldo
-    Route::post('/tarik-saldo', function (Request $request) {
-        /** @var Rekening $rekening */
-        $rekening = $request->user();
-
-        $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:1'],
-            'description' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $amount = (float) $validated['amount'];
-
-        if (!$rekening->hasSufficientBalance($amount)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Saldo tidak mencukupi untuk penarikan.',
-            ], 422);
-        }
-
-        $withdraw = WithdrawRequest::create([
-            'rekening_id' => $rekening->id,
-            'amount' => $amount,
-            'description' => $validated['description'] ?? 'Penarikan Saldo via API',
-            'status' => 'pending',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Permintaan penarikan saldo berhasil dibuat.',
-            'data' => $withdraw,
-        ], 201);
-    });
+    Route::post('/permintaan/setor-sampah', [PermintaanController::class, 'createSetorSampah']);
+    Route::post('/permintaan/tarik-saldo', [PermintaanController::class, 'createTarikSaldo']);
 
     // Tarik saldo - daftar permintaan penarikan saldo milik rekening login
     Route::get('/tarik-saldo', function (Request $request) {
