@@ -22,24 +22,35 @@ class CreateRekening extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Struktur Nomor Rekening: 1 (status desa) + 4 (tanggal pembuatan) + 3 (urut) = 8 digit
+        // Struktur Nomor Rekening: 1 (status desa) + 2 (tahun) + 2 (bulan) + 3 (urut) = 8 digit
 
-        // 1. Bagian Alamat (1 digit: 0 untuk dalam desa, 1 untuk luar desa)
-        $addressPart = $data['status_desa'] ? '0' : '1';
+        // Pastikan status_desa dikonversi menjadi boolean terlebih dahulu
+        $statusDesa = filter_var($data['status_desa'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        $statusDesa = $statusDesa ?? (bool) $data['status_desa'];
 
-        // 2. Bagian Tanggal (4 digit: ddmmyy)
-        $datePart = Carbon::now()->format('my');
+        // 1. Bagian Status (1 digit: 1 untuk penduduk desa, 0 untuk penduduk luar desa)
+        $statusPart = $statusDesa ? '0' : '1';
 
-        // 3. Bagian Nomor Urut (3 digit)
-        $lastRekeningToday = Rekening::whereDate('created_at', Carbon::today())->latest('id')->first();
+        // 2. Bagian Tanggal (2 digit tahun + 2 digit bulan)
+        $now = Carbon::now();
+        $datePart = $now->format('ym');
+
+        // 3. Nomor urut berdasarkan kombinasi status + tahun/bulan
+        $lastRekening = Rekening::query()
+            ->where('status_desa', $statusDesa)
+            ->whereYear('created_at', $now->year)
+            ->whereMonth('created_at', $now->month)
+            ->orderByDesc('no_rekening')
+            ->first();
+
         $sequence = 1;
-        if ($lastRekeningToday) {
-            $lastSequence = (int) substr($lastRekeningToday->no_rekening, -3);
-            $sequence = $lastSequence + 1;
+        if ($lastRekening) {
+            $sequence = ((int) substr($lastRekening->no_rekening, -3)) + 1;
         }
+
         $sequencePart = str_pad($sequence, 3, '0', STR_PAD_LEFT);
 
-        $data['no_rekening'] = $addressPart . $datePart . $sequencePart;
+        $data['no_rekening'] = $statusPart . $datePart . $sequencePart;
 
         return $data;
     }
