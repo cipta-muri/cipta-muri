@@ -37,6 +37,7 @@ class CreateRekening extends CreateRecord
 
         // 3. Nomor urut berdasarkan kombinasi status + tahun/bulan
         $lastRekening = Rekening::query()
+            ->withTrashed()
             ->where('status_desa', $statusDesa)
             ->whereYear('created_at', $now->year)
             ->whereMonth('created_at', $now->month)
