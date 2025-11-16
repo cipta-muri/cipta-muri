@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,9 +19,28 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): Response
     {
+        $providers = collect(config('services.socialite.providers', []))
+            ->map(function (array $provider, string $key) {
+                $credentials = config("services.{$key}", []);
+
+                if (blank(data_get($credentials, 'client_id')) || blank(data_get($credentials, 'client_secret'))) {
+                    return null;
+                }
+
+                return [
+                    'name' => $key,
+                    'label' => $provider['label'] ?? Str::headline($key),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'socialiteError' => session('socialite_error'),
+            'socialProviders' => $providers,
         ]);
     }
 
