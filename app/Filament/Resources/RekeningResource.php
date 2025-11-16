@@ -337,9 +337,12 @@ class RekeningResource extends Resource
                 EditAction::make()
                     ->visible(fn($record) => hexa()->can('rekening.update') && ($record?->no_rekening !== '00000000')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn($record) => hexa()->can('rekening.delete') && ($record?->no_rekening !== '00000000')),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
+                    ->visible(fn($record) => hexa()->can('rekening.delete') && ($record?->no_rekening !== '00000000'))
+                    ->extraAttributes(['dusk' => 'rekening-delete-action']),
+                Tables\Actions\RestoreAction::make()
+                    ->extraAttributes(['dusk' => 'rekening-restore-action']),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->extraAttributes(['dusk' => 'rekening-force-delete-action']),
             ])
             ->bulkActions([
                 FilamentExportBulkAction::make('export')

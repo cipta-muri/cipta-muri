@@ -45,4 +45,12 @@ abstract class DuskTestCase extends BaseTestCase
             )
         );
     }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config()->set('fortify.limiters.login', null);
+        config()->set('filament-breezy.limiters.login', null);
+    }
 }

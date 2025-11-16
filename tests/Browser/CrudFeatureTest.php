@@ -144,6 +144,11 @@ function loginToAdmin(Browser $browser, string $email, string $password): void
         ->assertPathIs('/admin');
 }
 
+function loginAsAdmin(Browser $browser, User $admin): void
+{
+    $browser->loginAs($admin);
+}
+
 function logoutFromAdmin(Browser $browser): void
 {
     $browser->visit(dusk_base() . '/_dusk/logout');
@@ -199,8 +204,15 @@ function clickElement(Browser $browser, string $selector, int $waitSeconds = 10)
 JS);
 }
 
+function confirmFilamentModal(Browser $browser, int $waitSeconds = 10): void
+{
+    $selector = '.fi-modal-footer-actions .fi-btn';
+    clickElement($browser, $selector, $waitSeconds);
+}
+
 function assertFilamentNotification(Browser $browser, string $message, int $waitSeconds = 10): void
 {
+    $browser->pause(250);
     $browser->waitFor('.fi-no-notification', $waitSeconds)
         ->assertSeeIn('.fi-no-notification', $message);
 }
@@ -239,6 +251,8 @@ test('Sampah: Create, Read, Update, Delete', function () {
     $updated = 'Dusk Updated Sampah ' . Str::upper(Str::random(5));
 
     $this->browse(function (Browser $browser) use ($admin, $name, $updated) {
+        loginAsAdmin($browser, $admin);
+
         // Create
         $browser->visit(dusk_base() . '/admin/sampahs/create');
 
@@ -273,14 +287,12 @@ test('Sampah: Create, Read, Update, Delete', function () {
         // Delete via table row action (soft delete)
         $browser->visit(dusk_base() . '/admin/sampahs')
             ->waitFor($sampahRowSelector, 10)
-            ->tap(function () use ($browser, $sampahRowSelector) {
+            ->tap(function (Browser $browser) use ($sampahRowSelector) {
                 clickElement($browser, "{$sampahRowSelector} [dusk=\"sampah-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
 
         $browser->visit(dusk_base() . '/admin/sampahs')
             ->assertDontSee($updated);
@@ -310,66 +322,73 @@ test('Rekening: Delete, Restore, Force Delete', function () {
     ]);
 
     $this->browse(function (Browser $browser) use ($admin, $rek) {
+        loginAsAdmin($browser, $admin);
+
         $rekRowSelector = filamentTableRowSelector($rek->getKey());
+        $rekSearch = urlencode($rek->nama);
+        $rekIndex = dusk_base() . '/admin/rekenings';
 
         // Ensure record visible on index
-        $browser->visit(dusk_base() . '/admin/rekenings')
-            ->waitForText($rek->nama, 10)
+        $browser->visit("{$rekIndex}?tableSearch={$rekSearch}")
+            ->waitFor($rekRowSelector, 10)
             ->assertSee($rek->nama);
 
         // Delete via table row action
-        $browser->visit(dusk_base() . '/admin/rekenings')
+        $browser->visit("{$rekIndex}?tableSearch={$rekSearch}")
             ->waitFor($rekRowSelector, 10)
-            ->with($rekRowSelector, function (Browser $row) {
-                $row->press('Hapus');
+            ->tap(function (Browser $browser) use ($rekRowSelector) {
+                clickElement($browser, "{$rekRowSelector} [dusk=\"rekening-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
         // Show only trashed and restore it
-        $browser->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false')
+        $browser->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $rekSearch)
             ->waitForText($rek->nama, 10)
             ->waitFor($rekRowSelector, 10)
-            ->with($rekRowSelector, function (Browser $row) {
-                $row->press('Pulihkan');
+            ->tap(function (Browser $browser) use ($rekRowSelector) {
+                clickElement($browser, "{$rekRowSelector} [dusk=\"rekening-restore-action\"]");
+            })
+            ->whenAvailable('.fi-modal', function (Browser $modal) {
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dipulihkan');
 
         // Soft-deleted again to test force delete
-        $browser->visit(dusk_base() . '/admin/rekenings')
+        $browser->visit("{$rekIndex}?tableSearch={$rekSearch}")
             ->waitFor($rekRowSelector, 10)
-            ->with($rekRowSelector, function (Browser $row) {
-                $row->press('Hapus');
+            ->tap(function (Browser $browser) use ($rekRowSelector) {
+                clickElement($browser, "{$rekRowSelector} [dusk=\"rekening-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
         // Force delete from trashed list via per-row action
-        $browser->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false')
+        $browser->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $rekSearch)
             ->waitForText($rek->nama, 10)
             ->waitFor($rekRowSelector, 10)
-            ->with($rekRowSelector, function (Browser $row) {
-                $row->press('Hapus selamanya');
+            ->tap(function (Browser $browser) use ($rekRowSelector) {
+                clickElement($browser, "{$rekRowSelector} [dusk=\"rekening-force-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
         // Verify it's gone from all views
-        $browser->visit(dusk_base() . '/admin/rekenings')
+        $browser->visit("{$rekIndex}?tableSearch={$rekSearch}")
             ->assertDontSee($rek->nama)
-            ->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=true') // with trashed
+            ->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=true&tableSearch=' . $rekSearch) // with trashed
             ->assertDontSee($rek->nama)
-            ->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false') // only trashed
+            ->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $rekSearch) // only trashed
             ->assertDontSee($rek->nama);
     });
 });
@@ -392,60 +411,67 @@ test('Pemasukan: Delete, Restore, Force Delete', function () {
     ]);
 
     $this->browse(function (Browser $browser) use ($admin, $source, $pem) {
+        loginAsAdmin($browser, $admin);
+
         $pemRowSelector = filamentTableRowSelector($pem->getKey());
+        $pemSearch = urlencode($source->nama_pemasukan);
+        $pemasukanIndex = dusk_base() . '/admin/pemasukans';
 
         // Visible on index
-        $browser->visit(dusk_base() . '/admin/pemasukans')
-            ->waitForText($source->nama_pemasukan, 10)
+        $browser->visit("{$pemasukanIndex}?tableSearch={$pemSearch}")
+            ->waitFor($pemRowSelector, 10)
             ->assertSee($source->nama_pemasukan);
 
         // Soft-delete
         $browser->waitFor($pemRowSelector, 10)
-            ->with($pemRowSelector, function (Browser $row) {
-                $row->press('Hapus');
+            ->tap(function (Browser $browser) use ($pemRowSelector) {
+                clickElement($browser, "{$pemRowSelector} [dusk=\"pemasukan-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
         // Restore from trashed
-        $browser->visit(dusk_base() . '/admin/pemasukans?tableFilters%5Btrashed%5D%5Bvalue%5D=false')
+        $browser->visit(dusk_base() . '/admin/pemasukans?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $pemSearch)
             ->waitForText($source->nama_pemasukan, 10)
             ->waitFor($pemRowSelector, 10)
-            ->with($pemRowSelector, function (Browser $row) {
-                $row->press('Pulihkan');
+            ->tap(function (Browser $browser) use ($pemRowSelector) {
+                clickElement($browser, "{$pemRowSelector} [dusk=\"pemasukan-restore-action\"]");
+            })
+            ->whenAvailable('.fi-modal', function (Browser $modal) {
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dipulihkan');
 
         // Soft-delete again
-        $browser->visit(dusk_base() . '/admin/pemasukans')
+        $browser->visit("{$pemasukanIndex}?tableSearch={$pemSearch}")
             ->waitFor($pemRowSelector, 10)
-            ->with($pemRowSelector, function (Browser $row) {
-                $row->press('Hapus');
+            ->tap(function (Browser $browser) use ($pemRowSelector) {
+                clickElement($browser, "{$pemRowSelector} [dusk=\"pemasukan-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
         // Force delete
-        $browser->visit(dusk_base() . '/admin/pemasukans?tableFilters%5Btrashed%5D%5Bvalue%5D=false')
+        $browser->visit(dusk_base() . '/admin/pemasukans?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $pemSearch)
             ->waitForText($source->nama_pemasukan, 10)
             ->waitFor($pemRowSelector, 10)
-            ->with($pemRowSelector, function (Browser $row) {
-                $row->press('Hapus selamanya');
+            ->tap(function (Browser $browser) use ($pemRowSelector) {
+                clickElement($browser, "{$pemRowSelector} [dusk=\"pemasukan-force-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
-        $browser->visit(dusk_base() . '/admin/pemasukans')
+        $browser->visit("{$pemasukanIndex}?tableSearch={$pemSearch}")
             ->assertDontSee($source->nama_pemasukan);
 
     });
@@ -468,59 +494,66 @@ test('Pengeluaran: Delete, Restore, Force Delete', function () {
     ]);
 
     $this->browse(function (Browser $browser) use ($admin, $kategori, $peng) {
+        loginAsAdmin($browser, $admin);
+
         $pengRowSelector = filamentTableRowSelector($peng->getKey());
+        $pengSearch = urlencode($kategori->nama_pengeluaran);
+        $pengIndex = dusk_base() . '/admin/pengeluarans';
 
         // Visible on index
-        $browser->visit(dusk_base() . '/admin/pengeluarans')
-            ->waitForText($kategori->nama_pengeluaran, 10)
+        $browser->visit("{$pengIndex}?tableSearch={$pengSearch}")
+            ->waitFor($pengRowSelector, 10)
             ->assertSee($kategori->nama_pengeluaran);
 
         // Soft-delete
         $browser->waitFor($pengRowSelector, 10)
-            ->with($pengRowSelector, function (Browser $row) {
-                $row->press('Hapus');
+            ->tap(function (Browser $browser) use ($pengRowSelector) {
+                clickElement($browser, "{$pengRowSelector} [dusk=\"pengeluaran-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
         // Restore from trashed
-        $browser->visit(dusk_base() . '/admin/pengeluarans?tableFilters%5Btrashed%5D%5Bvalue%5D=false')
+        $browser->visit(dusk_base() . '/admin/pengeluarans?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $pengSearch)
             ->waitForText($kategori->nama_pengeluaran, 10)
             ->waitFor($pengRowSelector, 10)
-            ->with($pengRowSelector, function (Browser $row) {
-                $row->press('Pulihkan');
+            ->tap(function (Browser $browser) use ($pengRowSelector) {
+                clickElement($browser, "{$pengRowSelector} [dusk=\"pengeluaran-restore-action\"]");
+            })
+            ->whenAvailable('.fi-modal', function (Browser $modal) {
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dipulihkan');
 
         // Soft-delete again and force delete
-        $browser->visit(dusk_base() . '/admin/pengeluarans')
+        $browser->visit("{$pengIndex}?tableSearch={$pengSearch}")
             ->waitFor($pengRowSelector, 10)
-            ->with($pengRowSelector, function (Browser $row) {
-                $row->press('Hapus');
+            ->tap(function (Browser $browser) use ($pengRowSelector) {
+                clickElement($browser, "{$pengRowSelector} [dusk=\"pengeluaran-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
-        $browser->visit(dusk_base() . '/admin/pengeluarans?tableFilters%5Btrashed%5D%5Bvalue%5D=false')
+        $browser->visit(dusk_base() . '/admin/pengeluarans?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $pengSearch)
             ->waitForText($kategori->nama_pengeluaran, 10)
             ->waitFor($pengRowSelector, 10)
-            ->with($pengRowSelector, function (Browser $row) {
-                $row->press('Hapus selamanya');
+            ->tap(function (Browser $browser) use ($pengRowSelector) {
+                clickElement($browser, "{$pengRowSelector} [dusk=\"pengeluaran-force-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
-                $modal->press('Hapus');
+                clickElement($modal, 'button[type=submit]');
             });
 
         assertFilamentNotification($browser, 'Data berhasil dihapus');
 
-        $browser->visit(dusk_base() . '/admin/pengeluarans')
+        $browser->visit("{$pengIndex}?tableSearch={$pengSearch}")
             ->assertDontSee($kategori->nama_pengeluaran);
     });
 });

@@ -53,16 +53,19 @@ class SampahResource extends Resource
                 Forms\Components\TextInput::make('jenis_sampah')
                     ->label('Nama Jenis Sampah')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->extraInputAttributes(['dusk' => 'sampah-form-jenis_sampah']),
                 Forms\Components\TextInput::make('saldo_per_kg')
                     ->label('Saldo per-Kg')
                     ->prefix('Rp')
                     ->numeric()
-                    ->required(),
+                    ->required()
+                    ->extraInputAttributes(['dusk' => 'sampah-form-saldo_per_kg']),
                 Forms\Components\Toggle::make('simpan_berat')
                     ->label('Simpan Berat Sampah')
                     ->default(true)
-                    ->helperText('Nonaktifkan jika sampah ini tidak ingin disimpan beratnya saat setor sampah.'),
+                    ->helperText('Nonaktifkan jika sampah ini tidak ingin disimpan beratnya saat setor sampah.')
+                    ->extraAttributes(['dusk' => 'sampah-form-simpan_berat']),
                 // Forms\Components\TextInput::make('poin_per_kg')
                 //     ->label('Poin per-gram')
                 //     ->prefix('Poin')
@@ -77,15 +80,15 @@ class SampahResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('jenis_sampah')->label('Nama Jenis Sampah')->sortable()->searchable(),
-                TextColumn::make('saldo_per_kg')->label('Saldo per-Kg')->sortable()->money('IDR'),
+                TextColumn::make('jenis_sampah')->label('Nama Jenis Sampah')->sortable()->searchable()->extraAttributes(['dusk' => 'sampah-table-jenis_sampah']),
+                TextColumn::make('saldo_per_kg')->label('Saldo per-Kg')->sortable()->money('IDR')->extraAttributes(['dusk' => 'sampah-table-saldo_per_kg']),
                 TextColumn::make('total_berat_terkumpul')
                     ->label('Total Terkumpul (Kg)')
                     ->numeric(
                         decimalPlaces: 4,
                         decimalSeparator: ',',
                         thousandsSeparator: '.'
-                    )->sortable(),
+                    )->sortable()->extraAttributes(['dusk' => 'sampah-tale-total_berat_terkumpul']),
                 IconColumn::make('simpan_berat')
                     ->label('Simpan Berat?')
                     ->boolean()
@@ -93,9 +96,10 @@ class SampahResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->sortable(),
+                    ->sortable()
+                    ->extraAttributes(['dusk' => 'sampah-table-simpan_berat']),
                 // TextColumn::make('poin_per_kg')->label('Poin per-gram')->sortable(),
-                TextColumn::make('user.name')->label('Pembuat Data')->sortable()->searchable(),
+                TextColumn::make('user.name')->label('Pembuat Data')->sortable()->searchable()->extraAttributes(['dusk' => 'sampah-table-user.name']),
             ])
             ->filters([
                 //
@@ -106,7 +110,8 @@ class SampahResource extends Resource
                 Tables\Actions\EditAction::make()
                     ->visible(fn() => hexa()->can('sampah.update')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn() => hexa()->can('sampah.delete')),
+                    ->visible(fn() => hexa()->can('sampah.delete'))
+                    ->extraAttributes(['dusk' => 'sampah-delete-action']),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()

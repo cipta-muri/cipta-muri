@@ -148,11 +148,14 @@ class PengeluaranResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                ->visible(fn() => hexa()->can('pengeluaran.update')),
+                    ->visible(fn() => hexa()->can('pengeluaran.update')),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() =>hexa()->can('pengeluaran.delete')),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
+                    ->visible(fn() => hexa()->can('pengeluaran.delete'))
+                    ->extraAttributes(['dusk' => 'pengeluaran-delete-action']),
+                Tables\Actions\RestoreAction::make()
+                    ->extraAttributes(['dusk' => 'pengeluaran-restore-action']),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->extraAttributes(['dusk' => 'pengeluaran-force-delete-action']),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

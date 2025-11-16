@@ -128,11 +128,14 @@ class PemasukanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                ->visible(fn() => hexa()->can('pemasukan.update')),
+                    ->visible(fn() => hexa()->can('pemasukan.update')),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('pemasukan.delete')),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
+                    ->visible(fn() => hexa()->can('pemasukan.delete'))
+                    ->extraAttributes(['dusk' => 'pemasukan-delete-action']),
+                Tables\Actions\RestoreAction::make()
+                    ->extraAttributes(['dusk' => 'pemasukan-restore-action']),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->extraAttributes(['dusk' => 'pemasukan-force-delete-action']),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
