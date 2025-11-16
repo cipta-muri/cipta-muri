@@ -31,9 +31,9 @@ class CreateRekening extends CreateRecord
         // 1. Bagian Status (1 digit: 1 untuk penduduk desa, 0 untuk penduduk luar desa)
         $statusPart = $statusDesa ? '0' : '1';
 
-        // 2. Bagian Tanggal (2 digit tahun + 2 digit bulan)
+        // 2. Bagian Tanggal (2 digit bulan + 2 digit tahun)
         $now = Carbon::now();
-        $datePart = $now->format('ym');
+        $datePart = $now->format('my');
 
         // 3. Nomor urut berdasarkan kombinasi status + tahun/bulan
         $lastRekening = Rekening::query()
