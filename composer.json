@@ -24,6 +24,7 @@
         "joshembling/image-optimizer": "^1.6",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.2",
+        "laravel/socialite": "^5.23",
         "laravel/tinker": "^2.10.1",
         "pxlrbt/filament-excel": "2.1",
         "rmsramos/activitylog": "^2.0",
