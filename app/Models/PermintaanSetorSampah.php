@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\PermintaanStatus;
 use App\Models\Concerns\HasPermintaanToken;
 use App\Models\Concerns\NotifiesPermintaanStatus;
-use App\Models\Sampah;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +13,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use App\Models\Sampah;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 

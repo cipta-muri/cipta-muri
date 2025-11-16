@@ -33,6 +33,8 @@ class PermintaanSetorSampahResource extends Resource
 
     protected static ?string $navigationGroup = 'Operasional Bank Sampah';
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $navigationLabel = 'Permintaan Setor Sampah';
 
     protected static ?int $navigationSort = 4;
@@ -126,13 +128,18 @@ class PermintaanSetorSampahResource extends Resource
                     ->sortable(),
                 BadgeColumn::make('status')
                     ->label('Status')
-                    ->enum(PermintaanStatus::options())
-                    ->colors([
-                        'gray' => PermintaanStatus::Draft->value,
-                        'warning' => PermintaanStatus::MenungguKonfirmasi->value,
-                        'success' => PermintaanStatus::Disetujui->value,
-                        'danger' => PermintaanStatus::Ditolak->value,
-                    ]),
+                    ->formatStateUsing(fn ($state) => ($state instanceof PermintaanStatus ? $state : PermintaanStatus::tryFrom($state))?->label() ?? '-')
+                    ->color(function ($state) {
+                        $enum = $state instanceof PermintaanStatus ? $state : PermintaanStatus::tryFrom($state);
+
+                        return match ($enum) {
+                            PermintaanStatus::Draft => 'gray',
+                            PermintaanStatus::MenungguKonfirmasi => 'warning',
+                            PermintaanStatus::Disetujui => 'success',
+                            PermintaanStatus::Ditolak => 'danger',
+                            default => 'gray',
+                        };
+                    }),
                 TextColumn::make('source')
                     ->label('Kanal')
                     ->badge()

@@ -1,121 +1,46 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\WithdrawRequestResource\Widgets;
 
 use App\Enums\PermintaanStatus;
-use App\Filament\Resources\PermintaanTarikSaldoResource\Pages;
+use App\Filament\Resources\PermintaanTarikSaldoResource;
 use App\Models\PermintaanTarikSaldo;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Textarea;
-use Filament\Resources\Resource;
+use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
-use Filament\Notifications\Notification;
+use Filament\Widgets\TableWidget;
 use Illuminate\Validation\ValidationException;
-use Hexters\HexaLite\HasHexaLite;
 
-class PermintaanTarikSaldoResource extends Resource
+class PermintaanTarikSaldoTable extends TableWidget
 {
-    use HasHexaLite;
+    protected static ?string $heading = 'Permintaan Tarik Saldo';
 
-    protected static ?string $model = PermintaanTarikSaldo::class;
+    protected int|string|array $columnSpan = 'full';
 
-    protected static ?string $navigationIcon = 'heroicon-o-qr-code';
-
-    protected static ?string $navigationGroup = 'Operasional Bank Sampah';
-
-    protected static ?string $navigationLabel = 'Permintaan Tarik Saldo';
-
-    protected static bool $shouldRegisterNavigation = false;
-
-    protected static ?int $navigationSort = 3;
-
-    public $hexaSort = 6;
-
-    public function defineGates()
-    {
-        return [
-            'permintaan_tarik_saldo.index' => __('Lihat Permintaan Tarik Saldo'),
-            'permintaan_tarik_saldo.update' => __('Konfirmasi / Tolak Permintaan Tarik Saldo'),
-        ];
-    }
-
-    public static function canAccess(): bool
+    public static function canView(): bool
     {
         return hexa()->can('permintaan_tarik_saldo.index');
     }
 
-    public static function canCreate(): bool
-    {
-        return false;
-    }
-
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->disabled()
-            ->schema([
-                Section::make('Informasi Nasabah')
-                    ->schema([
-                        Placeholder::make('rekening')
-                            ->label('Nasabah')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record && $record->rekening ? "{$record->rekening->nama} ({$record->rekening->no_rekening})" : '-'),
-                        Placeholder::make('saldo')
-                            ->label('Saldo Saat Ini')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record && $record->rekening ? 'Rp ' . number_format($record->rekening->balance, 0, ',', '.') : '-'),
-                    ])->columns(2),
-                Section::make('Detail Permintaan')
-                    ->schema([
-                        Placeholder::make('amount')
-                            ->label('Nominal')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record ? 'Rp ' . number_format($record->amount, 0, ',', '.') : '-'),
-                        Placeholder::make('jenis')
-                            ->label('Metode')
-                            ->content(fn (?PermintaanTarikSaldo $record) => ucfirst($record->jenis ?? '-')),
-                        Placeholder::make('catatan')
-                            ->label('Catatan Nasabah')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record?->catatan ?? '-'),
-                        Placeholder::make('status')
-                            ->label('Status')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record?->status?->label() ?? '-'),
-                        Placeholder::make('requested_at')
-                            ->label('Diajukan Pada')
-                            ->content(fn (?PermintaanTarikSaldo $record) => optional($record?->requested_at)->translatedFormat('d M Y H:i') ?? '-'),
-                        Placeholder::make('source')
-                            ->label('Sumber')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record?->source ?? '-'),
-                        Placeholder::make('qr')
-                            ->label('Token QR')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record?->qr_token ?? '-'),
-                    ])->columns(2),
-            ]);
-    }
-
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
-            ->query(PermintaanTarikSaldo::query())
-            ->defaultSort('requested_at', 'desc')
+            ->query(PermintaanTarikSaldo::query()->latest('requested_at'))
             ->columns([
-                TextColumn::make('rekening.nama')
+                Tables\Columns\TextColumn::make('rekening.nama')
                     ->label('Nasabah')
                     ->description(fn (PermintaanTarikSaldo $record) => $record->rekening?->no_rekening)
                     ->searchable(['rekening.nama', 'rekening.no_rekening'])
                     ->sortable(),
-                TextColumn::make('amount')
+                Tables\Columns\TextColumn::make('amount')
                     ->label('Nominal')
                     ->money('IDR')
                     ->sortable(),
-                BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('jenis')
+                    ->label('Metode')
+                    ->formatStateUsing(fn ($state) => ucfirst((string) $state)),
+                Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
                     ->formatStateUsing(fn ($state) => ($state instanceof PermintaanStatus ? $state : PermintaanStatus::tryFrom($state))?->label() ?? '-')
                     ->color(function ($state) {
@@ -129,22 +54,13 @@ class PermintaanTarikSaldoResource extends Resource
                             default => 'gray',
                         };
                     }),
-                TextColumn::make('source')
-                    ->label('Kanal')
-                    ->badge()
-                    ->colors(['primary']),
-                TextColumn::make('requested_at')
+                Tables\Columns\TextColumn::make('requested_at')
                     ->label('Diajukan')
                     ->dateTime('d M Y H:i')
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('qr_token')
-                    ->label('Token QR')
-                    ->copyable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('status')
+                Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options(PermintaanStatus::options()),
                 Tables\Filters\Filter::make('tanggal')
@@ -159,21 +75,20 @@ class PermintaanTarikSaldoResource extends Resource
                     }),
             ])
             ->actions([
-                ActionGroup::make([
-                    Action::make('confirm')
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('confirm')
                         ->label('Konfirmasi')
                         ->color('success')
                         ->icon('heroicon-o-check')
-                        ->requiresConfirmation()
                         ->visible(fn (PermintaanTarikSaldo $record) => $record->isWaitingConfirmation() && hexa()->can('permintaan_tarik_saldo.update'))
                         ->form([
-                            Textarea::make('note')
+                            Forms\Components\Textarea::make('note')
                                 ->label('Catatan Admin')
                                 ->rows(3),
                         ])
                         ->action(function (PermintaanTarikSaldo $record, array $data) {
                             try {
-                                $withdraw = $record->confirm(
+                                $record->confirm(
                                     auth()->user(),
                                     'table',
                                     $data['note'] ?? null,
@@ -200,13 +115,13 @@ class PermintaanTarikSaldoResource extends Resource
                                     ->send();
                             }
                         }),
-                    Action::make('reject')
+                    Tables\Actions\Action::make('reject')
                         ->label('Tolak')
                         ->color('danger')
                         ->icon('heroicon-o-x-mark')
                         ->visible(fn (PermintaanTarikSaldo $record) => $record->isWaitingConfirmation() && hexa()->can('permintaan_tarik_saldo.update'))
                         ->form([
-                            Textarea::make('reason')
+                            Forms\Components\Textarea::make('reason')
                                 ->label('Alasan Penolakan')
                                 ->required()
                                 ->rows(3),
@@ -234,7 +149,7 @@ class PermintaanTarikSaldoResource extends Resource
                                     ->send();
                             }
                         }),
-                    Action::make('regenerateToken')
+                    Tables\Actions\Action::make('refresh-token')
                         ->label('Refresh Token')
                         ->icon('heroicon-o-arrow-path')
                         ->visible(fn () => hexa()->can('permintaan_tarik_saldo.update'))
@@ -243,17 +158,9 @@ class PermintaanTarikSaldoResource extends Resource
                             Notification::make()->title('Token diperbarui')->success()->send();
                         }),
                 ]),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()->label('Detail'),
-            ])
-            ->bulkActions([]);
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListPermintaanTarikSaldos::route('/'),
-            'edit' => Pages\EditPermintaanTarikSaldo::route('/{record}'),
-        ];
+                Tables\Actions\ViewAction::make()
+                    ->url(fn (PermintaanTarikSaldo $record) => PermintaanTarikSaldoResource::getUrl('edit', ['record' => $record]))
+                    ->openUrlInNewTab(),
+            ]);
     }
 }

@@ -13,9 +13,7 @@ class PermintaanQrScanner extends Page
 
     protected static string $view = 'filament.pages.permintaan-qr-scanner';
 
-    protected static ?string $navigationLabel = 'QR Scanner Permintaan';
-
-    protected static ?string $navigationGroup = 'Operasional Bank Sampah';
+    protected static ?string $navigationLabel = 'Scan QR';
 
     protected static ?int $navigationSort = 10;
 
