@@ -70,4 +70,11 @@ class CreateRekeningRegistration extends CreateRecord
             ->success()
             ->body('Terima kasih, data registrasi nasabah telah kami terima.');
     }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction(),
+        ];
+    }
 }
