@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\SampahResource\Pages;
 
 use App\Filament\Resources\SampahResource;
+use App\Filament\Resources\SampahResource\Widgets;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -19,6 +20,14 @@ class EditSampah extends EditRecord
     {
         return [
             Actions\DeleteAction::make()->visible(fn() => hexa()->can('sampah.delete')),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            Widgets\SampahRecordStatsOverview::class,
+            Widgets\SampahRecordSetoranHarianTable::class,
         ];
     }
 }

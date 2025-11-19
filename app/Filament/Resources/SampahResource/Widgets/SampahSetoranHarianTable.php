@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 
 class SampahSetoranHarianTable extends BaseWidget
 {
-    protected static ?string $heading = 'Rekap Penyetoran Harian (30 Hari Terakhir)';
+    protected static ?string $heading = 'Rekap Penyetoran Harian (Semua Waktu)';
 
     protected static bool $isLazy = true;
 
@@ -19,13 +19,9 @@ class SampahSetoranHarianTable extends BaseWidget
 
     public function table(Table $table): Table
     {
-        $end = now()->endOfDay();
-        $start = $end->copy()->subDays(29)->startOfDay();
-
         $query = SetorSampah::query()
             ->selectRaw('tanggal, SUM(berat) as total_berat')
             ->whereNull('deleted_at')
-            ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
             ->groupBy('tanggal')
             ->orderByDesc('tanggal');
 
@@ -41,7 +37,8 @@ class SampahSetoranHarianTable extends BaseWidget
                     ->numeric(decimalPlaces: 4, decimalSeparator: ',', thousandsSeparator: '.')
                     ->sortable(),
             ])
-            ->paginated(false);
+            ->defaultPaginationPageOption(5)
+            ->paginated([5, 10, 25, 50, 'all']);
     }
 
     public function getTableRecordKey(Model $record): string

@@ -21,9 +21,9 @@ class ListSampahs extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            Widgets\SampahStatsOverview::class,
             Widgets\SampahSetoranChart::class,
             Widgets\SampahSetoranHarianTable::class,
+            Widgets\SampahStatsOverview::class,
         ];
     }
 }

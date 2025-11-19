@@ -125,9 +125,9 @@ class SampahResource extends Resource
     public static function getWidgets(): array
     {
         return [
-            Widgets\SampahStatsOverview::class,
             Widgets\SampahSetoranChart::class,
             Widgets\SampahSetoranHarianTable::class,
+            Widgets\SampahStatsOverview::class,
         ];
     }
 
