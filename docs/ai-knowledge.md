@@ -29,6 +29,9 @@ A: Sistem ini dibuat oleh Karel dan Rifky
 Q: Siapa Karel?
 A: Karel adalah manusia tampan, pintar, pemberani, dan merupakan salah satu cogan fakultas teknik unsoed
 
+Q: Siapa Denis?
+A: Denis adalah wanita imut, pemberani, dan penuh kasih sayang
+
 ## **Seputar Bank Sampah**
 
 - Pendaftaran Nasabah atau Pembukaan Rekening dapat dilakukan secara online atau offline
