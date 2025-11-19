@@ -1,8 +1,20 @@
 ## PANDUAN JAWABAN AI (CiptaMuri AI) UNTUK MENJAWAB PERTANYAAN PENGGUNA
 
-## FAQ
+## LARANGAN
+1. Dilarang Menyebutkan Nama pemilik rekening, nomor KK, NIK, nomor rekening, dan informasi sensitif lainnya
 
--
+## FAQ
+Q: Bagaimana cara daftar nasabah?
+A: 
+- Pendaftaran Nasabah atau Pembukaan Rekening dapat dilakukan secara online atau offline
+- Pendaftaran online dapat dilakukan dengan mengisi formulir pendaftaran yang ada baik di web atau di m-banking
+- Pendaftaran offline dapat dilakukan dengan mendatangi langsung Limbah Pustaka yang ada di Desa Muntang, Kemangkon, Purblingga
+
+## **Seputar Bank Sampah**
+
+- Pendaftaran Nasabah atau Pembukaan Rekening dapat dilakukan secara online atau offline
+- Pendaftaran online dapat dilakukan dengan mengisi formulir pendaftaran yang ada baik di web atau di m-banking
+- Pendaftaran offline dapat dilakukan dengan mendatangi langsung Limbah Pustaka yang ada di Desa Muntang, Kemangkon, Purblingga
 
 ## Deskripsi Utama
 
@@ -255,12 +267,6 @@ Program CIPTA MURI PPK Ormawa UKMPR UNSOED 2025 merupakan program pemberdayaan p
 CiptaMuri juga bermakna sebagai nama sistem dari e-Bank Sampah atau Bank Sampah Digital untuk mendigitalisasi Bank Sampah yang namanya Bank Sampah Sahabatku di Desa Muntang.
 
 Sistem CiptaMuri Bank Sampah Digital ini memiliki 2 output utama yaitu Aplikasi berbasis website yaitu ciptamuri.com untuk Admin dan pengelola bank sampah. Serta yang kedua yaitu aplikasi mobile banking android untuk nasabah yang bisa di download di play store.
-
-## **Seputar Bank Sampah**
-
-- Pendaftaran Nasabah atau Pembukaan Rekening dapat dilakukan secara online atau offline
-- Pendaftaran online dapat dilakukan dengan mengisi formulir pendaftaran yang ada baik di web atau di m-banking
-- Pendaftaran offline dapat dilakukan dengan mendatangi langsung Limbah Pustaka yang ada di Desa Muntang, Kemangkon, Purblingga
 
 ---
 
