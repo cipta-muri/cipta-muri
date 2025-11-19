@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { Send, Sparkles, X } from 'lucide-react';
 import axios from 'axios';
 
 interface Message {
@@ -41,92 +41,105 @@ export default function ChatWidget() {
             setMessages(prev => [...prev, { role: 'model', content: response.data.response }]);
         } catch (error) {
             console.error('Chat error:', error);
-            setMessages(prev => [...prev, { role: 'model', content: "Sorry, something went wrong. Please try again." }]);
+            setMessages(prev => [...prev, { role: 'model', content: 'Maaf, terjadi kesalahan. Silakan coba lagi.' }]);
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+        <div className="pointer-events-none fixed bottom-6 right-6 z-50 flex flex-col items-end">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                        className="mb-4 w-[350px] h-[500px] bg-white/90 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl overflow-hidden flex flex-col pointer-events-auto"
+                        className="pointer-events-auto relative mb-4 flex h-[520px] w-[360px] flex-col overflow-hidden rounded-[32px] border border-white/30 bg-white/20 shadow-[0_30px_80px_rgba(16,185,129,0.35)] backdrop-blur-2xl"
                     >
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex justify-between items-center text-white">
-                            <div className="flex items-center gap-2">
-                                <Bot className="w-6 h-6" />
-                                <h3 className="font-semibold">AI Assistant</h3>
-                            </div>
-                            <button 
-                                onClick={() => setIsOpen(false)}
-                                className="hover:bg-white/20 p-1 rounded-full transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(74,222,128,0.35),_transparent_65%)]" />
 
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
-                            {messages.length === 0 && (
-                                <div className="text-center text-gray-500 mt-10">
-                                    <Bot className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                                    <p>How can I help you today?</p>
-                                </div>
-                            )}
-                            {messages.map((msg, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    <div
-                                        className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                                            msg.role === 'user'
-                                                ? 'bg-indigo-600 text-white rounded-br-none'
-                                                : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'
-                                        }`}
-                                    >
-                                        {msg.content}
+                        <div className="relative z-10 flex h-full flex-col gap-4 p-4">
+                            {/* Header */}
+                            <div className="flex items-center justify-between rounded-[28px] border border-white/40 bg-gradient-to-r from-emerald-500 via-green-500 to-lime-400 p-4 text-white shadow-[0_10px_30px_rgba(22,163,74,0.45)]">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/25 text-base font-semibold shadow-inner shadow-emerald-200/40">
+                                        AI
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-[0.2em] text-white/70">Pemandu Virtual</p>
+                                        <h3 className="text-lg font-semibold">CiptaMuri AI</h3>
                                     </div>
                                 </div>
-                            ))}
-                            {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white border border-gray-200 p-3 rounded-2xl rounded-bl-none shadow-sm">
-                                        <div className="flex gap-1">
-                                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
-
-                        {/* Input */}
-                        <div className="p-4 bg-white border-t border-gray-100">
-                            <form onSubmit={handleSubmit} className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    placeholder="Type a message..."
-                                    className="flex-1 px-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                                />
                                 <button
-                                    type="submit"
-                                    disabled={isLoading || !inputValue.trim()}
-                                    className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    onClick={() => setIsOpen(false)}
+                                    className="rounded-full bg-white/15 p-1 transition-colors hover:bg-white/30"
                                 >
-                                    <Send className="w-5 h-5" />
+                                    <X className="h-5 w-5" />
                                 </button>
-                            </form>
+                            </div>
+
+                            {/* Messages */}
+                            <div className="flex-1 overflow-y-auto rounded-[28px] border border-white/20 bg-white/10 p-4 shadow-inner backdrop-blur-lg">
+                                <div className="space-y-4">
+                                    {messages.length === 0 && (
+                                        <div className="mt-12 text-center text-emerald-900/60">
+                                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] border border-white/40 bg-white/30 text-emerald-600 shadow-inner">
+                                                <Sparkles className="h-8 w-8" />
+                                            </div>
+                                            <p>Halo! Saya CiptaMuri AI. Ada yang bisa saya bantu?</p>
+                                        </div>
+                                    )}
+                                    {messages.map((msg, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                        >
+                                            <div
+                                                className={`max-w-[80%] rounded-3xl px-4 py-3 text-sm ${
+                                                    msg.role === 'user'
+                                                        ? 'rounded-br-md border border-white/30 bg-gradient-to-br from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-200/40'
+                                                        : 'rounded-bl-md border border-white/40 bg-white/60 text-emerald-900 shadow-sm backdrop-blur-lg'
+                                                }`}
+                                            >
+                                                {msg.content}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {isLoading && (
+                                        <div className="flex justify-start">
+                                            <div className="rounded-3xl border border-white/30 bg-white/70 px-4 py-3 text-emerald-700 shadow-inner">
+                                                <div className="flex gap-1">
+                                                    <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: '0ms' }} />
+                                                    <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: '120ms' }} />
+                                                    <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: '240ms' }} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div ref={messagesEndRef} />
+                                </div>
+                            </div>
+
+                            {/* Input */}
+                            <div className="rounded-[26px] border border-white/30 bg-white/20 p-2 shadow-lg shadow-emerald-200/30">
+                                <form onSubmit={handleSubmit} className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        placeholder="Tulis pesan..."
+                                        className="flex-1 rounded-full border border-transparent bg-transparent px-4 py-2 text-sm text-emerald-900 placeholder:text-emerald-300 focus:border-emerald-400 focus:outline-none"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading || !inputValue.trim()}
+                                        className="rounded-full bg-gradient-to-r from-emerald-500 via-green-500 to-lime-400 p-3 text-white shadow-[0_10px_20px_rgba(16,185,129,0.35)] transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <Send className="h-4 w-4" />
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </motion.div>
                 )}
@@ -138,9 +151,15 @@ export default function ChatWidget() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full shadow-lg flex items-center justify-center text-white cursor-pointer pointer-events-auto hover:shadow-xl transition-shadow z-50"
+                className="pointer-events-auto z-50 flex h-16 w-16 items-center justify-center rounded-[26px] border border-white/30 bg-gradient-to-br from-emerald-500 via-green-500 to-lime-400 text-white shadow-[0_20px_40px_rgba(16,185,129,0.45)] transition-shadow hover:shadow-[0_25px_50px_rgba(16,185,129,0.55)]"
             >
-                {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+                {isOpen ? (
+                    <X className="h-6 w-6" />
+                ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 text-lg font-semibold">
+                        AI
+                    </div>
+                )}
             </motion.button>
         </div>
     );

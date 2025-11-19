@@ -9,7 +9,7 @@ class GeminiService
 {
     protected $apiKey;
 
-    protected $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    protected $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
     public function __construct()
     {
@@ -48,23 +48,27 @@ class GeminiService
         if ($response->failed()) {
             Log::error('Gemini API Error', ['response' => $response->body()]);
 
-            return 'Sorry, I encountered an error while processing your request.';
+            return 'Maaf, saya mengalami kesalahan saat memproses permintaan Anda.';
         }
 
         $data = $response->json();
 
-        return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'No response generated.';
+        return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Tidak ada respons yang dihasilkan.';
     }
 
     public function generateSql(string $prompt, string $schemaContext)
     {
-        $systemPrompt = "You are a SQL expert. Convert the following natural language query into a valid SQL query for a MySQL database. \n\n".
-            "Database Schema:\n".$schemaContext."\n\n".
-            "Rules:\n".
-            "1. Return ONLY the SQL query. No markdown, no explanations.\n".
-            "2. Use only SELECT statements. Do not use INSERT, UPDATE, DELETE, DROP, etc.\n".
-            "3. If the query cannot be answered with the schema, return 'ERROR: Cannot answer'.\n\n".
-            'Query: '.$prompt;
+        $systemPrompt = "Kamu adalah analis data dan pakar SQL untuk sistem Bank Sampah Cipta Muri. Gunakan informasi skema berikut untuk menjawab pertanyaan pengguna.\n\n".
+            "Skema Database & Deskripsi:\n".$schemaContext."\n\n".
+            "Instruksi penting:\n".
+            "- Gunakan nama tabel persis seperti yang tercantum (misalnya 'setor_sampah', 'saldo_transactions').\n".
+            "- Pertanyaan bisa dalam Bahasa Indonesia atau Inggris. Pahami maksudnya, lalu buat query SQL yang sesuai.\n".
+            "- Jika diminta total/riwayat setoran, kolom berat dan total_harga berada pada tabel 'setor_sampah'.\n".
+            "- Jika diminta saldo nasabah, gunakan tabel 'rekening' dan/atau 'saldo_transactions'.\n".
+            "- Jika diminta catatan permintaan tarik saldo, gunakan tabel 'permintaan_tarik_saldo'.\n".
+            "- Hanya gunakan perintah SELECT; jangan gunakan INSERT/UPDATE/DELETE.\n".
+            "- Kembalikan hanya query SQL tanpa markdown. Jika data tidak lengkap, buat query SELECT terbaik yang paling mendekati kebutuhan (jangan balas 'ERROR').\n\n".
+            'Pertanyaan pengguna: '.$prompt;
 
         // For SQL generation, we don't need history, just the direct prompt
         return $this->generateContent($systemPrompt);
@@ -73,9 +77,9 @@ class GeminiService
     public function interpretResults(string $originalQuery, array $results)
     {
         $resultsJson = json_encode($results);
-        $prompt = "The user asked: \"$originalQuery\".\n".
-            "The database returned the following JSON data:\n".$resultsJson."\n\n".
-            "Please provide a natural language summary of this data to answer the user's question.";
+        $prompt = "Pengguna bertanya: \"$originalQuery\".\n".
+            "Database mengembalikan data JSON berikut:\n".$resultsJson."\n\n".
+            "Berikan ringkasan dalam bahasa alami untuk menjawab pertanyaan pengguna.";
 
         return $this->generateContent($prompt);
     }

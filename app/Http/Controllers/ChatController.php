@@ -7,10 +7,29 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class ChatController extends Controller
 {
     protected $gemini;
+
+    /**
+     * Additional descriptions for important tables to guide the LLM.
+     *
+     * @var array<string, string>
+     */
+    protected array $tableDescriptions = [
+        'setor_sampah' => 'Riwayat setoran sampah. Gunakan kolom berat, berat_total, tanggal_setor, rekening_id, user_id, total_harga.',
+        'sampah_transactions' => 'Rincian item sampah per transaksi setoran. Kolom jumlah, berat, harga, kategori.',
+        'rekening' => 'Data rekening / nasabah bank sampah. Kolom balance, points_balance, status_desa, status_lengkap.',
+        'saldo_transactions' => 'Mutasi saldo rekening (credit/debit). Kolom amount, type, rekening_id, description.',
+        'poin_transactions' => 'Mutasi poin pengguna. Kolom amount, rekening_id, description.',
+        'permintaan_tarik_saldo' => 'Permintaan penarikan saldo yang diajukan nasabah. Kolom amount, status, rekening_id.',
+        'permintaan_setor_sampah' => 'Permintaan penjemputan/setoran sampah. Kolom berat_estimasi, status, rekening_id.',
+        'users' => 'Akun pengguna internal/admin.',
+        'news' => 'Konten berita / publikasi.',
+        'activity_log' => 'Log aktivitas sistem.',
+    ];
 
     public function __construct(GeminiService $gemini)
     {
@@ -43,11 +62,11 @@ class ChatController extends Controller
                     $results = DB::select($sql);
                     $response = $this->gemini->interpretResults($message, $results);
                 } else {
-                    $response = "I couldn't generate a safe query for that request. (Generated: $sql)";
+                    $response = "Saya tidak dapat membuat query yang aman untuk permintaan tersebut. (Query: $sql)";
                 }
             } catch (\Exception $e) {
                 Log::error('Chat DB Error: '.$e->getMessage());
-                $response = 'I encountered an error trying to access the database: '.$e->getMessage();
+                $response = 'Terjadi kesalahan ketika mengakses database: '.$e->getMessage();
             }
         } else {
             $response = $this->gemini->generateContent($message, $history);
@@ -58,7 +77,12 @@ class ChatController extends Controller
 
     private function checkIfNeedsDb(string $message): bool
     {
-        $keywords = ['count', 'list', 'show', 'how many', 'who', 'what', 'where', 'find', 'search', 'data', 'database', 'users', 'logs', 'activity'];
+        $keywords = [
+            // English keywords
+            'count', 'list', 'show', 'how many', 'who', 'what', 'where', 'find', 'search', 'data', 'database', 'users', 'logs', 'activity', 'total', 'sum', 'average', 'report',
+            // Indonesian keywords
+            'berapa', 'jumlah', 'total', 'daftar', 'tampilkan', 'siapa', 'apa', 'dimana', 'cari', 'data', 'database', 'pengguna', 'log', 'aktivitas', 'statistik', 'laporan', 'riwayat', 'transaksi', 'saldo', 'berat', 'sampah'
+        ];
         foreach ($keywords as $keyword) {
             if (stripos($message, $keyword) !== false) {
                 return true;
@@ -74,13 +98,10 @@ class ChatController extends Controller
         $schema = '';
 
         foreach ($tables as $table) {
-            // Skip internal tables or sensitive ones if needed
-            if (in_array($table, ['migrations', 'password_reset_tokens', 'sessions', 'jobs', 'failed_jobs'])) {
-                continue;
-            }
-
             $columns = Schema::getColumnListing($table);
-            $schema .= "Table: $table\nColumns: ".implode(', ', $columns)."\n\n";
+            $readable = Str::headline($table);
+            $description = $this->tableDescriptions[$table] ?? "Data terkait {$readable}.";
+            $schema .= "Tabel: {$table} ({$readable})\nDeskripsi: {$description}\nKolom: ".implode(', ', $columns)."\n\n";
         }
 
         return $schema;
