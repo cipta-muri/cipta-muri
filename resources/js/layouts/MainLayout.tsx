@@ -3,6 +3,7 @@ import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
 import { ReactNode, SyntheticEvent, useEffect, useState } from 'react';
+import ChatWidget from '@/Components/ChatWidget';
 
 interface MainLayoutProps {
     children: ReactNode;

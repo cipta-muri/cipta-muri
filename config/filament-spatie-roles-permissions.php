@@ -16,7 +16,7 @@ return [
     'team_model' => \App\Models\Team::class,
 
     'scope_to_tenant' => true,
-    
+
     'scope_roles_to_tenant' => true,
     'scope_premissions_to_tenant' => false,
 
@@ -54,11 +54,11 @@ return [
     'should_redirect_to_index' => [
         'permissions' => [
             'after_create' => false,
-            'after_edit' => false
+            'after_edit' => false,
         ],
         'roles' => [
             'after_create' => false,
-            'after_edit' => false
+            'after_edit' => false,
         ],
     ],
 
@@ -82,7 +82,7 @@ return [
 
     'guard_names' => [
         'web' => 'web',
-        //'api' => 'api',
+        // 'api' => 'api',
     ],
 
     'toggleable_guard_names' => [
@@ -134,14 +134,14 @@ return [
 
     'sort' => [
         'role_navigation' => false,
-        'permission_navigation' => false
+        'permission_navigation' => false,
     ],
 
     'generator' => [
 
         'guard_names' => [
             'web',
-            //'api',
+            // 'api',
         ],
 
         'permission_affixes' => [
@@ -186,7 +186,7 @@ return [
          */
         'model_directories' => [
             app_path('Models'),
-            //app_path('Domains/Forum')
+            // app_path('Domains/Forum')
         ],
 
         /*
@@ -211,7 +211,7 @@ return [
          * Define any other permission that should be synced with the DB
          */
         'custom_permissions' => [
-            //'view-log'
+            // 'view-log'
         ],
 
         'user_model' => \App\Models\User::class,

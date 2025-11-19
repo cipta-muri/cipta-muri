@@ -2,18 +2,18 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\SetorSampah;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use App\Models\SetorSampah;
-use Filament\Tables\Columns\TextColumn;
 
 class RecentTransactionsWidget extends BaseWidget
 {
     protected static ?int $sort = 3;
-    
-    protected int | string | array $columnSpan = 'full';
-    
+
+    protected int|string|array $columnSpan = 'full';
+
     public function table(Table $table): Table
     {
         return $table
@@ -31,25 +31,26 @@ class RecentTransactionsWidget extends BaseWidget
                         if ($record->rekening?->no_rekening === '00000000000000') {
                             return 'Donasi';
                         }
+
                         return $state;
                     }),
-                    
+
                 TextColumn::make('created_at')
                     ->label('Tanggal')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
-                    
+
                 TextColumn::make('berat')
                     ->label('Total Berat')
                     ->suffix(' kg')
                     ->numeric(2)
                     ->sortable(),
-                    
+
                 TextColumn::make('total_saldo_dihasilkan')
                     ->label('Total Saldo')
                     ->money('IDR')
                     ->sortable(),
-                    
+
                 TextColumn::make('jenis_setoran')
                     ->label('Jenis')
                     ->badge()

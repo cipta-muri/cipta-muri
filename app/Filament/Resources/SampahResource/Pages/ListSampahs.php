@@ -14,7 +14,7 @@ class ListSampahs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->visible(fn() => hexa()->can('sampah.create')),
+            Actions\CreateAction::make()->visible(fn () => hexa()->can('sampah.create')),
         ];
     }
 

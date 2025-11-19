@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Sampah; // Import model Sampah
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class SampahSeeder extends Seeder
 {
@@ -16,7 +15,7 @@ class SampahSeeder extends Seeder
     {
         // Pastikan ada user di database, jika tidak, buat satu
         $user = User::first();
-        if (!$user) {
+        if (! $user) {
             $user = User::factory()->create();
         }
 

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PengeluaranResource\Pages;
-use App\Filament\Resources\PengeluaranResource\RelationManagers;
 use App\Models\Pengeluaran;
 use App\Models\Rekening;
 use Filament\Forms;
@@ -11,14 +10,14 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Number;
 use Hexters\HexaLite\HasHexaLite;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Number;
 
 class PengeluaranResource extends Resource
 {
     use HasHexaLite;
+
     protected static ?string $model = Pengeluaran::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
@@ -59,7 +58,7 @@ class PengeluaranResource extends Resource
                             ->label('Saldo Kas Bank Sampah Saat Ini')
                             ->content(function () use ($kasBalance) {
                                 // Format angka menjadi format Rupiah
-                                return 'Rp ' . Number::format($kasBalance, locale: 'id');
+                                return 'Rp '.Number::format($kasBalance, locale: 'id');
                             }),
                     ]),
 
@@ -136,8 +135,8 @@ class PengeluaranResource extends Resource
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
-                            ->when($data['from'], fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date))
-                            ->when($data['to'], fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date));
+                            ->when($data['from'], fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date))
+                            ->when($data['to'], fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date));
                     }),
                 Tables\Filters\SelectFilter::make('kategori_pengeluaran_id')
                     ->label('Kategori Pengeluaran')
@@ -148,16 +147,16 @@ class PengeluaranResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                ->visible(fn() => hexa()->can('pengeluaran.update')),
+                    ->visible(fn () => hexa()->can('pengeluaran.update')),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() =>hexa()->can('pengeluaran.delete')),
+                    ->visible(fn () => hexa()->can('pengeluaran.delete')),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn() => hexa()->can('pengeluaran.delete')),
+                        ->visible(fn () => hexa()->can('pengeluaran.delete')),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),

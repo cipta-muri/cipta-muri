@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\Rekening;
-use App\Models\User;
-use App\Models\SumberPemasukan;
 use App\Models\KategoriPengeluaran;
 use App\Models\Pemasukan;
 use App\Models\Pengeluaran;
 use App\Models\PoinTransaction;
+use App\Models\Rekening;
 use App\Models\SaldoTransaction;
+use App\Models\SumberPemasukan;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -28,9 +28,10 @@ class FinancialDataSeeder extends Seeder
         // Pastikan ada data prerequisite
         $users = User::all();
         $rekenings = Rekening::all();
-        
+
         if ($users->isEmpty() || $rekenings->isEmpty()) {
             $this->command->error('❌ Data users atau rekening tidak ditemukan. Jalankan CoreBankSampahSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -39,7 +40,7 @@ class FinancialDataSeeder extends Seeder
 
         // 1. Buat sumber pemasukan
         $this->command->info('📋 Membuat sumber pemasukan...');
-        
+
         // Sumber pemasukan dari waste
         $sumberWaste = SumberPemasukan::factory()->waste()->createMany([
             ['nama_pemasukan' => 'Penjualan Sampah Plastik'],
@@ -65,7 +66,7 @@ class FinancialDataSeeder extends Seeder
 
         // 2. Buat kategori pengeluaran
         $this->command->info('📋 Membuat kategori pengeluaran...');
-        
+
         $kategoriRoutine = KategoriPengeluaran::factory()->routine()->createMany([
             ['nama_pengeluaran' => 'Operasional Harian'],
             ['nama_pengeluaran' => 'Gaji Koordinator'],
@@ -93,7 +94,7 @@ class FinancialDataSeeder extends Seeder
 
         // 3. Buat pemasukan dari berbagai sumber
         $this->command->info('💵 Membuat data pemasukan...');
-        
+
         // Pemasukan dari penjualan sampah (masuk ke akun donasi)
         for ($i = 0; $i < 25; $i++) {
             Pemasukan::factory()->fromWaste()->create([
@@ -126,7 +127,7 @@ class FinancialDataSeeder extends Seeder
 
         // 4. Buat pengeluaran dengan berbagai kategori
         $this->command->info('💸 Membuat data pengeluaran...');
-        
+
         // Pengeluaran rutin
         for ($i = 0; $i < 20; $i++) {
             Pengeluaran::factory()->routine()->create([
@@ -169,9 +170,9 @@ class FinancialDataSeeder extends Seeder
 
         // 5. Buat transaksi saldo untuk rekening nasabah
         $this->command->info('💳 Membuat transaksi saldo...');
-        
+
         $customerRekenings = $rekenings->where('no_rekening', '!=', '00000000');
-        
+
         foreach ($customerRekenings as $rekening) {
             // Credit transactions (dari setoran sampah - otomatis dibuat oleh sistem)
             $creditCount = fake()->numberBetween(3, 10);
@@ -196,7 +197,7 @@ class FinancialDataSeeder extends Seeder
 
         // 6. Buat transaksi poin untuk rekening nasabah
         $this->command->info('🎯 Membuat transaksi poin...');
-        
+
         foreach ($customerRekenings as $rekening) {
             // Credit transactions (dari setoran sampah)
             $creditCount = fake()->numberBetween(3, 10);
@@ -230,7 +231,7 @@ class FinancialDataSeeder extends Seeder
 
         // 7. Buat transaksi besar dan kecil untuk variasi
         $this->command->info('🎲 Membuat transaksi variasi...');
-        
+
         // Transaksi saldo besar
         SaldoTransaction::factory(5)->large()->create([
             'rekening_id' => $customerRekenings->random()->id,
@@ -259,12 +260,12 @@ class FinancialDataSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->command->info('✅ Seeding data keuangan selesai!');
-        $this->command->info("📊 Data yang dibuat:");
-        $this->command->info("   - Sumber Pemasukan: " . SumberPemasukan::count());
-        $this->command->info("   - Kategori Pengeluaran: " . KategoriPengeluaran::count());
-        $this->command->info("   - Pemasukan: " . Pemasukan::count());
-        $this->command->info("   - Pengeluaran: " . Pengeluaran::count());
-        $this->command->info("   - Transaksi Saldo: " . SaldoTransaction::count());
-        $this->command->info("   - Transaksi Poin: " . PoinTransaction::count());
+        $this->command->info('📊 Data yang dibuat:');
+        $this->command->info('   - Sumber Pemasukan: '.SumberPemasukan::count());
+        $this->command->info('   - Kategori Pengeluaran: '.KategoriPengeluaran::count());
+        $this->command->info('   - Pemasukan: '.Pemasukan::count());
+        $this->command->info('   - Pengeluaran: '.Pengeluaran::count());
+        $this->command->info('   - Transaksi Saldo: '.SaldoTransaction::count());
+        $this->command->info('   - Transaksi Poin: '.PoinTransaction::count());
     }
 }

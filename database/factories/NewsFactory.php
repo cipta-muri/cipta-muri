@@ -23,7 +23,7 @@ class NewsFactory extends Factory
     {
         $categories = ['program', 'event', 'announcement', 'achievement', 'education', 'partnership'];
         $statuses = ['published', 'draft'];
-        
+
         $titles = [
             'Program Baru Bank Sampah Digital Cipta Muri',
             'Pelatihan Pengelolaan Sampah Organik untuk Masyarakat',
@@ -59,7 +59,7 @@ class NewsFactory extends Factory
 
         return [
             'title' => $title,
-            'slug' => Str::slug($title) . '-' . fake()->numberBetween(1, 999),
+            'slug' => Str::slug($title).'-'.fake()->numberBetween(1, 999),
             'content' => $content,
             'category' => $category,
             'status' => $status,
@@ -77,41 +77,41 @@ class NewsFactory extends Factory
      */
     private function generateContentByCategory(string $category, string $title): string
     {
-        $baseContent = match($category) {
+        $baseContent = match ($category) {
             'program' => [
                 '<p>Bank Sampah Digital Cipta Muri dengan bangga mengumumkan program terbaru yang akan membantu masyarakat dalam mengelola sampah dengan lebih efektif dan ramah lingkungan.</p>',
                 '<p>Program ini mencakup sistem digital yang memungkinkan nasabah untuk melacak tabungan sampah mereka secara real-time, mendapatkan poin reward, dan menukarkannya dengan berbagai hadiah menarik.</p>',
-                '<p>Dengan teknologi terdepan, kami berkomitmen untuk menciptakan lingkungan yang lebih bersih dan sustainable untuk generasi mendatang.</p>'
+                '<p>Dengan teknologi terdepan, kami berkomitmen untuk menciptakan lingkungan yang lebih bersih dan sustainable untuk generasi mendatang.</p>',
             ],
             'event' => [
                 '<p>Bergabunglah dengan kami dalam acara yang akan dilaksanakan dalam waktu dekat. Acara ini ditujukan untuk meningkatkan kesadaran masyarakat tentang pentingnya pengelolaan sampah yang baik.</p>',
                 '<p>Peserta akan mendapatkan pelatihan praktis, workshop interaktif, dan kesempatan networking dengan para ahli lingkungan.</p>',
-                '<p>Daftarkan diri Anda sekarang dan jadilah bagian dari gerakan lingkungan yang berkelanjutan!</p>'
+                '<p>Daftarkan diri Anda sekarang dan jadilah bagian dari gerakan lingkungan yang berkelanjutan!</p>',
             ],
             'announcement' => [
                 '<p>Pengumuman penting dari Bank Sampah Digital Cipta Muri untuk seluruh nasabah dan masyarakat.</p>',
                 '<p>Informasi ini berkaitan dengan kebijakan terbaru dan perubahan sistem operasional yang akan meningkatkan pelayanan kami.</p>',
-                '<p>Untuk informasi lebih lanjut, silakan hubungi kantor kami atau kunjungi website resmi.</p>'
+                '<p>Untuk informasi lebih lanjut, silakan hubungi kantor kami atau kunjungi website resmi.</p>',
             ],
             'achievement' => [
                 '<p>Bank Sampah Digital Cipta Muri meraih pencapaian membanggakan yang menunjukkan komitmen kami terhadap lingkungan.</p>',
                 '<p>Prestasi ini merupakan hasil kerja keras seluruh tim dan dukungan masyarakat yang luar biasa.</p>',
-                '<p>Kami berterima kasih atas kepercayaan dan akan terus berinovasi untuk memberikan dampak positif yang lebih besar.</p>'
+                '<p>Kami berterima kasih atas kepercayaan dan akan terus berinovasi untuk memberikan dampak positif yang lebih besar.</p>',
             ],
             'education' => [
                 '<p>Edukasi merupakan kunci utama dalam perubahan perilaku masyarakat terhadap pengelolaan sampah yang bertanggung jawab.</p>',
                 '<p>Melalui program edukasi ini, kami menyediakan informasi praktis dan mudah dipahami tentang cara mengelola sampah di rumah.</p>',
-                '<p>Mari bersama-sama membangun kesadaran lingkungan untuk masa depan yang lebih hijau dan berkelanjutan.</p>'
+                '<p>Mari bersama-sama membangun kesadaran lingkungan untuk masa depan yang lebih hijau dan berkelanjutan.</p>',
             ],
             'partnership' => [
                 '<p>Bank Sampah Digital Cipta Muri menjalin kemitraan strategis untuk memperluas dampak positif program lingkungan.</p>',
                 '<p>Kemitraan ini akan membuka peluang kolaborasi yang lebih luas dalam pengembangan program dan inovasi teknologi.</p>',
-                '<p>Bersama mitra, kami optimis dapat mencapai target lingkungan yang ambisius dan berkelanjutan.</p>'
+                '<p>Bersama mitra, kami optimis dapat mencapai target lingkungan yang ambisius dan berkelanjutan.</p>',
             ],
             default => [
                 '<p>Informasi terkini dari Bank Sampah Digital Cipta Muri.</p>',
                 '<p>Terus ikuti perkembangan program dan kegiatan kami untuk mendapatkan informasi terbaru.</p>',
-                '<p>Terima kasih atas dukungan dan partisipasi aktif Anda dalam program lingkungan.</p>'
+                '<p>Terima kasih atas dukungan dan partisipasi aktif Anda dalam program lingkungan.</p>',
             ]
         };
 
@@ -124,8 +124,8 @@ class NewsFactory extends Factory
     private function generateTagsByCategory(string $category): array
     {
         $baseTags = ['bank sampah', 'lingkungan', 'daur ulang'];
-        
-        $categoryTags = match($category) {
+
+        $categoryTags = match ($category) {
             'program' => ['program baru', 'inovasi', 'digital'],
             'event' => ['acara', 'workshop', 'pelatihan'],
             'announcement' => ['pengumuman', 'informasi', 'kebijakan'],

@@ -15,12 +15,11 @@ class EditSampahKeluar extends EditRecord
         return hexa()->can('sampah_keluar.update');
     }
 
-
     protected function getHeaderActions(): array
     {
         return [
             Actions\DeleteAction::make()
-            ->visible(fn() => hexa()->can('sampah_keluar.delete')),
+                ->visible(fn () => hexa()->can('sampah_keluar.delete')),
         ];
     }
 }

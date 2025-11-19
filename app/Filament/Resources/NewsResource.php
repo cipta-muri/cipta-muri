@@ -4,31 +4,25 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NewsResource\Pages;
 use App\Models\News;
-use App\Models\User;
-use Filament\Forms;
-use Filament\Forms\Components\DateTimePicker;
+use App\Services\ImageOptimizationService;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Hexters\HexaLite\HasHexaLite;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Str;
-use App\Services\ImageOptimizationService;
-use Hexters\HexaLite\HasHexaLite;
 
 class NewsResource extends Resource
 {
@@ -39,6 +33,7 @@ class NewsResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
 
     protected static ?string $navigationLabel = 'Berita';
+
     protected static ?string $navigationGroup = 'Pengelolaan Website';
 
     protected static ?string $modelLabel = 'Berita';
@@ -58,7 +53,7 @@ class NewsResource extends Resource
             'berita.delete' => __('Hapus Berita'),
         ];
     }
-    
+
     public static function canAccess(): bool
     {
         return hexa()->can('berita.index');
@@ -159,7 +154,6 @@ class NewsResource extends Resource
                     ])
                     ->columns(2),
 
-
                 Hidden::make('meta_title'),
 
                 Hidden::make('meta_description'),
@@ -182,7 +176,8 @@ class NewsResource extends Resource
                     ->visibility('public')
                     ->action(function (News $record) {
                         if ($record->featured_image) {
-                            $imageUrl = url('storage/' . $record->featured_image);
+                            $imageUrl = url('storage/'.$record->featured_image);
+
                             return redirect($imageUrl);
                         }
                     })
@@ -195,6 +190,7 @@ class NewsResource extends Resource
                     ->limit(50)
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
+
                         return strlen($state) > 50 ? $state : null;
                     }),
 
@@ -203,7 +199,7 @@ class NewsResource extends Resource
                 TextColumn::make('category')
                     ->label('Kategori')
                     ->badge()
-                    ->formatStateUsing(fn(string $state): string => News::getCategoryOptions()[$state] ?? $state),
+                    ->formatStateUsing(fn (string $state): string => News::getCategoryOptions()[$state] ?? $state),
 
                 TextColumn::make('author.name')
                     ->label('Penulis')
@@ -240,25 +236,25 @@ class NewsResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                ->visible(fn()=>hexa()->can('berita.update')),
+                    ->visible(fn () => hexa()->can('berita.update')),
                 Tables\Actions\Action::make('view_image')
                     ->label('Lihat Gambar')
                     ->icon('heroicon-o-eye')
                     ->color('info')
-                    ->modalHeading(fn(News $record): string => "Gambar: {$record->title}")
+                    ->modalHeading(fn (News $record): string => "Gambar: {$record->title}")
                     ->modalContent(function (News $record) {
-                        if (!$record->featured_image) {
+                        if (! $record->featured_image) {
                             return view('filament.components.no-image-placeholder');
                         }
 
-                        $imageUrl = url('storage/' . $record->featured_image);
+                        $imageUrl = url('storage/'.$record->featured_image);
                         $stats = ImageOptimizationService::getOptimizationStats($record->featured_image, 'public');
 
                         return view('filament.components.image-viewer', [
                             'imageUrl' => $imageUrl,
                             'title' => $record->title,
                             'stats' => $stats,
-                            'featured_image' => $record->featured_image
+                            'featured_image' => $record->featured_image,
                         ]);
                     })
                     ->modalWidth('6xl')
@@ -267,23 +263,23 @@ class NewsResource extends Resource
                             ->label('Download')
                             ->icon('heroicon-o-arrow-down-tray')
                             ->color('success')
-                            ->url(fn(News $record): string => url('storage/' . $record->featured_image))
+                            ->url(fn (News $record): string => url('storage/'.$record->featured_image))
                             ->openUrlInNewTab(),
                     ])
                     ->modalCancelAction(
-                        fn() => \Filament\Actions\Action::make('cancel')
+                        fn () => \Filament\Actions\Action::make('cancel')
                             ->label('Close')
                             ->color('secondary')
                     )
-                    ->visible(fn(News $record) => $record->featured_image),
+                    ->visible(fn (News $record) => $record->featured_image),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn()=>hexa()->can('berita.delete')),
+                    ->visible(fn () => hexa()->can('berita.delete')),
                 Tables\Actions\RestoreAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn()=>hexa()->can('berita.delete')),
+                        ->visible(fn () => hexa()->can('berita.delete')),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('optimize_images')
@@ -300,6 +296,7 @@ class NewsResource extends Resource
                                     ->title('No Images to Optimize')
                                     ->warning()
                                     ->send();
+
                                 return;
                             }
 

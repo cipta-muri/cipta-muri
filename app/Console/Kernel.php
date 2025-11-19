@@ -11,13 +11,13 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->job(new CleanupPermintaanJob())->dailyAt('02:00');
-        $schedule->job(new PermintaanReminderJob())->hourly();
+        $schedule->job(new CleanupPermintaanJob)->dailyAt('02:00');
+        $schedule->job(new PermintaanReminderJob)->hourly();
     }
 
     protected function commands(): void
     {
-        $this->load(__DIR__ . '/Commands');
+        $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
     }

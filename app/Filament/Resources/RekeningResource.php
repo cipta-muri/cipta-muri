@@ -2,49 +2,45 @@
 
 namespace App\Filament\Resources;
 
+use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
+use App\Filament\Resources\RekeningResource\Pages;
+use App\Filament\Resources\RekeningResource\RelationManagers;
 use App\Models\Rekening;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
-use Filament\Resources\Resource;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Pages\Actions;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Pages\Actions;
-use App\Filament\Resources\RekeningResource\Pages;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Support\RawJs;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\BulkActionGroup;
-use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
-use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
-use Filament\Forms\Components\CheckboxList;
-use Filament\Tables\Actions\Action;
-use Illuminate\Support\Facades\Hash;
-use Filament\Notifications\Notification;
-use Illuminate\Support\Str;
-use Filament\Tables;
-use App\Filament\Resources\RekeningResource\RelationManagers;
+use Filament\Tables\Table;
 use Hexters\HexaLite\HasHexaLite;
+use Illuminate\Database\Eloquent\Builder;
 
 class RekeningResource extends Resource
 {
     use HasHexaLite;
 
     public $hexaSort = 3;
+
     protected static ?string $model = Rekening::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+
     protected static ?string $navigationGroup = 'Manajemen Pengguna';
+
     protected static ?string $navigationLabel = 'Rekening Nasabah';
+
     protected static ?int $navigationSort = 3;
 
     public function defineGates()
@@ -93,7 +89,7 @@ class RekeningResource extends Resource
                         ->label('Nama Lengkap (sesuai KTP)')
                         ->required()
                         ->validationMessages([
-                            'required' => 'Nama tidak boleh kosong'
+                            'required' => 'Nama tidak boleh kosong',
                         ]),
                     Select::make('gender')
                         ->label('Jenis Kelamin')
@@ -101,7 +97,7 @@ class RekeningResource extends Resource
                         ->required()
                         ->dehydrated(true)
                         ->validationMessages([
-                            'required' => 'Jenis Kelamin tidak boleh kosong'
+                            'required' => 'Jenis Kelamin tidak boleh kosong',
                         ]),
                     DatePicker::make('tanggal_lahir')
                         ->label('Tanggal Lahir'),
@@ -135,13 +131,13 @@ class RekeningResource extends Resource
                                 ])
                                 ->required()
                                 ->columnSpan('full')
-                                ->disabled(fn(string $context): bool => $context !== 'create'),
+                                ->disabled(fn (string $context): bool => $context !== 'create'),
                             TextInput::make('dusun')
                                 ->label('Dusun')
                                 ->length(1)
                                 ->minValue(1)
                                 ->numeric()
-                                ->visible(fn(Get $get) => $get('status_desa') == false && $get('status_desa') !== null)
+                                ->visible(fn (Get $get) => $get('status_desa') == false && $get('status_desa') !== null)
                                 ->columnSpan(1)
                                 ->validationMessages([
                                     'required' => 'Dusun tidak boleh kosong',
@@ -154,7 +150,7 @@ class RekeningResource extends Resource
                                 ->maxLength(2)
                                 ->minValue(1)
                                 ->columnSpan(1)
-                                ->visible(fn(Get $get) => $get('status_desa') == false && $get('status_desa') !== null)
+                                ->visible(fn (Get $get) => $get('status_desa') == false && $get('status_desa') !== null)
                                 ->numeric()
                                 ->rule('regex:/^[0-9]+$/')
                                 ->validationMessages([
@@ -167,7 +163,7 @@ class RekeningResource extends Resource
                                 ->label('RT')
                                 ->maxLength(2)
                                 ->minValue(1)
-                                ->visible(fn(Get $get) => $get('status_desa') == false && $get('status_desa') !== null)
+                                ->visible(fn (Get $get) => $get('status_desa') == false && $get('status_desa') !== null)
                                 ->numeric()
                                 ->columnSpan(1)
                                 ->rule('regex:/^[0-9]+$/')
@@ -180,8 +176,8 @@ class RekeningResource extends Resource
                             TextInput::make('alamat')
                                 ->label('Alamat Domisili')
                                 ->columnSpan('full')
-                                ->visible(fn(Get $get) => $get('status_desa') !== null && $get('status_desa') == true),
-                        ])
+                                ->visible(fn (Get $get) => $get('status_desa') !== null && $get('status_desa') == true),
+                        ]),
                 ]),
             Section::make('Informasi Kontak')
                 ->schema([
@@ -191,7 +187,7 @@ class RekeningResource extends Resource
                         ->nullable()
                         ->validationMessages([
                             'tel' => 'Nomor Telepon tidak valid',
-                            'regex' => 'Nomor Telepon tidak valid'
+                            'regex' => 'Nomor Telepon tidak valid',
                         ]),
                 ])
                 ->columns(1),
@@ -206,13 +202,13 @@ class RekeningResource extends Resource
                         ->minValue(0)
                         ->prefix('Rp')
                         ->placeholder('0')
-                        ->visible(fn(string $context): bool => $context === 'create')
+                        ->visible(fn (string $context): bool => $context === 'create')
                         ->validationMessages([
                             'min_value' => 'Saldo awal tidak boleh kurang dari 0',
                         ]),
                 ])
                 ->columns(1)
-                ->visible(fn(string $context): bool => $context === 'create'),
+                ->visible(fn (string $context): bool => $context === 'create'),
 
             Section::make('Informasi Tabungan Emas Pegadaian')
                 ->schema([
@@ -235,7 +231,7 @@ class RekeningResource extends Resource
             ->columns([
                 BadgeColumn::make('status_lengkap')
                     ->label('Status Data')
-                    ->formatStateUsing(fn(bool $state): string => $state ? 'Lengkap' : 'Belum Lengkap')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Lengkap' : 'Belum Lengkap')
                     ->colors([
                         'success' => true,
                         'danger' => false,
@@ -299,23 +295,23 @@ class RekeningResource extends Resource
                         TextColumn::make('updated_at')->label('Terakhir Diubah'),
                     ])
                     ->formatStates([
-                        'no_rekening' => fn($record) => ' ' . $record->no_rekening, // Space prefix untuk Excel
-                        'nama' => fn($record) => $record->nama,
-                        'current_balance' => fn($record) => 'Rp ' . number_format($record->current_balance ?? 0, 0, ',', '.'),
-                        'status_pegadaian' => fn($record) => $record->status_pegadaian == 1 ? 'Ada' : 'Tidak Ada',
-                        'nik' => fn($record) => ' ' . $record->nik, // Space prefix untuk Excel
-                        'no_kk' => fn($record) => ' ' . $record->no_kk, // Space prefix untuk Excel
-                        'gender' => fn($record) => $record->gender,
-                        'tanggal_lahir' => fn($record) => $record->tanggal_lahir ? date('d/m/Y', strtotime($record->tanggal_lahir)) : '',
-                        'pendidikan' => fn($record) => $record->pendidikan,
-                        'dusun' => fn($record) => $record->dusun,
-                        'rw' => fn($record) => $record->rw,
-                        'rt' => fn($record) => $record->rt,
-                        'telepon' => fn($record) => $record->telepon ? ' ' . $record->telepon : '',
-                        'points_balance' => fn($record) => number_format($record->points_balance ?? 0, 0, ',', '.'),
-                        'user.name' => fn($record) => $record->user->name ?? '',
-                        'created_at' => fn($record) => $record->created_at ? date('d/m/Y H:i', strtotime($record->created_at)) : '',
-                        'updated_at' => fn($record) => $record->updated_at ? date('d/m/Y H:i', strtotime($record->updated_at)) : '',
+                        'no_rekening' => fn ($record) => ' '.$record->no_rekening, // Space prefix untuk Excel
+                        'nama' => fn ($record) => $record->nama,
+                        'current_balance' => fn ($record) => 'Rp '.number_format($record->current_balance ?? 0, 0, ',', '.'),
+                        'status_pegadaian' => fn ($record) => $record->status_pegadaian == 1 ? 'Ada' : 'Tidak Ada',
+                        'nik' => fn ($record) => ' '.$record->nik, // Space prefix untuk Excel
+                        'no_kk' => fn ($record) => ' '.$record->no_kk, // Space prefix untuk Excel
+                        'gender' => fn ($record) => $record->gender,
+                        'tanggal_lahir' => fn ($record) => $record->tanggal_lahir ? date('d/m/Y', strtotime($record->tanggal_lahir)) : '',
+                        'pendidikan' => fn ($record) => $record->pendidikan,
+                        'dusun' => fn ($record) => $record->dusun,
+                        'rw' => fn ($record) => $record->rw,
+                        'rt' => fn ($record) => $record->rt,
+                        'telepon' => fn ($record) => $record->telepon ? ' '.$record->telepon : '',
+                        'points_balance' => fn ($record) => number_format($record->points_balance ?? 0, 0, ',', '.'),
+                        'user.name' => fn ($record) => $record->user->name ?? '',
+                        'created_at' => fn ($record) => $record->created_at ? date('d/m/Y H:i', strtotime($record->created_at)) : '',
+                        'updated_at' => fn ($record) => $record->updated_at ? date('d/m/Y H:i', strtotime($record->updated_at)) : '',
                     ])
 
                     ->icon('heroicon-o-document-arrow-down')
@@ -335,9 +331,9 @@ class RekeningResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn($record) => hexa()->can('rekening.update') && ($record?->no_rekening !== '00000000')),
+                    ->visible(fn ($record) => hexa()->can('rekening.update') && ($record?->no_rekening !== '00000000')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn($record) => hexa()->can('rekening.delete') && ($record?->no_rekening !== '00000000')),
+                    ->visible(fn ($record) => hexa()->can('rekening.delete') && ($record?->no_rekening !== '00000000')),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
             ])
@@ -369,26 +365,26 @@ class RekeningResource extends Resource
                         TextColumn::make('updated_at')->label('Terakhir Diubah'),
                     ])
                     ->formatStates([
-                        'no_rekening' => fn($record) => ' ' . $record->no_rekening, // Space prefix untuk Excel
-                        'nama' => fn($record) => $record->nama,
-                        'current_balance' => fn($record) => 'Rp ' . number_format($record->current_balance ?? 0, 0, ',', '.'),
-                        'status_pegadaian' => fn($record) => $record->status_pegadaian == 1 ? 'Ada' : 'Tidak Ada',
-                        'nik' => fn($record) => ' ' . $record->nik, // Space prefix untuk Excel
-                        'no_kk' => fn($record) => ' ' . $record->no_kk, // Space prefix untuk Excel
-                        'gender' => fn($record) => $record->gender,
-                        'tanggal_lahir' => fn($record) => $record->tanggal_lahir ? date('d/m/Y', strtotime($record->tanggal_lahir)) : '',
-                        'pendidikan' => fn($record) => $record->pendidikan,
-                        'dusun' => fn($record) => $record->dusun,
-                        'rw' => fn($record) => $record->rw,
-                        'rt' => fn($record) => $record->rt,
-                        'telepon' => fn($record) => $record->telepon ? ' ' . $record->telepon : '',
-                        'points_balance' => fn($record) => number_format($record->points_balance ?? 0, 0, ',', '.'),
-                        'user.name' => fn($record) => $record->user->name ?? '',
-                        'created_at' => fn($record) => $record->created_at ? date('d/m/Y H:i', strtotime($record->created_at)) : '',
-                        'updated_at' => fn($record) => $record->updated_at ? date('d/m/Y H:i', strtotime($record->updated_at)) : '',
+                        'no_rekening' => fn ($record) => ' '.$record->no_rekening, // Space prefix untuk Excel
+                        'nama' => fn ($record) => $record->nama,
+                        'current_balance' => fn ($record) => 'Rp '.number_format($record->current_balance ?? 0, 0, ',', '.'),
+                        'status_pegadaian' => fn ($record) => $record->status_pegadaian == 1 ? 'Ada' : 'Tidak Ada',
+                        'nik' => fn ($record) => ' '.$record->nik, // Space prefix untuk Excel
+                        'no_kk' => fn ($record) => ' '.$record->no_kk, // Space prefix untuk Excel
+                        'gender' => fn ($record) => $record->gender,
+                        'tanggal_lahir' => fn ($record) => $record->tanggal_lahir ? date('d/m/Y', strtotime($record->tanggal_lahir)) : '',
+                        'pendidikan' => fn ($record) => $record->pendidikan,
+                        'dusun' => fn ($record) => $record->dusun,
+                        'rw' => fn ($record) => $record->rw,
+                        'rt' => fn ($record) => $record->rt,
+                        'telepon' => fn ($record) => $record->telepon ? ' '.$record->telepon : '',
+                        'points_balance' => fn ($record) => number_format($record->points_balance ?? 0, 0, ',', '.'),
+                        'user.name' => fn ($record) => $record->user->name ?? '',
+                        'created_at' => fn ($record) => $record->created_at ? date('d/m/Y H:i', strtotime($record->created_at)) : '',
+                        'updated_at' => fn ($record) => $record->updated_at ? date('d/m/Y H:i', strtotime($record->updated_at)) : '',
                     ]),
                 Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn() => hexa()->can('rekening.delete')),
+                    ->visible(fn () => hexa()->can('rekening.delete')),
                 Tables\Actions\RestoreBulkAction::make(),
                 Tables\Actions\ForceDeleteBulkAction::make(),
             ]);
@@ -398,7 +394,7 @@ class RekeningResource extends Resource
     {
         return [
             Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('rekening.delete')),
+                ->visible(fn () => hexa()->can('rekening.delete')),
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),
         ];
@@ -409,6 +405,7 @@ class RekeningResource extends Resource
         return parent::getEloquentQuery()
             ->withTrashed();
     }
+
     public static function getRelations(): array
     {
         return [
@@ -426,5 +423,3 @@ class RekeningResource extends Resource
         ];
     }
 }
-
-

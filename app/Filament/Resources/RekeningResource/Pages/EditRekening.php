@@ -4,11 +4,8 @@ namespace App\Filament\Resources\RekeningResource\Pages;
 
 use App\Filament\Resources\RekeningResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
-use App\Models\Nasabah;
 use Filament\Notifications\Notification;
-use Filament\Support\Facades\Dialog;
-use App\Models\Rekening;
+use Filament\Resources\Pages\EditRecord;
 
 class EditRekening extends EditRecord
 {
@@ -23,7 +20,7 @@ class EditRekening extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('rekening.delete')),
+                ->visible(fn () => hexa()->can('rekening.delete')),
             Actions\RestoreAction::make(),
             Actions\ForceDeleteAction::make(),
         ];
@@ -32,7 +29,7 @@ class EditRekening extends EditRecord
     protected function afterSave(): void
     {
         // This logic is identical to afterCreate()
-        if (!$this->record->status_lengkap) {
+        if (! $this->record->status_lengkap) {
             Notification::make()
                 ->title('Peringatan Data Belum Lengkap')
                 ->body('Perubahan berhasil disimpan, namun data nasabah ini belum lengkap.')

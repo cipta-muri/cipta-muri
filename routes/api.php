@@ -1,18 +1,16 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Models\Rekening;
-use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PermintaanController;
+use App\Http\Controllers\Api\RankingController;
+use App\Models\News;
+use App\Models\Rekening;
 use App\Models\SaldoTransaction;
+use App\Models\Sampah;
 use App\Models\SetorSampah;
 use App\Models\WithdrawRequest;
-use App\Models\News;
-use App\Models\Sampah;
-use App\Http\Controllers\Api\RankingController;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,7 +25,6 @@ use App\Http\Controllers\Api\RankingController;
 
 // LOGIN NASABAH
 Route::post('/nasabah/login', [AuthController::class, 'login']);
-
 
 // ROUTE TERPROTEKSI
 Route::middleware('auth:rekening')->group(function () {
@@ -51,6 +48,7 @@ Route::middleware('auth:rekening')->group(function () {
     Route::get('/rekening', function (Request $request) {
         /** @var Rekening $rekening */
         $rekening = $request->user();
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -129,12 +127,13 @@ Route::get('/berita', function (Request $request) {
     }
 
     $data = $query->get([
-        'id', 'title', 'slug', 'excerpt', 'featured_image', 'published_at', 'category', 'views_count'
+        'id', 'title', 'slug', 'excerpt', 'featured_image', 'published_at', 'category', 'views_count',
     ]);
 
     // Map to include featured_image_url accessor
     $data->transform(function ($item) {
         $item->featured_image_url = $item->featured_image_url; // ensure appended
+
         return $item;
     });
 
@@ -157,6 +156,7 @@ Route::get('/berita/{slug}', function (string $slug) {
 // Sampah (publik)
 Route::get('/sampah', function () {
     $data = Sampah::orderBy('jenis_sampah')->get();
+
     return response()->json([
         'success' => true,
         'data' => $data,
@@ -165,6 +165,7 @@ Route::get('/sampah', function () {
 
 Route::get('/sampah/{id}', function (string $id) {
     $item = Sampah::findOrFail($id);
+
     return response()->json([
         'success' => true,
         'data' => $item,

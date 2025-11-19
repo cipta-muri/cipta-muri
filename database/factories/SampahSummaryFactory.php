@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\SampahSummary;
 use App\Models\Sampah;
+use App\Models\SampahSummary;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +22,7 @@ class SampahSummaryFactory extends Factory
     public function definition(): array
     {
         $tanggalSummary = fake()->dateTimeBetween('-1 year', 'now');
-        
+
         // Generate realistic data based on waste type
         $beratMasuk = fake()->randomFloat(2, 5, 200); // 5kg - 200kg masuk
         $beratKeluar = fake()->randomFloat(2, 0, $beratMasuk * 0.8); // keluar maksimal 80% dari masuk

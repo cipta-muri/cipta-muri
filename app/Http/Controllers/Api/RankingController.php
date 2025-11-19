@@ -7,15 +7,18 @@ use App\Models\Rekening;
 use App\Models\SampahTransactions;
 use App\Models\SetorSampah;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class RankingController extends Controller
 {
     public function index(Request $request)
     {
         $limit = (int) ($request->query('limit', 10));
-        if ($limit < 1) $limit = 10;
-        if ($limit > 100) $limit = 100;
+        if ($limit < 1) {
+            $limit = 10;
+        }
+        if ($limit > 100) {
+            $limit = 100;
+        }
 
         $startDate = $request->query('start_date');
         $endDate = $request->query('end_date');
@@ -49,7 +52,7 @@ class RankingController extends Controller
             ->select('rekening.id', 'rekening.nama', 'rekening.no_rekening')
             ->selectRaw('COALESCE(t.total_berat, 0) as total_berat')
             ->leftJoinSub($trxBerat, 't', 't.rekening_id', '=', 'rekening.id')
-            ->when(!$includeDonasi, fn($q) => $q->where('rekening.no_rekening', '!=', '00000000'))
+            ->when(! $includeDonasi, fn ($q) => $q->where('rekening.no_rekening', '!=', '00000000'))
             ->whereRaw('COALESCE(t.total_berat, 0) > 0')
             ->orderByDesc('total_berat')
             ->limit($limit)
@@ -71,7 +74,7 @@ class RankingController extends Controller
             ->select('rekening.id', 'rekening.nama', 'rekening.no_rekening')
             ->selectRaw('COALESCE(t.total_setor, 0) as total_setor')
             ->leftJoinSub($subSetor, 't', 't.rekening_id', '=', 'rekening.id')
-            ->when(!$includeDonasi, fn($q) => $q->where('rekening.no_rekening', '!=', '00000000'))
+            ->when(! $includeDonasi, fn ($q) => $q->where('rekening.no_rekening', '!=', '00000000'))
             ->whereRaw('COALESCE(t.total_setor, 0) > 0')
             ->orderByDesc('total_setor')
             ->limit($limit)
@@ -86,4 +89,3 @@ class RankingController extends Controller
         ]);
     }
 }
-

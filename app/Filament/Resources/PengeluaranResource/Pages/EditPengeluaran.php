@@ -19,7 +19,7 @@ class EditPengeluaran extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('pengeluaran.delete')),
+                ->visible(fn () => hexa()->can('pengeluaran.delete')),
         ];
     }
 }

@@ -19,7 +19,7 @@ class EditNews extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-            ->visible(fn() => hexa()->can('berita.delete')),
+                ->visible(fn () => hexa()->can('berita.delete')),
         ];
     }
 }

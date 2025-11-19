@@ -3,17 +3,17 @@
 namespace App\Filament\Resources\RekeningResource\RelationManagers;
 
 use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
 use Filament\Support\RawJs;
+use Filament\Tables;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class SaldoTransactionRelationManager extends RelationManager
 {
@@ -49,7 +49,7 @@ class SaldoTransactionRelationManager extends RelationManager
                             ->rows(3)
                             ->required()
                             ->placeholder('Masukkan keterangan transaksi'),
-                    ])
+                    ]),
             ]);
     }
 
@@ -67,7 +67,7 @@ class SaldoTransactionRelationManager extends RelationManager
                         'success' => 'credit',
                         'danger' => 'debit',
                     ])
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'credit' => 'Masuk',
                         'debit' => 'Keluar',
                         default => $state,
@@ -77,17 +77,16 @@ class SaldoTransactionRelationManager extends RelationManager
                     ->money('IDR')
                     ->sortable()
                     ->formatStateUsing(
-                        fn($state, $record) =>
-                        $record->type === 'debit'
-                        ? '- Rp' . number_format($state, 0, ',', '.')
-                        : '+ Rp' . number_format($state, 0, ',', '.')
+                        fn ($state, $record) => $record->type === 'debit'
+                        ? '- Rp'.number_format($state, 0, ',', '.')
+                        : '+ Rp'.number_format($state, 0, ',', '.')
                     )
-                    ->color(fn($record) => match ($record->type) {
+                    ->color(fn ($record) => match ($record->type) {
                         'credit' => 'success', // hijau
                         'debit' => 'danger',  // merah
                         default => null,
                     }),
-                TextColumn::make('description')->label('Keterangan')->limit(50)->tooltip(fn($record) => $record->description),
+                TextColumn::make('description')->label('Keterangan')->limit(50)->tooltip(fn ($record) => $record->description),
                 TextColumn::make('user.name')->label('Diproses oleh'),
             ])
             ->filters([
@@ -108,11 +107,11 @@ class SaldoTransactionRelationManager extends RelationManager
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn($query, $date) => $query->whereDate('created_at', '>=', $date),
+                                fn ($query, $date) => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['created_until'],
-                                fn($query, $date) => $query->whereDate('created_at', '<=', $date),
+                                fn ($query, $date) => $query->whereDate('created_at', '<=', $date),
                             );
                     }),
             ])

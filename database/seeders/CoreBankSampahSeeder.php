@@ -2,13 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\DetailSetorSampah;
 use App\Models\Rekening;
 use App\Models\Sampah;
-use App\Models\SetorSampah;
-use App\Models\DetailSetorSampah;
 use App\Models\SampahKeluar;
 use App\Models\SampahSummary;
+use App\Models\SetorSampah;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -65,11 +65,11 @@ class CoreBankSampahSeeder extends Seeder
         $sampahPlastik = Sampah::factory(8)->plastic()->create([
             'user_id' => $coordinator->id,
         ]);
-        
+
         $sampahKertas = Sampah::factory(6)->paper()->create([
             'user_id' => $coordinator->id,
         ]);
-        
+
         $sampahLogam = Sampah::factory(4)->metal()->create([
             'user_id' => $coordinator->id,
         ]);
@@ -78,7 +78,7 @@ class CoreBankSampahSeeder extends Seeder
 
         // 5. Buat transaksi setor sampah
         $this->command->info('📦 Membuat transaksi setor sampah...');
-        
+
         // Setor sampah ke rekening biasa (80% dari total)
         $setorSampahRekening = collect();
         for ($i = 0; $i < 40; $i++) {
@@ -109,7 +109,7 @@ class CoreBankSampahSeeder extends Seeder
         foreach ($allSetorSampah as $setorSampah) {
             $jumlahDetail = fake()->numberBetween(1, 5); // 1-5 jenis sampah per transaksi
             $selectedSampah = $allSampah->random($jumlahDetail);
-            
+
             $totalBerat = 0;
             $totalSaldo = 0;
             $totalPoin = 0;
@@ -138,7 +138,7 @@ class CoreBankSampahSeeder extends Seeder
 
         // 7. Buat sampah keluar
         $this->command->info('🚛 Membuat data sampah keluar...');
-        
+
         // Sampah keluar plastik
         SampahKeluar::factory(15)->plastic()->create([
             'sampah_id' => $sampahPlastik->random()->id,
@@ -159,7 +159,7 @@ class CoreBankSampahSeeder extends Seeder
 
         // 8. Buat sampah summary
         $this->command->info('📊 Membuat sampah summary...');
-        
+
         foreach ($allSampah as $sampah) {
             // Summary bulanan untuk 6 bulan terakhir
             for ($month = 5; $month >= 0; $month--) {
@@ -191,13 +191,13 @@ class CoreBankSampahSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->command->info('✅ Seeding data core bank sampah selesai!');
-        $this->command->info("📊 Data yang dibuat:");
-        $this->command->info("   - Users: " . User::count());
-        $this->command->info("   - Rekening: " . Rekening::count());
-        $this->command->info("   - Jenis Sampah: " . Sampah::count());
-        $this->command->info("   - Setor Sampah: " . SetorSampah::count());
-        $this->command->info("   - Detail Setor: " . DetailSetorSampah::count());
-        $this->command->info("   - Sampah Keluar: " . SampahKeluar::count());
-        $this->command->info("   - Sampah Summary: " . SampahSummary::count());
+        $this->command->info('📊 Data yang dibuat:');
+        $this->command->info('   - Users: '.User::count());
+        $this->command->info('   - Rekening: '.Rekening::count());
+        $this->command->info('   - Jenis Sampah: '.Sampah::count());
+        $this->command->info('   - Setor Sampah: '.SetorSampah::count());
+        $this->command->info('   - Detail Setor: '.DetailSetorSampah::count());
+        $this->command->info('   - Sampah Keluar: '.SampahKeluar::count());
+        $this->command->info('   - Sampah Summary: '.SampahSummary::count());
     }
 }

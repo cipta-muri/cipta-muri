@@ -2,32 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\User as Authenticatable; 
-use Spatie\Activitylog\Traits\LogsActivity;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Rekening extends Authenticatable
 {
-    use HasUlids, SoftDeletes, HasFactory, HasApiTokens, LogsActivity;
+    use HasApiTokens, HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('rekening')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Rekening has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Rekening has been {$eventName}");
     }
 
     protected $table = 'rekening';
 
     protected $primaryKey = 'id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $guarded = ['id'];
@@ -83,7 +85,6 @@ class Rekening extends Authenticatable
         $this->saveQuietly(); // biar tidak trigger event save lagi
     }
 
-
     /**
      * Menghitung ulang total saldo dari transaksi dan menyimpannya.
      * Ini akan dipanggil oleh SaldoTransactionObserver.
@@ -101,7 +102,7 @@ class Rekening extends Authenticatable
 
     /**
      * Menghitung saldo poin saat ini berdasarkan transaksi
-     * Catatan: Poin transactions tidak memiliki kolom 'type', 
+     * Catatan: Poin transactions tidak memiliki kolom 'type',
      * semua transaksi poin dianggap sebagai credit (penambahan)
      */
     public function getPointsBalanceAttribute()
@@ -122,9 +123,8 @@ class Rekening extends Authenticatable
      */
     public function getFormattedBalanceAttribute()
     {
-        return 'Rp ' . number_format($this->balance, 0, ',', '.');
+        return 'Rp '.number_format($this->balance, 0, ',', '.');
     }
-
 
     // Method untuk menghitung dan mengatur status kelengkapan
     public function calculateAndSetStatusLengkap(): void
@@ -139,6 +139,7 @@ class Rekening extends Authenticatable
         foreach ($requiredFields as $field) {
             if (empty($this->{$field})) {
                 $this->status_lengkap = false;
+
                 return;
             }
         }
@@ -146,15 +147,18 @@ class Rekening extends Authenticatable
         if ($this->status_desa === false) {
             if (empty($this->dusun) || empty($this->rw) || empty($this->rt)) {
                 $this->status_lengkap = false;
+
                 return;
             }
         } elseif ($this->status_desa === true) {
             if (empty($this->alamat)) {
                 $this->status_lengkap = false;
+
                 return;
             }
         } else {
             $this->status_lengkap = true;
+
             return;
         }
 
@@ -164,7 +168,7 @@ class Rekening extends Authenticatable
     protected static function booted(): void
     {
         static::creating(function ($Rekening) {
-            if (!$Rekening->user_id && Auth::check()) {
+            if (! $Rekening->user_id && Auth::check()) {
                 $Rekening->user_id = Auth::id();
             }
 

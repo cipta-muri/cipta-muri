@@ -14,7 +14,7 @@ class ListSampahKeluars extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-            ->visible(fn() => hexa()->can('sampah_keluar.create')),
+                ->visible(fn () => hexa()->can('sampah_keluar.create')),
         ];
     }
 }

@@ -22,7 +22,7 @@ class KategoriPengeluaranFactory extends Factory
         $kategoriOptions = [
             'Rutin',
             'Kebutuhan',
-            'Perlombaan/Kegiatan', 
+            'Perlombaan/Kegiatan',
             'Donasi',
             'Operasional',
             'Pemeliharaan',

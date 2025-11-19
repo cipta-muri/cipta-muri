@@ -24,6 +24,7 @@ class WebsiteContentSeeder extends Seeder
         $users = User::all();
         if ($users->isEmpty()) {
             $this->command->error('❌ Data users tidak ditemukan. Jalankan CoreBankSampahSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -99,12 +100,12 @@ class WebsiteContentSeeder extends Seeder
         // UMKM dengan berbagai kategori lainnya
         $otherCategories = [
             'Fashion & Aksesoris',
-            'Tanaman & Pertanian', 
+            'Tanaman & Pertanian',
             'Jasa & Layanan',
             'Elektronik & Gadget',
             'Kecantikan & Kesehatan',
             'Pendidikan & Kursus',
-            'Otomotif'
+            'Otomotif',
         ];
 
         foreach ($otherCategories as $kategori) {
@@ -137,7 +138,7 @@ class WebsiteContentSeeder extends Seeder
                 'category' => 'achievement',
                 'content' => '<p>Bank Sampah Digital Cipta Muri dengan bangga mengumumkan pencapaian luar biasa di tahun 2024 dengan berhasil mengumpulkan dan mengolah 50 ton sampah untuk didaur ulang.</p><p>Pencapaian ini merupakan hasil kolaborasi yang solid antara tim bank sampah, masyarakat, dan mitra industri daur ulang.</p><p>Dari 50 ton tersebut, 35 ton adalah sampah plastik, 12 ton kertas, dan 3 ton logam, yang semuanya telah disalurkan ke fasilitas daur ulang yang tepat.</p>',
                 'tags' => ['achievement', '50 ton', 'daur ulang', 'plastik', 'kertas', 'logam'],
-            ]
+            ],
         ];
 
         foreach ($bankSampahNews as $newsData) {
@@ -174,15 +175,15 @@ class WebsiteContentSeeder extends Seeder
                 'harga' => 'Rp 15.000 - Rp 300.000',
                 'rating' => 4.5,
                 'jumlah_ulasan' => 45,
-            ]
+            ],
         ];
 
         foreach ($ecoFriendlyUmkm as $umkmData) {
             PostinganUmkm::factory()->create(array_merge($umkmData, [
                 'user_id' => $users->random()->id,
                 'status' => 'aktif',
-                'alamat' => fake()->streetAddress() . ', ' . fake()->city(),
-                'nomor_wa' => '08' . fake()->numerify('##########'),
+                'alamat' => fake()->streetAddress().', '.fake()->city(),
+                'nomor_wa' => '08'.fake()->numerify('##########'),
                 'gambar_url' => fake()->imageUrl(400, 300, 'recycling', true, 'eco-friendly'),
             ]));
         }
@@ -191,13 +192,13 @@ class WebsiteContentSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->command->info('✅ Seeding konten website selesai!');
-        $this->command->info("📊 Data yang dibuat:");
-        $this->command->info("   - Total Berita: " . News::count());
-        $this->command->info("     • Published: " . News::where('status', 'published')->count());
-        $this->command->info("     • Draft: " . News::where('status', 'draft')->count());
-        $this->command->info("   - Total UMKM: " . PostinganUmkm::count());
-        $this->command->info("     • Aktif: " . PostinganUmkm::where('status', 'aktif')->count());
-        $this->command->info("     • Non-aktif: " . PostinganUmkm::where('status', 'non-aktif')->count());
-        $this->command->info("     • Produk Daur Ulang: " . PostinganUmkm::where('kategori', 'Produk Daur Ulang')->count());
+        $this->command->info('📊 Data yang dibuat:');
+        $this->command->info('   - Total Berita: '.News::count());
+        $this->command->info('     • Published: '.News::where('status', 'published')->count());
+        $this->command->info('     • Draft: '.News::where('status', 'draft')->count());
+        $this->command->info('   - Total UMKM: '.PostinganUmkm::count());
+        $this->command->info('     • Aktif: '.PostinganUmkm::where('status', 'aktif')->count());
+        $this->command->info('     • Non-aktif: '.PostinganUmkm::where('status', 'non-aktif')->count());
+        $this->command->info('     • Produk Daur Ulang: '.PostinganUmkm::where('kategori', 'Produk Daur Ulang')->count());
     }
 }

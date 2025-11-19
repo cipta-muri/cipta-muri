@@ -6,31 +6,35 @@ use App\Filament\Resources\SampahKeluarResource\Pages;
 use App\Models\Sampah;
 use App\Models\SampahKeluar;
 use Filament\Forms;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Repeater;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Hexters\HexaLite\HasHexaLite;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\HtmlString;
-use Hexters\HexaLite\HasHexaLite;
 
 class SampahKeluarResource extends Resource
 {
     use HasHexaLite;
+
     protected static ?string $model = SampahKeluar::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-truck';
+
     protected static ?string $navigationGroup = 'Operasional Bank Sampah';
+
     protected static ?int $navigationSort = 4;
 
     public $hexaSort = 7;
-    
-     public function defineGates()
+
+    public function defineGates()
     {
         return [
             'sampah_keluar.index' => __('Lihat Pendataan Sampah Keluar'),
@@ -80,12 +84,13 @@ class SampahKeluarResource extends Resource
 
                                 foreach ($sampahItems as $item) {
                                     $table .= '<tr>';
-                                    $table .= '<td style="padding: 8px; border: 1px solid #ddd;">' . e($item->jenis_sampah) . '</td>';
-                                    $table .= '<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">' . number_format($item->total_berat_terkumpul, 2, ',', '.') . '</td>';
+                                    $table .= '<td style="padding: 8px; border: 1px solid #ddd;">'.e($item->jenis_sampah).'</td>';
+                                    $table .= '<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">'.number_format($item->total_berat_terkumpul, 2, ',', '.').'</td>';
                                     $table .= '</tr>';
                                 }
 
                                 $table .= '</tbody></table>';
+
                                 return new HtmlString($table);
                             })->columnSpanFull(),
                     ]),
@@ -110,11 +115,12 @@ class SampahKeluarResource extends Resource
                                     ->label('Berat')
                                     ->helperText(function (Get $get) {
                                         $sampahId = $get('sampah_id');
-                                        if (!$sampahId) {
+                                        if (! $sampahId) {
                                             return 'Pilih jenis sampah terlebih dahulu.';
                                         }
                                         $beratTersedia = \App\Models\Sampah::find($sampahId)?->total_berat_terkumpul ?? 0;
-                                        return 'Tidak boleh lebih dari: ' . number_format($beratTersedia, 2, ',', '.') . ' Kg';
+
+                                        return 'Tidak boleh lebih dari: '.number_format($beratTersedia, 2, ',', '.').' Kg';
                                     })
                                     ->postfix('Kg')->numeric()->required()->minValue(0.01)
                                     ->columnSpan(['md' => 1]),
@@ -128,7 +134,7 @@ class SampahKeluarResource extends Resource
                                 Forms\Components\TextInput::make('harga_jual')
                                     ->label('Uang Hasil Penjualan')
                                     ->prefix('Rp')->numeric()->required()->minValue(0)
-                                    ->hidden(fn(Get $get) => $get('../../jenis_keluar') !== 'jual') // Akses state di luar repeater
+                                    ->hidden(fn (Get $get) => $get('../../jenis_keluar') !== 'jual') // Akses state di luar repeater
                                     ->columnSpan(['md' => 1])
                                     ->dehydrated(false),
                             ])
@@ -139,7 +145,6 @@ class SampahKeluarResource extends Resource
                             ->required()
                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data, Get $get): array {
                                 $rekeningId = $get('rekening_id');
-
 
                                 // Deteksi apakah $data adalah list/array of items atau single associative array
                                 $isList = array_keys($data) === range(0, count($data) - 1);
@@ -153,7 +158,7 @@ class SampahKeluarResource extends Resource
                                         }
                                     }
                                     unset($item); // good practice setelah foreach by-ref
-                    
+
                                     return $data;
                                 }
 
@@ -169,17 +174,17 @@ class SampahKeluarResource extends Resource
                                 }
 
                                 return $data;
-                            })
-                        ,
+                            }),
                     ]),
 
                 // --- BAGIAN PERHITUNGAN KONDISIONAL ---
                 Section::make('Perhitungan dan Rincian')
-                    ->hidden(fn(Get $get) => $get('jenis_keluar') !== 'jual') // Sembunyikan jika 'bakar'
+                    ->hidden(fn (Get $get) => $get('jenis_keluar') !== 'jual') // Sembunyikan jika 'bakar'
                     ->schema([
                         Forms\Components\Hidden::make('rekening_id')
                             ->default(function () {
                                 $rekening = \App\Models\Rekening::where('no_rekening', '00000000')->first();
+
                                 return $rekening?->id;
                             }), // Tidak perlu disimpan di DB
                         Forms\Components\Hidden::make('calculation_performed')->default(false)->dehydrated(true),
@@ -199,10 +204,11 @@ class SampahKeluarResource extends Resource
 
                         Forms\Components\Placeholder::make('rincian_penjualan')
                             ->label('Rincian')
-                            ->visible(fn(Get $get) => (bool) $get('calculation_performed'))
+                            ->visible(fn (Get $get) => (bool) $get('calculation_performed'))
                             ->content(function (Get $get) {
                                 $items = $get('details');
                                 $sampahData = Sampah::whereIn('id', array_column($items, 'sampah_id'))->get()->keyBy('id');
+
                                 return self::generateRincianHtmlJual($items, $sampahData);
                             })
                             ->columnSpanFull(),
@@ -221,13 +227,14 @@ class SampahKeluarResource extends Resource
         $data['user_id'] = auth()->id();
 
         if ($data['jenis_keluar'] === 'jual') {
-            if (!($data['calculation_performed'] ?? false)) {
+            if (! ($data['calculation_performed'] ?? false)) {
                 Notification::make()->title('Perhitungan Belum Dilakukan')->body('Anda harus menekan tombol "Hitung Total Penjualan" sebelum menyimpan.')->danger()->send();
                 throw \Illuminate\Validation\ValidationException::withMessages(['hitung_jual' => 'Tombol hitung harus ditekan.']);
             }
         } else { // jenis_keluar === 'bakar'
             $data['total_saldo_dihasilkan'] = 0;
         }
+
         return $data;
     }
 
@@ -258,6 +265,7 @@ class SampahKeluarResource extends Resource
                     ->danger()->send();
             }
         }
+
         return $data;
     }
 
@@ -267,8 +275,9 @@ class SampahKeluarResource extends Resource
         $totalBerat = 0;
         $rows = '';
         foreach ($items as $item) {
-            if (empty($item['sampah_id']) || empty($item['berat']) || !is_numeric($item['berat']))
+            if (empty($item['sampah_id']) || empty($item['berat']) || ! is_numeric($item['berat'])) {
                 continue;
+            }
             $sampah = $sampahData->get($item['sampah_id']);
             if ($sampah) {
                 $berat = (float) $item['berat'];
@@ -277,9 +286,9 @@ class SampahKeluarResource extends Resource
                 $rows .= "<tr>
                             <td style='padding:6px;'>{$sampah->jenis_sampah}</td>
                             <td style='padding:6px; text-align:center;'>{$berat} Kg</td>
-                            <td style='padding:6px; text-align:right;'>Rp " . number_format($hargaPerKg, 2, ',', '.') . "</td>
-                            <td style='padding:6px; text-align:right;'>Rp " . number_format($harga, 2, ',', '.') . "</td>
-                        </tr>";
+                            <td style='padding:6px; text-align:right;'>Rp ".number_format($hargaPerKg, 2, ',', '.')."</td>
+                            <td style='padding:6px; text-align:right;'>Rp ".number_format($harga, 2, ',', '.').'</td>
+                        </tr>';
                 $totalHarga += $harga;
                 $totalBerat += $berat;
             }
@@ -287,11 +296,12 @@ class SampahKeluarResource extends Resource
         $avgHargaPerKg = ($totalBerat > 0) ? ($totalHarga / $totalBerat) : 0;
         $totalRow = "<tr style='font-weight:bold; border-top:2px solid #333;'>
                         <td style='padding:6px;'>Total</td>
-                        <td style='padding:6px; text-align:center;'>" . number_format($totalBerat, 2, ',', '.') . " Kg</td>
-                        <td style='padding:6px; text-align:right;'>Rp " . number_format($avgHargaPerKg, 2, ',', '.') . " (Rata-rata)</td>
-                        <td style='padding:6px; text-align:right;'>Rp " . number_format($totalHarga, 2, ',', '.') . "</td>
-                    </tr>";
+                        <td style='padding:6px; text-align:center;'>".number_format($totalBerat, 2, ',', '.')." Kg</td>
+                        <td style='padding:6px; text-align:right;'>Rp ".number_format($avgHargaPerKg, 2, ',', '.')." (Rata-rata)</td>
+                        <td style='padding:6px; text-align:right;'>Rp ".number_format($totalHarga, 2, ',', '.').'</td>
+                    </tr>';
         $header = "<thead><tr style='background:#f3f4f6; text-align:left;'><th style='padding:6px;'>Jenis Sampah</th><th style='padding:6px; text-align:center;'>Berat</th><th style='padding:6px; text-align:right;'>Harga/Kg</th><th style='padding:6px; text-align:right;'>Hasil Jual</th></tr></thead>";
+
         return new HtmlString("<table style='width:100%; border-collapse:collapse;'>{$header}<tbody>{$rows}{$totalRow}</tbody></table>");
     }
 
@@ -300,30 +310,30 @@ class SampahKeluarResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('jenis_keluar')->label('Jenis')->sortable()->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'jual' => 'success',
                         'bakar' => 'danger',
                     }),
                 TextColumn::make('tanggal_keluar')->date()->label('Tanggal')->sortable(),
                 TextColumn::make('berat_keluar')->label('Total Berat (Kg)')->sortable()->weight('bold'),
                 TextColumn::make('total_saldo_dihasilkan')->label('Total Hasil Jual')->sortable()->money('IDR')
-                    ->formatStateUsing(fn(string $state) => $state > 0 ? "Rp " . number_format($state, 0, ',', '.') : '-'),
+                    ->formatStateUsing(fn (string $state) => $state > 0 ? 'Rp '.number_format($state, 0, ',', '.') : '-'),
                 TextColumn::make('user.name')->label('Petugas')->sortable(),
                 TextColumn::make('created_at')->dateTime()->label('Dibuat')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('tanggal_keluar', 'desc')
             ->actions([
                 Tables\Actions\EditAction::make()
-                ->visible(fn() => hexa()->can('sampah_keluar.update')),
+                    ->visible(fn () => hexa()->can('sampah_keluar.update')),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('sampah_keluar.delete')),
-                ])
+                    ->visible(fn () => hexa()->can('sampah_keluar.delete')),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn() => hexa()->can('sampah_keluar.delete')),
-                    ])
-                ]);
+                        ->visible(fn () => hexa()->can('sampah_keluar.delete')),
+                ]),
+            ]);
     }
 
     public static function getPages(): array

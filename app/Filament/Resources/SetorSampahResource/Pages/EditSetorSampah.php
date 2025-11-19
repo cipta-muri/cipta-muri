@@ -18,7 +18,7 @@ class EditSetorSampah extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(fn() => hexa()->can('setor_sampah.delete')),
+            Actions\DeleteAction::make()->visible(fn () => hexa()->can('setor_sampah.delete')),
         ];
     }
 }

@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -32,7 +33,7 @@ return new class extends Migration {
             $table->boolean('status_pegadaian')->default(false);
 
             $table->boolean('status_lengkap')->default(false);
-            $table->boolean('status_desa'); //Nasabah Dalam Desa atau Luar Desa
+            $table->boolean('status_desa'); // Nasabah Dalam Desa atau Luar Desa
 
             $table->foreignUlid('user_id')->nullable()->constrained('users')->nullOnDelete()->index()->name('fk_rekening_user');
             $table->timestamps();

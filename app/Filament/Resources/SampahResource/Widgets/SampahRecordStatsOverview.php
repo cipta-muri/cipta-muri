@@ -25,4 +25,3 @@ class SampahRecordStatsOverview extends BaseWidget
         ];
     }
 }
-

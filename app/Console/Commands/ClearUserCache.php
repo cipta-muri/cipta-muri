@@ -42,15 +42,15 @@ class ClearUserCache extends Command
     private function clearAllUsersCache(): void
     {
         $this->info('Clearing cache for all users...');
-        
+
         $users = User::all();
         $count = 0;
-        
+
         foreach ($users as $user) {
             $user->clearUserCache();
             $count++;
         }
-        
+
         $this->info("Cache cleared for {$count} users.");
     }
 
@@ -60,12 +60,13 @@ class ClearUserCache extends Command
     private function clearSpecificUserCache(string $userId): void
     {
         $user = User::find($userId);
-        
-        if (!$user) {
+
+        if (! $user) {
             $this->error("User with ID {$userId} not found.");
+
             return;
         }
-        
+
         $user->clearUserCache();
         $this->info("Cache cleared for user: {$user->name} (ID: {$userId})");
     }
@@ -103,9 +104,9 @@ class ClearUserCache extends Command
     private function showCacheStats(): void
     {
         $this->info('User Cache Statistics:');
-        
+
         $users = User::take(10)->get();
-        
+
         $this->table(
             ['User ID', 'Name', 'Avatar Cached', 'Roles Cached', 'Permissions Cached'],
             $users->map(function ($user) {

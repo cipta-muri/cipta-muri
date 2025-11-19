@@ -2,30 +2,30 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Pemasukan extends Model
 {
-    use HasUlids, SoftDeletes, HasFactory, LogsActivity;
+    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('pemasukan')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Pemasukan has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Pemasukan has been {$eventName}");
     }
 
     protected $table = 'pemasukan';
 
     protected $guarded = ['id'];
-    
+
     protected $casts = [
         'nominal' => 'decimal:2',
     ];
@@ -34,7 +34,6 @@ class Pemasukan extends Model
     {
         return $this->morphTo();
     }
-
 
     public function user()
     {
@@ -45,6 +44,7 @@ class Pemasukan extends Model
     {
         return $this->belongsTo(Rekening::class);
     }
+
     public function sumberPemasukan()
     {
         return $this->belongsTo(SumberPemasukan::class, 'sumber_pemasukan_id');
@@ -53,7 +53,7 @@ class Pemasukan extends Model
     public static function booted(): void
     {
         static::creating(function ($pemasukan) {
-            if (!$pemasukan->user_id && Auth::check()) {
+            if (! $pemasukan->user_id && Auth::check()) {
                 $pemasukan->user_id = Auth::id();
             }
 
@@ -99,8 +99,11 @@ class Pemasukan extends Model
                     $saldoBaru = $pemasukan->nominal;
                     $perubahanSaldo = $saldoBaru - $saldoLama;
 
-                    if ($perubahanSaldo > 0) $rekening->increment('balance', $perubahanSaldo);
-                    elseif ($perubahanSaldo < 0) $rekening->decrement('balance', abs($perubahanSaldo));
+                    if ($perubahanSaldo > 0) {
+                        $rekening->increment('balance', $perubahanSaldo);
+                    } elseif ($perubahanSaldo < 0) {
+                        $rekening->decrement('balance', abs($perubahanSaldo));
+                    }
 
                     if ($perubahanSaldo != 0) {
                         \App\Models\SaldoTransaction::create([
@@ -161,4 +164,3 @@ class Pemasukan extends Model
         });
     }
 }
-

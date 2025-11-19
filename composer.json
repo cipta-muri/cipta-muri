@@ -23,6 +23,7 @@
         "joaopaulolndev/filament-edit-profile": "^1.0",
         "joshembling/image-optimizer": "^1.6",
         "laravel/framework": "^12.0",
+        "laravel/reverb": "^1.6",
         "laravel/sanctum": "^4.2",
         "laravel/tinker": "^2.10.1",
         "pxlrbt/filament-excel": "2.1",

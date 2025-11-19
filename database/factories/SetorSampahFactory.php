@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\SetorSampah;
 use App\Models\Rekening;
+use App\Models\SetorSampah;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -44,7 +44,7 @@ class SetorSampahFactory extends Factory
         return $this->state(function (array $attributes) {
             // Find or create donation account
             $donationRekening = Rekening::where('no_rekening', '00000000')->first();
-            if (!$donationRekening) {
+            if (! $donationRekening) {
                 $donationRekening = Rekening::factory()->donation()->create();
             }
 

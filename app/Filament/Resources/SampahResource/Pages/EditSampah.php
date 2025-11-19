@@ -21,7 +21,7 @@ class EditSampah extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(fn() => hexa()->can('sampah.delete')),
+            Actions\DeleteAction::make()->visible(fn () => hexa()->can('sampah.delete')),
         ];
     }
 
@@ -38,7 +38,7 @@ class EditSampah extends EditRecord
         ];
     }
 
-    protected function getFormWidgetsColumns(): int | string | array
+    protected function getFormWidgetsColumns(): int|string|array
     {
         return [
             'lg' => 2,

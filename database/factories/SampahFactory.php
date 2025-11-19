@@ -71,7 +71,7 @@ class SampahFactory extends Factory
 
         $hargaRange = $hargaMapping[$selectedJenis] ?? [500, 2000];
         $saldoPerKg = fake()->numberBetween($hargaRange[0], $hargaRange[1]);
-        
+
         // Poin per kg biasanya 1/100 dari harga
         $poinPerKg = max(1, intval($saldoPerKg / 100));
 

@@ -15,7 +15,7 @@ return [
     'export_icon' => 'heroicon-o-arrow-down-on-square',
     'print_icon' => 'heroicon-o-printer',
     'cancel_icon' => 'heroicon-o-x-circle',
-    
+
     // Excel column width configuration
     'excel_default_column_width' => 20,
     'excel_default_row_height' => 16,

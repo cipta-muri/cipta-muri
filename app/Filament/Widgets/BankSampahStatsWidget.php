@@ -2,12 +2,11 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Rekening;
+use App\Models\SetorSampah;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use App\Models\Rekening;
-use App\Models\User;
-use App\Models\SetorSampah;
-use App\Models\SaldoTransaction;
 use Illuminate\Support\Number;
 
 class BankSampahStatsWidget extends BaseWidget
@@ -29,7 +28,7 @@ class BankSampahStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('info'),
 
-            Stat::make('Total Saldo Nasabah', 'Rp ' . Number::format($saldoNasabah, locale: 'id'))
+            Stat::make('Total Saldo Nasabah', 'Rp '.Number::format($saldoNasabah, locale: 'id'))
                 ->description('Total saldo semua nasabah')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('warning'),

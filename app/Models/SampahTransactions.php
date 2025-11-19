@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
 class SampahTransactions extends Model
 {
-    use SoftDeletes, HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'sampah_transactions';
 
@@ -23,7 +23,6 @@ class SampahTransactions extends Model
     {
         return $this->belongsTo(Rekening::class);
     }
-
 
     public function setorSampah()
     {
@@ -43,7 +42,7 @@ class SampahTransactions extends Model
     protected static function booted(): void
     {
         static::creating(function ($detail) {
-            if (!$detail->user_id && Auth::check()) {
+            if (! $detail->user_id && Auth::check()) {
                 $detail->user_id = Auth::id();
             }
         });

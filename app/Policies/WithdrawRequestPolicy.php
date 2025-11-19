@@ -2,9 +2,8 @@
 
 namespace App\Policies;
 
-use Illuminate\Auth\Access\Response;
-use App\Models\WithdrawRequest;
 use App\Models\User;
+use App\Models\WithdrawRequest;
 
 class WithdrawRequestPolicy
 {

@@ -15,9 +15,8 @@ class EditUser extends EditRecord
         return [
             Actions\DeleteAction::make()
                 ->visible(
-                    fn($record) =>
-                    hexa()->can('user.delete') &&
-                    !$record->roles()->where('name', 'Super Admin')->exists()
+                    fn ($record) => hexa()->can('user.delete') &&
+                    ! $record->roles()->where('name', 'Super Admin')->exists()
                 )
                 ->before(function ($record, $action) {
                     if ($record->roles()->where('name', 'Super Admin')->exists()) {

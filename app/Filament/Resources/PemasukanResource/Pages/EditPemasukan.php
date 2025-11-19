@@ -15,12 +15,11 @@ class EditPemasukan extends EditRecord
         return hexa()->can('pemasukan.update');
     }
 
-
     protected function getHeaderActions(): array
     {
         return [
             Actions\DeleteAction::make()
-            ->visible(fn() => hexa()->can('pemasukan.delete')),
+                ->visible(fn () => hexa()->can('pemasukan.delete')),
         ];
     }
 }

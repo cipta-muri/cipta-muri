@@ -51,12 +51,12 @@ class PoinTransactionFactory extends Factory
             'Adjustment poin',
         ];
 
-        $description = $type === 'credit' 
+        $description = $type === 'credit'
             ? fake()->randomElement($creditDescriptions)
             : fake()->randomElement($debitDescriptions);
 
         // Points berdasarkan tipe
-        $points = $type === 'credit' 
+        $points = $type === 'credit'
             ? fake()->numberBetween(10, 1000)  // Credit: 10 - 1000 poin
             : fake()->numberBetween(5, 500);   // Debit: 5 - 500 poin
 

@@ -14,7 +14,7 @@ class EditRole extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('role.delete')),
+                ->visible(fn () => hexa()->can('role.delete')),
         ];
     }
 
@@ -30,7 +30,6 @@ class EditRole extends EditRecord
         return $data;
     }
 
-
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['access'] = $data['gates'] ?? [];
@@ -38,4 +37,3 @@ class EditRole extends EditRecord
         return $data;
     }
 }
-

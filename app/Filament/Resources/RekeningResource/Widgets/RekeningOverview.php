@@ -61,11 +61,10 @@ class RekeningOverview extends BaseWidget
                 ->description('Total nasabah pemilik Tabungan Emas')
                 ->descriptionIcon('heroicon-m-sparkles')
                 ->color('warning'),
-            Stat::make('Total Saldo Nasabah', 'Rp ' . Number::format($saldoNasabah, locale: 'id'))
+            Stat::make('Total Saldo Nasabah', 'Rp '.Number::format($saldoNasabah, locale: 'id'))
                 ->description('Snapshot total saldo tersimpan saat ini')
                 ->descriptionIcon('heroicon-m-wallet')
                 ->color('primary'),
         ];
     }
 }
-

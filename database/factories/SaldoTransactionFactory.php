@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\SaldoTransaction;
 use App\Models\Rekening;
+use App\Models\SaldoTransaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -47,12 +47,12 @@ class SaldoTransactionFactory extends Factory
             'Koreksi saldo',
         ];
 
-        $description = $type === 'credit' 
+        $description = $type === 'credit'
             ? fake()->randomElement($creditDescriptions)
             : fake()->randomElement($debitDescriptions);
 
         // Amount berdasarkan tipe
-        $amount = $type === 'credit' 
+        $amount = $type === 'credit'
             ? fake()->randomFloat(2, 1000, 100000) // Credit: 1k - 100k
             : fake()->randomFloat(2, 500, 50000);  // Debit: 500 - 50k
 

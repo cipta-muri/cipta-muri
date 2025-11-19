@@ -14,14 +14,14 @@ class ListRekenings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->visible(fn() => hexa()->can('rekening.create')),
+            Actions\CreateAction::make()->visible(fn () => hexa()->can('rekening.create')),
         ];
     }
 
     protected function getHeaderWidgets(): array
     {
         return [
-                // Perbaikan: Menggunakan ::class, bukan ::make()
+            // Perbaikan: Menggunakan ::class, bukan ::make()
             Widgets\RekeningOverview::class,
         ];
     }

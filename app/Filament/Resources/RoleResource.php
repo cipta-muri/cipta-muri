@@ -6,7 +6,6 @@ use App\Filament\Resources\RoleResource\Pages;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\ViewField;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -88,8 +87,7 @@ class RoleResource extends Resource
     {
         return $table
             ->modifyQueryUsing(
-                fn($query) =>
-                $query
+                fn ($query) => $query
                     ->where('guard', hexa()->guard())
                     ->where('name', '!=', 'Super Admin')
             )
@@ -109,14 +107,14 @@ class RoleResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn() => hexa()->can('role.update')),
+                    ->visible(fn () => hexa()->can('role.update')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn() => hexa()->can('role.delete')),
+                    ->visible(fn () => hexa()->can('role.delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn() => hexa()->can('role.delete')),
+                        ->visible(fn () => hexa()->can('role.delete')),
                 ]),
             ]);
     }

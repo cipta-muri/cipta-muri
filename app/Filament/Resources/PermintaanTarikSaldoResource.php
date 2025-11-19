@@ -6,22 +6,21 @@ use App\Enums\PermintaanStatus;
 use App\Filament\Resources\PermintaanTarikSaldoResource\Pages;
 use App\Models\PermintaanTarikSaldo;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
-use Filament\Notifications\Notification;
-use Illuminate\Validation\ValidationException;
+use Filament\Tables\Table;
 use Hexters\HexaLite\HasHexaLite;
+use Illuminate\Validation\ValidationException;
 
 class PermintaanTarikSaldoResource extends Resource
 {
@@ -71,13 +70,13 @@ class PermintaanTarikSaldoResource extends Resource
                             ->content(fn (?PermintaanTarikSaldo $record) => $record && $record->rekening ? "{$record->rekening->nama} ({$record->rekening->no_rekening})" : '-'),
                         Placeholder::make('saldo')
                             ->label('Saldo Saat Ini')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record && $record->rekening ? 'Rp ' . number_format($record->rekening->balance, 0, ',', '.') : '-'),
+                            ->content(fn (?PermintaanTarikSaldo $record) => $record && $record->rekening ? 'Rp '.number_format($record->rekening->balance, 0, ',', '.') : '-'),
                     ])->columns(2),
                 Section::make('Detail Permintaan')
                     ->schema([
                         Placeholder::make('amount')
                             ->label('Nominal')
-                            ->content(fn (?PermintaanTarikSaldo $record) => $record ? 'Rp ' . number_format($record->amount, 0, ',', '.') : '-'),
+                            ->content(fn (?PermintaanTarikSaldo $record) => $record ? 'Rp '.number_format($record->amount, 0, ',', '.') : '-'),
                         Placeholder::make('jenis')
                             ->label('Metode')
                             ->content(fn (?PermintaanTarikSaldo $record) => ucfirst($record->jenis ?? '-')),

@@ -19,9 +19,9 @@ class NewsController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('content', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('excerpt', 'LIKE', '%' . $request->search . '%');
+                $q->where('title', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('content', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('excerpt', 'LIKE', '%'.$request->search.'%');
             });
         }
 
@@ -65,7 +65,7 @@ class NewsController extends Controller
                 'search' => $request->search,
                 'category' => $request->category,
                 'sort' => $sortBy,
-            ]
+            ],
         ]);
     }
 
@@ -75,7 +75,7 @@ class NewsController extends Controller
     public function show(News $news)
     {
         // Check if news is published
-        if (!$news->isPublished()) {
+        if (! $news->isPublished()) {
             abort(404);
         }
 
@@ -120,7 +120,7 @@ class NewsController extends Controller
     {
         // Validate category exists
         $categories = array_keys(News::getCategoryOptions());
-        if (!in_array($category, $categories)) {
+        if (! in_array($category, $categories)) {
             abort(404);
         }
 
@@ -131,9 +131,9 @@ class NewsController extends Controller
         // Search within category
         if ($request->has('search') && $request->search) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('content', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('excerpt', 'LIKE', '%' . $request->search . '%');
+                $q->where('title', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('content', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('excerpt', 'LIKE', '%'.$request->search.'%');
             });
         }
 
@@ -162,7 +162,7 @@ class NewsController extends Controller
             'filters' => [
                 'search' => $request->search,
                 'sort' => $sortBy,
-            ]
+            ],
         ]);
     }
 
@@ -177,8 +177,8 @@ class NewsController extends Controller
 
         $news = News::published()
             ->where(function ($query) use ($request) {
-                $query->where('title', 'LIKE', '%' . $request->q . '%')
-                      ->orWhere('excerpt', 'LIKE', '%' . $request->q . '%');
+                $query->where('title', 'LIKE', '%'.$request->q.'%')
+                    ->orWhere('excerpt', 'LIKE', '%'.$request->q.'%');
             })
             ->select('id', 'title', 'slug', 'featured_image', 'published_at')
             ->orderBy('published_at', 'desc')
@@ -191,7 +191,7 @@ class NewsController extends Controller
                     'slug' => $item->slug,
                     'featured_image_url' => $item->featured_image_url,
                     'published_at' => $item->published_at->format('d M Y'),
-                    'url' => route('news.show', $item->slug)
+                    'url' => route('news.show', $item->slug),
                 ];
             });
 

@@ -19,11 +19,12 @@ class PermintaanTarikSaldo extends Model
 {
     /** @use HasFactory<\Database\Factories\PermintaanTarikSaldoFactory> */
     use HasFactory;
-    use HasUlids;
-    use SoftDeletes;
-    use LogsActivity;
+
     use HasPermintaanToken;
+    use HasUlids;
+    use LogsActivity;
     use NotifiesPermintaanStatus;
+    use SoftDeletes;
 
     protected $table = 'permintaan_tarik_saldo';
 
@@ -54,11 +55,11 @@ class PermintaanTarikSaldo extends Model
     protected static function booted(): void
     {
         static::creating(function (self $record) {
-            if (!$record->requested_at) {
+            if (! $record->requested_at) {
                 $record->requested_at = now();
             }
 
-            if (!$record->requested_by_rekening_id) {
+            if (! $record->requested_by_rekening_id) {
                 $record->requested_by_rekening_id = $record->rekening_id;
             }
         });
@@ -92,6 +93,7 @@ class PermintaanTarikSaldo extends Model
     public function scopeStatus($query, PermintaanStatus|string $status)
     {
         $status = $status instanceof PermintaanStatus ? $status : PermintaanStatus::from($status);
+
         return $query->where('status', $status->value);
     }
 
@@ -123,7 +125,7 @@ class PermintaanTarikSaldo extends Model
 
     public function confirm(User $admin, string $via = 'table', ?string $note = null, ?string $notificationUrl = null): WithdrawRequest
     {
-        if (!$this->isWaitingConfirmation()) {
+        if (! $this->isWaitingConfirmation()) {
             throw ValidationException::withMessages([
                 'status' => 'Permintaan sudah diproses.',
             ]);
@@ -132,7 +134,7 @@ class PermintaanTarikSaldo extends Model
         return DB::transaction(function () use ($admin, $via, $note, $notificationUrl) {
             $rekening = $this->rekening()->lockForUpdate()->first();
 
-            if (!$rekening?->hasSufficientBalance($this->amount)) {
+            if (! $rekening?->hasSufficientBalance($this->amount)) {
                 throw ValidationException::withMessages([
                     'amount' => 'Saldo nasabah tidak mencukupi untuk penarikan ini.',
                 ]);
@@ -169,7 +171,7 @@ class PermintaanTarikSaldo extends Model
 
     public function reject(?User $admin, string $reason, string $via = 'table', ?string $notificationUrl = null): void
     {
-        if (!$this->isWaitingConfirmation()) {
+        if (! $this->isWaitingConfirmation()) {
             throw ValidationException::withMessages([
                 'status' => 'Permintaan sudah diproses.',
             ]);

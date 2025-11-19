@@ -21,4 +21,3 @@ class HexaLite extends BaseHexaLite
         $this->registerGateList($panel);
     }
 }
-

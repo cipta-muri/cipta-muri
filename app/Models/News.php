@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class News extends Model
 {
-    use HasFactory, SoftDeletes, HasUlids, LogsActivity;
+    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
     protected $guarded = ['id'];
 
@@ -24,7 +24,7 @@ class News extends Model
     ];
 
     protected $appends = [
-        'featured_image_url'
+        'featured_image_url',
     ];
 
     protected $dates = ['deleted_at'];
@@ -34,7 +34,7 @@ class News extends Model
         return LogOptions::defaults()
             ->useLogName('news')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Berita has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Berita has been {$eventName}");
     }
 
     // Auto-generate fields
@@ -63,7 +63,7 @@ class News extends Model
 
                 // Check if slug exists
                 while (static::where('slug', $slug)->exists()) {
-                    $slug = $originalSlug . '-' . $counter;
+                    $slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
 
@@ -97,7 +97,7 @@ class News extends Model
 
                 // Check if slug exists (excluding current record)
                 while (static::where('slug', $slug)->where('id', '!=', $news->id)->exists()) {
-                    $slug = $originalSlug . '-' . $counter;
+                    $slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
 
@@ -118,7 +118,9 @@ class News extends Model
 
     // Status constants
     const STATUS_DRAFT = 'draft';
+
     const STATUS_PUBLISHED = 'published';
+
     const STATUS_SCHEDULED = 'scheduled';
 
     // Relationship with User (Author)
@@ -171,7 +173,8 @@ class News extends Model
     {
         $words = str_word_count(strip_tags($this->content));
         $minutes = ceil($words / 200); // Average reading speed
-        return $minutes . ' min read';
+
+        return $minutes.' min read';
     }
 
     public function incrementViews()
@@ -203,12 +206,12 @@ class News extends Model
     // Image helper methods
     public function getFeaturedImageUrlAttribute()
     {
-        if (!$this->featured_image) {
+        if (! $this->featured_image) {
             return null;
         }
 
         // Use relative URL to avoid CORS issues
-        return url('storage/' . $this->featured_image);
+        return url('storage/'.$this->featured_image);
     }
 
     public function getThumbnailUrl($width = 300, $height = 200)

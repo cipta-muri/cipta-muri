@@ -22,7 +22,7 @@ class PermintaanQrRedirectController extends Controller
         /** @var \App\Models\PermintaanTarikSaldo|\App\Models\PermintaanSetorSampah $permintaan */
         $permintaan = $modelClass::findOrFail($record);
 
-        if (!$permintaan->verifyPermintaanToken($request->query('token'))) {
+        if (! $permintaan->verifyPermintaanToken($request->query('token'))) {
             abort(403, 'Token tidak valid atau sudah kedaluwarsa.');
         }
 

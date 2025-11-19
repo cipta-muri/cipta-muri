@@ -19,9 +19,9 @@ class ViewNews extends ViewRecord
     {
         return [
             Actions\EditAction::make()
-            ->visible(fn() => hexa()->can('berita.update')),
+                ->visible(fn () => hexa()->can('berita.update')),
             Actions\DeleteAction::make()
-            ->visible(fn()=>hexa()->can('berita.delete')),
+                ->visible(fn () => hexa()->can('berita.delete')),
         ];
     }
 }

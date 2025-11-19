@@ -3,22 +3,21 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SampahResource\Pages;
+use App\Filament\Resources\SampahResource\RelationManagers;
+use App\Filament\Resources\SampahResource\Widgets;
 use App\Models\Sampah;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Resources\Forms\Form;
 use Filament\Support\RawJs;
-use App\Filament\Resources\SampahResource\RelationManagers;
-use App\Filament\Resources\SampahResource\Widgets;
-use Filament\Resources\Tables\Table;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Hexters\HexaLite\HasHexaLite;
 
 class SampahResource extends Resource
 {
     use HasHexaLite;
+
     protected static ?string $model = Sampah::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-trash';
@@ -45,7 +44,6 @@ class SampahResource extends Resource
     {
         return hexa()->can('sampah.index');
     }
-
 
     public static function form(Forms\Form $form): Forms\Form
     {
@@ -103,15 +101,15 @@ class SampahResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->visible(fn() => hexa()->can('sampah.index')),
+                    ->visible(fn () => hexa()->can('sampah.index')),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn() => hexa()->can('sampah.update')),
+                    ->visible(fn () => hexa()->can('sampah.update')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn() => hexa()->can('sampah.delete')),
+                    ->visible(fn () => hexa()->can('sampah.delete')),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn() => hexa()->can('sampah.delete')),
+                    ->visible(fn () => hexa()->can('sampah.delete')),
             ]);
     }
 

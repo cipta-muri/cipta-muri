@@ -1,6 +1,6 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/Button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -13,6 +13,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
+import { useState, useEffect } from 'react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -35,7 +36,7 @@ const rightNavItems: NavItem[] = [
     },
 ];
 
-const activeItemStyles = 'text-neutral-900';
+const activeItemStyles = 'text-primary-600 font-semibold bg-primary-50';
 
 interface AppHeaderProps {
     breadcrumbs?: BreadcrumbItem[];
@@ -44,10 +45,23 @@ interface AppHeaderProps {
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <>
-            <div className="border-sidebar-border/80 border-b">
-                <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+            <div className={cn(
+                "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-transparent",
+                isScrolled ? "bg-white/80 backdrop-blur-md shadow-sm border-gray-200/50" : "bg-transparent"
+            )}>
+                <div className="mx-auto flex h-20 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
                         <Sheet>
@@ -56,32 +70,32 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     <Menu className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="left" className="bg-sidebar flex h-full w-64 flex-col items-stretch justify-between">
+                            <SheetContent side="left" className="bg-white flex h-full w-80 flex-col items-stretch justify-between border-r border-gray-100">
                                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                                <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 fill-current text-black" />
+                                <SheetHeader className="flex justify-start text-left p-4 border-b border-gray-100">
+                                    <AppLogoIcon className="h-8 w-8 fill-current text-primary-600" />
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
-                                        <div className="flex flex-col space-y-4">
+                                        <div className="flex flex-col space-y-2">
                                             {mainNavItems.map((item) => (
-                                                <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
-                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                <Link key={item.title} href={item.href} className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 font-medium text-gray-700 transition-colors">
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5 text-gray-500" />}
                                                     <span>{item.title}</span>
                                                 </Link>
                                             ))}
                                         </div>
 
-                                        <div className="flex flex-col space-y-4">
+                                        <div className="flex flex-col space-y-2 border-t border-gray-100 pt-4">
                                             {rightNavItems.map((item) => (
                                                 <a
                                                     key={item.title}
                                                     href={item.href}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center space-x-2 font-medium"
+                                                    className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 font-medium text-gray-700 transition-colors"
                                                 >
-                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5 text-gray-500" />}
                                                     <span>{item.title}</span>
                                                 </a>
                                             ))}
@@ -92,12 +106,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/dashboard" prefetch className="flex items-center space-x-2">
+                    <Link href="/dashboard" prefetch className="flex items-center space-x-2 transition-transform hover:scale-105">
                         <AppLogo />
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
+                    <div className="ml-10 hidden h-full items-center space-x-8 lg:flex">
                         <NavigationMenu className="flex h-full items-stretch">
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 {mainNavItems.map((item, index) => (
@@ -106,28 +120,25 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             href={item.href}
                                             className={cn(
                                                 navigationMenuTriggerStyle(),
+                                                "h-10 rounded-lg px-4 text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-primary-50 transition-colors",
                                                 page.url === item.href && activeItemStyles,
-                                                'h-9 cursor-pointer px-3',
                                             )}
                                         >
                                             {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
                                             {item.title}
                                         </Link>
-                                        {page.url === item.href && (
-                                            <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black"></div>
-                                        )}
                                     </NavigationMenuItem>
                                 ))}
                             </NavigationMenuList>
                         </NavigationMenu>
                     </div>
 
-                    <div className="ml-auto flex items-center space-x-2">
-                        <div className="relative flex items-center space-x-1">
-                            <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
-                                <Search className="!size-5 opacity-80 group-hover:opacity-100" />
+                    <div className="ml-auto flex items-center space-x-4">
+                        <div className="relative flex items-center space-x-2">
+                            <Button variant="ghost" size="icon" className="group h-10 w-10 cursor-pointer rounded-full hover:bg-gray-100">
+                                <Search className="!size-5 text-gray-500 group-hover:text-primary-600 transition-colors" />
                             </Button>
-                            <div className="hidden lg:flex">
+                            <div className="hidden lg:flex items-center gap-2">
                                 {rightNavItems.map((item) => (
                                     <TooltipProvider key={item.title} delayDuration={0}>
                                         <Tooltip>
@@ -136,10 +147,10 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                     href={item.href}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-accent-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring group ml-1 inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-primary-600 transition-all"
                                                 >
                                                     <span className="sr-only">{item.title}</span>
-                                                    {item.icon && <Icon iconNode={item.icon} className="size-5 opacity-80 group-hover:opacity-100" />}
+                                                    {item.icon && <Icon iconNode={item.icon} className="size-5" />}
                                                 </a>
                                             </TooltipTrigger>
                                             <TooltipContent>
@@ -150,27 +161,43 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 ))}
                             </div>
                         </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="size-10 rounded-full p-1">
-                                    <UserAvatarAlternative
-                                        user={auth.user}
-                                        size="md"
-                                        variant="initials"
-                                        className="transition-all duration-200 hover:ring-2 hover:ring-green-300"
-                                    />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56" align="end">
-                                <UserMenuContent user={auth.user} />
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        
+                        {auth.user ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="size-10 rounded-full p-0 ring-2 ring-transparent hover:ring-primary-100 transition-all">
+                                        <UserAvatarAlternative
+                                            user={auth.user}
+                                            size="md"
+                                            variant="initials"
+                                            className="h-full w-full"
+                                        />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-64 p-2" align="end">
+                                    <UserMenuContent user={auth.user} />
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <div className="flex items-center gap-3">
+                                <Link href={route('login')}>
+                                    <Button variant="ghost" size="sm">Log in</Button>
+                                </Link>
+                                <Link href={route('register')}>
+                                    <Button variant="primary" size="sm">Register</Button>
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+            
+            {/* Spacer for fixed header */}
+            <div className="h-20"></div>
+
             {breadcrumbs.length > 1 && (
-                <div className="border-sidebar-border/70 flex w-full border-b">
-                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
+                <div className="border-b border-gray-100 bg-gray-50/50">
+                    <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-gray-500 md:max-w-7xl">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
                 </div>

@@ -2,9 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\WithdrawRequest;
 use App\Models\SaldoTransaction;
-use App\Models\Rekening;
+use App\Models\WithdrawRequest;
 use Illuminate\Support\Facades\Auth;
 
 class WithdrawRequestObserver
@@ -34,8 +33,8 @@ class WithdrawRequestObserver
     {
         // Validasi saldo cukup sebelum membuat transaksi
         $rekening = $withdrawRequest->rekening;
-        
-        if (!$rekening->hasSufficientBalance($withdrawRequest->amount)) {
+
+        if (! $rekening->hasSufficientBalance($withdrawRequest->amount)) {
             throw new \Exception('Saldo tidak mencukupi untuk penarikan ini.');
         }
 

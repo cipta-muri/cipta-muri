@@ -22,10 +22,10 @@ class RekeningFactory extends Factory
     {
         // Generate unique no_rekening dalam format 8 digit
         $noRekening = str_pad(fake()->unique()->numberBetween(10000000, 99999999), 8, '0', STR_PAD_LEFT);
-        
+
         // Generate unique NIK dalam format 16 digit
         $nik = str_pad(fake()->unique()->numberBetween(1000000000000000, 9999999999999999), 16, '0', STR_PAD_LEFT);
-        
+
         // Generate unique no_kk dalam format 16 digit (berbeda dari NIK)
         do {
             $noKk = str_pad(fake()->unique()->numberBetween(1000000000000000, 9999999999999999), 16, '0', STR_PAD_LEFT);
@@ -34,14 +34,14 @@ class RekeningFactory extends Factory
         $genders = ['Laki-laki', 'Perempuan'];
         $pendidikan = ['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3', 'Lainnya'];
         $pekerjaan = [
-            'Petani', 'Wiraswasta', 'PNS', 'Karyawan Swasta', 'Buruh', 
-            'Pedagang', 'Guru', 'Pensiunan', 'Ibu Rumah Tangga', 'Mahasiswa'
+            'Petani', 'Wiraswasta', 'PNS', 'Karyawan Swasta', 'Buruh',
+            'Pedagang', 'Guru', 'Pensiunan', 'Ibu Rumah Tangga', 'Mahasiswa',
         ];
 
         // Nama dusun yang realistis untuk Indonesia
         $dusun = [
             'Krajan', 'Sumber', 'Kauman', 'Ngabean', 'Ketapang', 'Rejoso',
-            'Wringin', 'Tanggul', 'Kebalen', 'Patihan', 'Kaliwungu'
+            'Wringin', 'Tanggul', 'Kebalen', 'Patihan', 'Kaliwungu',
         ];
 
         return [

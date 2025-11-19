@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\KategoriPengeluaran;
 use App\Models\Pengeluaran;
 use App\Models\Rekening;
 use App\Models\User;
-use App\Models\KategoriPengeluaran;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -29,21 +29,21 @@ class PengeluaranFactory extends Factory
             'Biaya operasional bulanan',
             'Maintenance peralatan',
             'Transport pengambilan sampah',
-            
+
             // Kebutuhan
             'Pembelian timbangan digital',
             'Karung plastik untuk sampah',
             'Alat tulis kantor',
             'Seragam petugas',
             'Masker dan sarung tangan',
-            
+
             // Perlombaan/Kegiatan
             'Hadiah lomba lingkungan',
             'Konsumsi workshop',
             'Sewa sound system',
             'Spanduk kegiatan',
             'Transport narasumber',
-            
+
             // Donasi
             'Bantuan untuk warga kurang mampu',
             'Donasi untuk sekolah',
@@ -56,7 +56,7 @@ class PengeluaranFactory extends Factory
         $metode = fake()->randomElement($metodePembayaran);
 
         // Nominal berdasarkan metode pembayaran
-        $nominal = match($metode) {
+        $nominal = match ($metode) {
             'Transfer' => fake()->randomFloat(2, 100000, 2000000), // Transfer untuk nominal besar
             'Tunai' => fake()->randomFloat(2, 5000, 500000),       // Tunai untuk nominal kecil-sedang
             default => fake()->randomFloat(2, 10000, 500000),
@@ -170,7 +170,7 @@ class PengeluaranFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'nominal' => fake()->randomFloat(2, 1000000, 5000000),
-            'keterangan' => 'Pengeluaran besar - ' . fake()->sentence(),
+            'keterangan' => 'Pengeluaran besar - '.fake()->sentence(),
         ]);
     }
 
@@ -181,7 +181,7 @@ class PengeluaranFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'nominal' => fake()->randomFloat(2, 1000, 50000),
-            'keterangan' => 'Pengeluaran kecil - ' . fake()->sentence(),
+            'keterangan' => 'Pengeluaran kecil - '.fake()->sentence(),
         ]);
     }
 

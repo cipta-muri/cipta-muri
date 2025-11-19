@@ -11,7 +11,7 @@ trait NotifiesPermintaanStatus
     {
         $user = $this->rekening?->user;
 
-        if (!$user) {
+        if (! $user) {
             return;
         }
 

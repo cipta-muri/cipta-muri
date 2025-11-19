@@ -51,19 +51,22 @@ class OptimizeImages extends Command
                 break;
             default:
                 $this->error("Unknown model: {$model}");
+
                 return 1;
         }
 
         $this->info('Image optimization completed!');
+
         return 0;
     }
 
     private function optimizeNewsImages(bool $force, bool $dryRun): void
     {
         $news = News::whereNotNull('featured_image')->get();
-        
+
         if ($news->isEmpty()) {
             $this->info('No news items with images found.');
+
             return;
         }
 
@@ -82,12 +85,13 @@ class OptimizeImages extends Command
         foreach ($news as $newsItem) {
             $progressBar->advance();
 
-            if (!Storage::disk('public')->exists($newsItem->featured_image)) {
+            if (! Storage::disk('public')->exists($newsItem->featured_image)) {
                 $stats['skipped']++;
                 if ($this->output->isVerbose()) {
                     $this->newLine();
                     $this->warn("Skipped: {$newsItem->title} - Image file not found");
                 }
+
                 continue;
             }
 
@@ -98,6 +102,7 @@ class OptimizeImages extends Command
                     $this->newLine();
                     $this->info("Would optimize: {$newsItem->title} - {$newsItem->featured_image}");
                 }
+
                 continue;
             }
 

@@ -14,7 +14,7 @@ class ListSetorSampahs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->visible(fn() => hexa()->can('setor_sampah.create')),
+            Actions\CreateAction::make()->visible(fn () => hexa()->can('setor_sampah.create')),
         ];
     }
 

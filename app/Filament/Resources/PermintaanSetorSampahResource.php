@@ -6,22 +6,22 @@ use App\Enums\PermintaanStatus;
 use App\Filament\Resources\PermintaanSetorSampahResource\Pages;
 use App\Models\PermintaanSetorSampah;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\ViewField;
+use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
-use Filament\Notifications\Notification;
-use Illuminate\Validation\ValidationException;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Hexters\HexaLite\HasHexaLite;
+use Illuminate\Validation\ValidationException;
 
 class PermintaanSetorSampahResource extends Resource
 {
@@ -80,10 +80,10 @@ class PermintaanSetorSampahResource extends Resource
                     ->schema([
                         Placeholder::make('total_berat')
                             ->label('Total Berat')
-                            ->content(fn (?PermintaanSetorSampah $record) => $record ? number_format($record->total_berat, 2) . ' Kg' : '-'),
+                            ->content(fn (?PermintaanSetorSampah $record) => $record ? number_format($record->total_berat, 2).' Kg' : '-'),
                         Placeholder::make('total_saldo_dihasilkan')
                             ->label('Total Saldo')
-                            ->content(fn (?PermintaanSetorSampah $record) => $record ? 'Rp ' . number_format($record->total_saldo_dihasilkan, 0, ',', '.') : '-'),
+                            ->content(fn (?PermintaanSetorSampah $record) => $record ? 'Rp '.number_format($record->total_saldo_dihasilkan, 0, ',', '.') : '-'),
                         Placeholder::make('total_poin_dihasilkan')
                             ->label('Total Poin')
                             ->content(fn (?PermintaanSetorSampah $record) => $record ? number_format($record->total_poin_dihasilkan) : '-'),

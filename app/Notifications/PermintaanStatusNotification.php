@@ -18,14 +18,13 @@ class PermintaanStatusNotification extends Notification implements ShouldQueue
         public readonly string $title,
         public readonly ?string $message = null,
         public readonly ?string $actionUrl = null,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
         $channels = ['database'];
 
-        if (!empty($notifiable->email)) {
+        if (! empty($notifiable->email)) {
             $channels[] = 'mail';
         }
 

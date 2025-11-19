@@ -18,7 +18,7 @@ class CreateRekeningRegistration extends CreateRecord
             ->where('name', $data['nama'] ?? null)
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             $user = User::query()
                 ->whereHas('roles', fn ($query) => $query->where('name', 'Super Admin'))
                 ->orderBy('created_at')
@@ -53,7 +53,7 @@ class CreateRekeningRegistration extends CreateRecord
 
         $sequencePart = str_pad($sequence, 3, '0', STR_PAD_LEFT);
 
-        $data['no_rekening'] = $statusPart . $datePart . $sequencePart;
+        $data['no_rekening'] = $statusPart.$datePart.$sequencePart;
 
         return $data;
     }

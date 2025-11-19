@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Spatie\Permission\Models\Role as SpatieRole;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Permission\Models\Role as SpatieRole;
 
 class Role extends SpatieRole
 {
@@ -17,18 +17,19 @@ class Role extends SpatieRole
         return LogOptions::defaults()
             ->useLogName('role')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Role has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Role has been {$eventName}");
     }
 
     protected $guarded = ['id'];
-    
+
     public $incrementing = false;
+
     protected $keyType = 'string';
-    
+
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($model) {
             if (empty($model->{$model->getKeyName()})) {
                 $model->{$model->getKeyName()} = (string) Str::ulid();

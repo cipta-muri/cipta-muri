@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\DetailSetorSampah;
-use App\Models\SetorSampah;
 use App\Models\Sampah;
+use App\Models\SetorSampah;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

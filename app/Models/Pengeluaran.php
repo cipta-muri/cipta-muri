@@ -2,30 +2,30 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Pengeluaran extends Model
 {
-    use HasUlids, SoftDeletes, HasFactory, LogsActivity;
+    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('pengeluaran')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Pengeluaran has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Pengeluaran has been {$eventName}");
     }
 
     protected $table = 'pengeluaran';
 
     protected $guarded = ['id'];
-    
+
     protected $casts = [
         'nominal' => 'decimal:2',
     ];
@@ -39,6 +39,7 @@ class Pengeluaran extends Model
     {
         return $this->belongsTo(Rekening::class);
     }
+
     public function kategoriPengeluaran()
     {
         return $this->belongsTo(KategoriPengeluaran::class, 'kategori_pengeluaran_id');
@@ -47,7 +48,7 @@ class Pengeluaran extends Model
     public static function booted(): void
     {
         static::creating(function ($pengeluaran) {
-            if (!$pengeluaran->user_id && Auth::check()) {
+            if (! $pengeluaran->user_id && Auth::check()) {
                 $pengeluaran->user_id = Auth::id();
             }
 
@@ -56,7 +57,6 @@ class Pengeluaran extends Model
             if ($defaultRekening) {
                 $pengeluaran->rekening_id = $defaultRekening->id;
             }
-
 
         });
 
@@ -93,7 +93,6 @@ class Pengeluaran extends Model
 
                     // Hitung selisihnya
                     $perubahanSaldo = $saldoBaru - $saldoLama;
-                    ;
 
                     // Update saldo dan poin rekening dengan nilai selisih menggunakan increment/decrement
                     if ($perubahanSaldo > 0) {

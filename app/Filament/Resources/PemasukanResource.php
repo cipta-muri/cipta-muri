@@ -3,21 +3,20 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PemasukanResource\Pages;
-use App\Filament\Resources\PemasukanResource\RelationManagers;
 use App\Models\Pemasukan;
+use App\Models\Rekening;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Models\Rekening;
 use Hexters\HexaLite\HasHexaLite;
+use Illuminate\Database\Eloquent\Builder;
 
 class PemasukanResource extends Resource
 {
     use HasHexaLite;
+
     protected static ?string $model = Pemasukan::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
@@ -28,7 +27,8 @@ class PemasukanResource extends Resource
 
     public $hexaSort = 8;
 
-    public function defineGates(){
+    public function defineGates()
+    {
         return [
             'pemasukan.index' => __('Lihat Pemasukan'),
             'pemasukan.create' => __('Buat Pemasukan Baru'),
@@ -90,7 +90,7 @@ class PemasukanResource extends Resource
                     ->nullable(),
 
                 Forms\Components\Hidden::make('rekening_id')
-                    ->default(fn() => Rekening::where('no_rekening', '00000000')->value('id')),
+                    ->default(fn () => Rekening::where('no_rekening', '00000000')->value('id')),
 
             ])->columns(1);
     }
@@ -116,8 +116,8 @@ class PemasukanResource extends Resource
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
-                            ->when($data['from'], fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date))
-                            ->when($data['to'], fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date));
+                            ->when($data['from'], fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date))
+                            ->when($data['to'], fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date));
                     }),
                 Tables\Filters\Filter::make('sumber_pemasukan_id')
                     ->label('Sumber Pemasukan')
@@ -128,16 +128,16 @@ class PemasukanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                ->visible(fn() => hexa()->can('pemasukan.update')),
+                    ->visible(fn () => hexa()->can('pemasukan.update')),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('pemasukan.delete')),
+                    ->visible(fn () => hexa()->can('pemasukan.delete')),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                    ->visible(fn() => hexa()->can('pemasukan.delete')),
+                        ->visible(fn () => hexa()->can('pemasukan.delete')),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),

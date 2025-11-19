@@ -14,4 +14,3 @@ class ViewRekening extends ViewRecord
         return hexa()->can('rekening.index');
     }
 }
-

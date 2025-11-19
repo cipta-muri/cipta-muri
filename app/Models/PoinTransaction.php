@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
 class PoinTransaction extends Model
 {
-    use HasUlids, SoftDeletes, HasFactory;
+    use HasFactory, HasUlids, SoftDeletes;
 
     protected $table = 'poin_transactions';
 
@@ -29,7 +29,7 @@ class PoinTransaction extends Model
     protected static function booted(): void
     {
         static::creating(function ($SaldoTransaction) {
-            if (!$SaldoTransaction->user_id && Auth::check()) {
+            if (! $SaldoTransaction->user_id && Auth::check()) {
                 $SaldoTransaction->user_id = Auth::id();
             }
         });

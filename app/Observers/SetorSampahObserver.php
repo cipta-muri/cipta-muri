@@ -2,9 +2,9 @@
 
 namespace App\Observers;
 
-use App\Models\SetorSampah;
 use App\Models\Rekening;
 use App\Models\SaldoTransaction;
+use App\Models\SetorSampah;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +15,7 @@ class SetorSampahObserver
      */
     public function creating(SetorSampah $setorSampah): void
     {
-        if (!$setorSampah->user_id && Auth::check()) {
+        if (! $setorSampah->user_id && Auth::check()) {
             $setorSampah->user_id = Auth::id();
         }
 
@@ -48,7 +48,7 @@ class SetorSampahObserver
     public function created(SetorSampah $setorSampah): void
     {
         // Buat transaksi saldo hanya jika bukan donasi dan ada saldo
-        if (!$setorSampah->isDonation() && $setorSampah->total_saldo_dihasilkan > 0) {
+        if (! $setorSampah->isDonation() && $setorSampah->total_saldo_dihasilkan > 0) {
             $setorSampah->rekening->saldoTransactions()->create([
                 'amount' => $setorSampah->total_saldo_dihasilkan,
                 'type' => 'credit',
@@ -78,9 +78,10 @@ class SetorSampahObserver
 
         // Jika total saldo 0, hapus transaksi saldo bila ada
         if ($setorSampah->total_saldo_dihasilkan <= 0) {
-            if ($existing && !$existing->trashed()) {
+            if ($existing && ! $existing->trashed()) {
                 $existing->delete();
             }
+
             return;
         }
 
@@ -88,7 +89,7 @@ class SetorSampahObserver
         if ($existing) {
             // Jika rekening berubah, hapus transaksi lama dan buat baru agar kedua saldo terbarui
             if ($existing->rekening_id !== $setorSampah->rekening_id) {
-                if (!$existing->trashed()) {
+                if (! $existing->trashed()) {
                     $existing->delete();
                 }
                 $setorSampah->rekening->saldoTransactions()->create([
@@ -99,6 +100,7 @@ class SetorSampahObserver
                     'transactable_type' => SetorSampah::class,
                     'user_id' => $setorSampah->user_id,
                 ]);
+
                 return;
             }
 
@@ -132,7 +134,7 @@ class SetorSampahObserver
     {
         // Hapus (soft delete) semua transaksi terkait satu per satu untuk memicu observer mereka.
         $setorSampah->details()->get()->each->delete();
-        if (!$setorSampah->isDonation()) {
+        if (! $setorSampah->isDonation()) {
             $setorSampah->rekening->saldoTransactions()->where('transactable_id', $setorSampah->id)->get()->each->delete();
         }
     }
@@ -144,7 +146,7 @@ class SetorSampahObserver
     {
         // Pulihkan (restore) semua transaksi terkait satu per satu untuk memicu observer mereka.
         $setorSampah->details()->onlyTrashed()->where('transactable_id', $setorSampah->id)->get()->each->restore();
-        if (!$setorSampah->isDonation()) {
+        if (! $setorSampah->isDonation()) {
             $setorSampah->rekening->saldoTransactions()->onlyTrashed()->where('transactable_id', $setorSampah->id)->get()->each->restore();
         }
     }

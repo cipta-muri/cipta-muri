@@ -18,8 +18,7 @@ class PermintaanReminderJob implements ShouldQueue
 
     public function __construct(
         protected int $slaHours = 6,
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {

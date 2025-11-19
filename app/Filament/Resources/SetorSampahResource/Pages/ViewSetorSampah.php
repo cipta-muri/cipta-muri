@@ -18,7 +18,7 @@ class ViewSetorSampah extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make()->visible(fn() => hexa()->can('setor_sampah.update')),
+            Actions\EditAction::make()->visible(fn () => hexa()->can('setor_sampah.update')),
         ];
     }
 }

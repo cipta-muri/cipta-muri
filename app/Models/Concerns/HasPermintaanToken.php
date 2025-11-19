@@ -22,8 +22,8 @@ trait HasPermintaanToken
     public function initializePermintaanToken(bool $force = false, ?int $validDays = 7): void
     {
         if (
-            !$force
-            && !empty($this->qr_token)
+            ! $force
+            && ! empty($this->qr_token)
             && $this->qr_token_expires_at
             && $this->qr_token_expires_at->isFuture()
         ) {
@@ -49,7 +49,7 @@ trait HasPermintaanToken
      */
     public function verifyPermintaanToken(?string $token): bool
     {
-        if (!is_string($token) || trim($token) === '' || empty($this->qr_token)) {
+        if (! is_string($token) || trim($token) === '' || empty($this->qr_token)) {
             return false;
         }
 

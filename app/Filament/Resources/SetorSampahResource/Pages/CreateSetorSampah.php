@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\SetorSampahResource\Pages;
 
 use App\Filament\Resources\SetorSampahResource;
-use Filament\Resources\Pages\CreateRecord;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateSetorSampah extends CreateRecord
 {
@@ -18,13 +18,13 @@ class CreateSetorSampah extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Validasi bahwa perhitungan sudah dilakukan
-        if (!isset($data['calculation_performed']) || !$data['calculation_performed']) {
+        if (! isset($data['calculation_performed']) || ! $data['calculation_performed']) {
             Notification::make()
                 ->title('Perhitungan Belum Dilakukan')
                 ->body('Silakan tekan tombol "Hitung" terlebih dahulu sebelum menyimpan data.')
                 ->danger()
                 ->send();
-                
+
             $this->halt();
         }
 

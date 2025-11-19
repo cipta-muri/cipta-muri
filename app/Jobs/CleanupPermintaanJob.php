@@ -19,8 +19,7 @@ class CleanupPermintaanJob implements ShouldQueue
     public function __construct(
         protected int $retentionDays = 30,
         protected int $expirationDays = 7,
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {

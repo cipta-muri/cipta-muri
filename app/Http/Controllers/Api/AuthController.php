@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Rekening;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -20,7 +20,7 @@ class AuthController extends Controller
 
         $nasabah = Rekening::where('nik', $request->nik)->first();
 
-        if (!$nasabah) {
+        if (! $nasabah) {
             return response()->json([
                 'success' => false,
                 'message' => 'NIK tidak ditemukan',
@@ -63,7 +63,7 @@ class AuthController extends Controller
                     'points_balance' => $nasabah->points_balance,
                     'formatted_balance' => $nasabah->formatted_balance,
                 ],
-            ]
+            ],
         ]);
     }
 

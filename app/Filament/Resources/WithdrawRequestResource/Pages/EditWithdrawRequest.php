@@ -18,7 +18,7 @@ class EditWithdrawRequest extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->visible(fn() => hexa()->can('withdraw_request.delete')),
+            Actions\DeleteAction::make()->visible(fn () => hexa()->can('withdraw_request.delete')),
         ];
     }
 

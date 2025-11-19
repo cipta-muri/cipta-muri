@@ -3,11 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
 use Hexters\HexaLite\Models\HexaRole;
-
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -18,16 +17,16 @@ class UserSeeder extends Seeder
     {
         // 1) Buat role jika belum ada
         $adminRole = HexaRole::where('name', 'Admin')->first();
-        if (!$adminRole) {
-            $adminRole = new HexaRole();
+        if (! $adminRole) {
+            $adminRole = new HexaRole;
             $adminRole->name = 'Admin';
             $adminRole->guard = 'web';
             $adminRole->save();
         }
 
         $superRole = HexaRole::where('name', 'Super Admin')->first();
-        if (!$superRole) {
-            $superRole = new HexaRole();
+        if (! $superRole) {
+            $superRole = new HexaRole;
             $superRole->name = 'Super Admin';
             $superRole->guard = 'web';
             $superRole->save();
@@ -44,10 +43,10 @@ class UserSeeder extends Seeder
         );
 
         // 3) Assign role Super Admin
-        if (!$superUser->hasRole('Super Admin')) {
+        if (! $superUser->hasRole('Super Admin')) {
             $superUser->roles()->syncWithoutDetaching([$superRole->id]);
         }
-        if (!$superUser->hasRole('Admin')) {
+        if (! $superUser->hasRole('Admin')) {
             $superUser->roles()->syncWithoutDetaching([$adminRole->id]);
         }
 
@@ -62,7 +61,7 @@ class UserSeeder extends Seeder
         );
 
         // 5) Assign role Admin saja
-        if (!$adminUser->hasRole('Admin')) {
+        if (! $adminUser->hasRole('Admin')) {
             $adminUser->roles()->syncWithoutDetaching([$adminRole->id]);
         }
 
@@ -97,12 +96,12 @@ class UserSeeder extends Seeder
             $lastName = Str::lower(preg_replace('/[^a-zA-Z]/', '', end($parts)));
 
             // Email: namadepan.namabelakang@ciptamuri.com
-            $email = $firstName . '.' . $lastName . '@ciptamuri.com';
+            $email = $firstName.'.'.$lastName.'@ciptamuri.com';
 
             // Password: nama depan + huruf terakhir nama depan -> angka
             $lastChar = substr($firstName, -1);
             $charToNum = ord(strtolower($lastChar)) - 96; // a=1, b=2, ... z=26
-            $rawPassword = $firstName . $charToNum;
+            $rawPassword = $firstName.$charToNum;
 
             // Gunakan firstOrCreate untuk menghindari duplicate
             $user = User::firstOrCreate(
@@ -116,7 +115,7 @@ class UserSeeder extends Seeder
             );
 
             // Assign role Admin untuk semua user selain super admin
-            if (!$user->hasRole('Admin')) {
+            if (! $user->hasRole('Admin')) {
                 $user->roles()->syncWithoutDetaching([$adminRole->id]);
             }
 

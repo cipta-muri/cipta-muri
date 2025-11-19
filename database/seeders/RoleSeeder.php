@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use Hexters\HexaLite\Models\HexaRole;
+use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
@@ -15,8 +15,8 @@ class RoleSeeder extends Seeder
         // Buat roles dasar untuk bank sampah
         $roles = [
             'Super Admin',
-            'Operator', 
-            'Petugas'
+            'Operator',
+            'Petugas',
         ];
 
         // Update role admin yang lowercase menjadi Admin
@@ -28,8 +28,8 @@ class RoleSeeder extends Seeder
             $this->command->info("✅ Role 'admin' diupdate menjadi 'Admin'");
         } else {
             // Jika tidak ada, cek apakah sudah ada Admin
-            if (!HexaRole::where('name', 'Admin')->where('guard', hexa()->guard())->exists()) {
-                $role = new HexaRole();
+            if (! HexaRole::where('name', 'Admin')->where('guard', hexa()->guard())->exists()) {
+                $role = new HexaRole;
                 $role->name = 'Admin';
                 $role->guard = hexa()->guard();
                 $role->save();
@@ -39,8 +39,8 @@ class RoleSeeder extends Seeder
 
         foreach ($roles as $roleName) {
             $existingRole = HexaRole::where('name', $roleName)->where('guard', hexa()->guard())->first();
-            if (!$existingRole) {
-                $role = new HexaRole();
+            if (! $existingRole) {
+                $role = new HexaRole;
                 $role->name = $roleName;
                 $role->guard = hexa()->guard();
                 $role->save();

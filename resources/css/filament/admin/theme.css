@@ -95,17 +95,17 @@
 
 /* Custom brand colors */
 .fi-brand {
-    --fi-brand-50: rgb(240 253 244);
-    --fi-brand-100: rgb(220 252 231);
-    --fi-brand-200: rgb(187 247 208);
-    --fi-brand-300: rgb(134 239 172);
-    --fi-brand-400: rgb(74 222 128);
-    --fi-brand-500: rgb(34 197 94);
-    --fi-brand-600: rgb(22 163 74);
-    --fi-brand-700: rgb(21 128 61);
-    --fi-brand-800: rgb(22 101 52);
-    --fi-brand-900: rgb(20 83 45);
-    --fi-brand-950: rgb(5 46 22);
+    --fi-brand-50: rgb(236 253 245);
+    --fi-brand-100: rgb(209 250 229);
+    --fi-brand-200: rgb(167 243 208);
+    --fi-brand-300: rgb(110 231 183);
+    --fi-brand-400: rgb(52 211 153);
+    --fi-brand-500: rgb(16 185 129);
+    --fi-brand-600: rgb(5 150 105);
+    --fi-brand-700: rgb(4 120 87);
+    --fi-brand-800: rgb(6 95 70);
+    --fi-brand-900: rgb(6 78 59);
+    --fi-brand-950: rgb(2 44 34);
 }
 
 /* Dark mode adjustments */

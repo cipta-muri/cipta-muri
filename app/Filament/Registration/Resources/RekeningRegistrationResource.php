@@ -4,12 +4,11 @@ namespace App\Filament\Registration\Resources;
 
 use App\Filament\Registration\Resources\RekeningRegistrationResource\Pages;
 use App\Models\Rekening;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Forms\Components\Component;
 use Illuminate\Support\HtmlString;
 
 class RekeningRegistrationResource extends Resource

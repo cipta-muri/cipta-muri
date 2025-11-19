@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\PermintaanSetorSampahResource\Pages;
 
 use App\Filament\Resources\PermintaanSetorSampahResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListPermintaanSetorSampahs extends ListRecords

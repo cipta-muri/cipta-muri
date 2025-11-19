@@ -6,30 +6,28 @@ namespace App\Models;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
+use Hexters\HexaLite\HexaLiteRolePermission;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Hexters\HexaLite\HexaLiteRolePermission;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
-
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasUlids, HexaLiteRolePermission, LogsActivity;
+    use HasFactory, HasUlids, HexaLiteRolePermission, LogsActivity, Notifiable;
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('user')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Daftar Admin has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Daftar Admin has been {$eventName}");
     }
-
 
     /**
      * The attributes that are mass assignable.
@@ -122,7 +120,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return Cache::remember("user_can_access_panel_{$this->id}", 3600, function () use ($panel) {
+        return Cache::remember("user_can_access_panel_{$this->id}", 3600, function () {
             // Allow access to the panel for any user that has at least one registered role
             return $this->roles()->exists();
         });
@@ -154,6 +152,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
                     }
                 }
             }
+
             return array_keys($gates);
         });
     }
@@ -167,7 +166,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         $avatarPath = $this->attributes['avatar_url'] ?? null;
 
-        if (!$avatarPath) {
+        if (! $avatarPath) {
             return null;
         }
 
@@ -178,7 +177,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
         // If it's a relative path and the file exists on the public disk, build the asset URL
         if (Storage::disk('public')->exists($avatarPath)) {
-            return asset('storage/' . ltrim($avatarPath, '/'));
+            return asset('storage/'.ltrim($avatarPath, '/'));
         }
 
         return null;
@@ -200,9 +199,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return Cache::remember("user_avatar_{$this->id}", 3600, function () {
             $avatarPath = $this->attributes['avatar_url'] ?? null;
 
-            if (!$avatarPath) {
+            if (! $avatarPath) {
                 // Return a consistent placeholder instead of null to prevent flickering
-                return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=10b981&color=ffffff';
+                return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&background=10b981&color=ffffff';
             }
 
             // If it's already a full URL, return as is
@@ -211,7 +210,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             }
 
             // If it's a relative path, construct full URL
-            return asset('storage/' . $avatarPath);
+            return asset('storage/'.$avatarPath);
         });
     }
 
@@ -250,6 +249,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function hasRoleCached(string $role): bool
     {
         $roles = $this->getCachedRoles();
+
         return $roles->contains('name', $role);
     }
 
@@ -259,6 +259,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function hasAnyRoleCached(array $roles): bool
     {
         $userRoles = $this->getCachedRoles();
+
         return $userRoles->whereIn('name', $roles)->isNotEmpty();
     }
 
@@ -268,6 +269,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function hasPermissionCached(string $permission): bool
     {
         $permissions = $this->getCachedPermissions();
+
         return in_array($permission, $permissions, true);
     }
 
@@ -332,7 +334,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
                 ];
 
                 $action = $map[$action] ?? $action;
-                return $modelSnake . '.' . $action;
+
+                return $modelSnake.'.'.$action;
             }
 
             // Fallback: return as-is

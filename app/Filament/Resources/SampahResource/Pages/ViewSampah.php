@@ -30,7 +30,7 @@ class ViewSampah extends ViewRecord
         ];
     }
 
-    protected function getFormWidgetsColumns(): int | string | array
+    protected function getFormWidgetsColumns(): int|string|array
     {
         return [
             'lg' => 2,

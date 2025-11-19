@@ -20,11 +20,12 @@ class PermintaanSetorSampah extends Model
 {
     /** @use HasFactory<\Database\Factories\PermintaanSetorSampahFactory> */
     use HasFactory;
-    use HasUlids;
-    use SoftDeletes;
-    use LogsActivity;
+
     use HasPermintaanToken;
+    use HasUlids;
+    use LogsActivity;
     use NotifiesPermintaanStatus;
+    use SoftDeletes;
 
     protected $table = 'permintaan_setor_sampah';
 
@@ -61,11 +62,11 @@ class PermintaanSetorSampah extends Model
     protected static function booted(): void
     {
         static::creating(function (self $record) {
-            if (!$record->requested_at) {
+            if (! $record->requested_at) {
                 $record->requested_at = now();
             }
 
-            if (!$record->requested_by_rekening_id) {
+            if (! $record->requested_by_rekening_id) {
                 $record->requested_by_rekening_id = $record->rekening_id;
             }
         });
@@ -99,6 +100,7 @@ class PermintaanSetorSampah extends Model
     public function scopeStatus($query, PermintaanStatus|string $status)
     {
         $status = $status instanceof PermintaanStatus ? $status : PermintaanStatus::from($status);
+
         return $query->where('status', $status->value);
     }
 
@@ -130,13 +132,13 @@ class PermintaanSetorSampah extends Model
 
     public function confirm(User $admin, string $via = 'table', ?string $note = null, ?string $notificationUrl = null): SetorSampah
     {
-        if (!$this->isWaitingConfirmation()) {
+        if (! $this->isWaitingConfirmation()) {
             throw ValidationException::withMessages([
                 'status' => 'Permintaan sudah diproses.',
             ]);
         }
 
-        if (!$this->calculation_performed) {
+        if (! $this->calculation_performed) {
             throw ValidationException::withMessages([
                 'calculation_performed' => 'Perhitungan belum dilakukan pada permintaan ini.',
             ]);
@@ -197,7 +199,7 @@ class PermintaanSetorSampah extends Model
 
     public function reject(?User $admin, string $reason, string $via = 'table', ?string $notificationUrl = null): void
     {
-        if (!$this->isWaitingConfirmation()) {
+        if (! $this->isWaitingConfirmation()) {
             throw ValidationException::withMessages([
                 'status' => 'Permintaan sudah diproses.',
             ]);
@@ -229,6 +231,7 @@ class PermintaanSetorSampah extends Model
 
         return $items->map(function (array $item) use ($names) {
             $item['sampah_name'] = $names[$item['sampah_id']] ?? $item['sampah_id'];
+
             return $item;
         });
     }

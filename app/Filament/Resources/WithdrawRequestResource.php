@@ -4,36 +4,33 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WithdrawRequestResource\Pages;
 use App\Models\Rekening;
-use App\Models\SaldoTransaction;
 use App\Models\WithdrawRequest;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\BadgeColumn;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Hidden;
-use Filament\Notifications\Notification;
-use Filament\Support\RawJs;
+use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Tables\Actions\Action;
-use Illuminate\Support\Facades\DB;
+use Filament\Resources\Resource;
+use Filament\Support\RawJs;
+use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Hexters\HexaLite\HasHexaLite;
 
 class WithdrawRequestResource extends Resource
 {
     use HasHexaLite;
+
     protected static ?string $model = WithdrawRequest::class;
+
     protected static ?string $title = 'Penarikan Saldo';
+
     protected static ?string $pluralModelLabel = 'Penarikan Saldo';
+
     protected static ?string $navigationIcon = 'heroicon-o-arrow-down-on-square';
 
     protected static ?string $navigationLabel = 'Penarikan Saldo';
@@ -76,26 +73,28 @@ class WithdrawRequestResource extends Resource
                                     ->where('no_rekening', '!=', '00000000')
                                     ->select('id', 'nama', 'nik')
                                     ->get()
-                                    ->mapWithKeys(fn($rekening) => [$rekening->id => "{$rekening->nama} - {$rekening->nik}"]);
+                                    ->mapWithKeys(fn ($rekening) => [$rekening->id => "{$rekening->nama} - {$rekening->nik}"]);
                             })
                             ->live()
                             ->afterStateHydrated(function ($state, Forms\Set $set) {
                                 $rekening = $state ? Rekening::find($state) : null;
                                 $set('current_balance', $rekening?->balance ?? 0);
-                                $set('formatted_balance', 'Rp ' . number_format($rekening?->balance ?? 0, 0, ',', '.'));
+                                $set('formatted_balance', 'Rp '.number_format($rekening?->balance ?? 0, 0, ',', '.'));
                             })
                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                 $rekening = $state ? Rekening::find($state) : null;
                                 $set('current_balance', $rekening?->balance ?? 0);
-                                $set('formatted_balance', 'Rp ' . number_format($rekening?->balance ?? 0, 0, ',', '.'));
+                                $set('formatted_balance', 'Rp '.number_format($rekening?->balance ?? 0, 0, ',', '.'));
                             }),
                         Forms\Components\Placeholder::make('saldo_info')
                             ->label('Saldo Tersedia')
                             ->content(function (Forms\Get $get) {
                                 if ($rekeningId = $get('rekening_id')) {
                                     $rekening = Rekening::find($rekeningId);
-                                    return $rekening ? 'Rp ' . number_format($rekening->balance, 0, ',', '.') : '-';
+
+                                    return $rekening ? 'Rp '.number_format($rekening->balance, 0, ',', '.') : '-';
                                 }
+
                                 return '-';
                             }),
                         Forms\Components\Placeholder::make('tabungan_emas_info')
@@ -103,8 +102,10 @@ class WithdrawRequestResource extends Resource
                             ->content(function (Forms\Get $get) {
                                 if ($rekeningId = $get('rekening_id')) {
                                     $rekening = Rekening::find($rekeningId);
+
                                     return $rekening ? ($rekening->status_pegadaian ? 'Ada' : 'Tidak Ada') : '-';
                                 }
+
                                 return '-';
                             }),
                         Forms\Components\Hidden::make('current_balance'),
@@ -124,47 +125,59 @@ class WithdrawRequestResource extends Resource
                             ->live()
                             ->visible(function (Get $get): bool {
                                 $rekeningId = $get('rekening_id');
-                                if (!$rekeningId || $get('jenis') !== 'emas')
+                                if (! $rekeningId || $get('jenis') !== 'emas') {
                                     return false;
+                                }
                                 $rekening = Rekening::find($rekeningId);
-                                return $rekening && !$rekening->status_pegadaian;
+
+                                return $rekening && ! $rekening->status_pegadaian;
                             }),
 
                         // DITAMBAHKAN: Input untuk nomor rekening baru
                         TextInput::make('amount')
                             ->label('Jumlah Penarikan')
                             ->numeric()->required()->prefix('Rp')->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(',')->minValue(10000)->maxValue(fn(Get $get) => (float) ($get('current_balance') ?? 0))
+                            ->stripCharacters(',')->minValue(10000)->maxValue(fn (Get $get) => (float) ($get('current_balance') ?? 0))
                             ->visible(function (Get $get): bool {
                                 $jenis = $get('jenis');
-                                if ($jenis !== 'emas')
+                                if ($jenis !== 'emas') {
                                     return true;
+                                }
                                 $rekeningId = $get('rekening_id');
-                                if (!$rekeningId)
+                                if (! $rekeningId) {
                                     return false;
+                                }
                                 $rekening = Rekening::find($rekeningId);
-                                if (!$rekening)
+                                if (! $rekening) {
                                     return false;
-                                if ($rekening->status_pegadaian)
+                                }
+                                if ($rekening->status_pegadaian) {
                                     return true;
+                                }
+
                                 return (bool) $get('is_new_pegadaian_registration');
                             })
                             ->validationMessages(['min' => 'Jumlah penarikan minimal Rp 10.000', 'required' => 'Jumlah penarikan wajib diisi', 'max' => 'Jumlah penarikan tidak boleh melebihi saldo yang tersedia'])
-                            ->helperText(fn(Get $get) => 'Saldo tersedia: ' . ($get('formatted_balance') ?? '-')),
+                            ->helperText(fn (Get $get) => 'Saldo tersedia: '.($get('formatted_balance') ?? '-')),
 
                         Textarea::make('catatan')->label('Catatan Nasabah')->rows(3)->placeholder('Catatan tambahan untuk penarikan saldo ini')
                             ->visible(function (Get $get): bool {
                                 $jenis = $get('jenis');
-                                if ($jenis !== 'emas')
+                                if ($jenis !== 'emas') {
                                     return true;
+                                }
                                 $rekeningId = $get('rekening_id');
-                                if (!$rekeningId)
+                                if (! $rekeningId) {
                                     return false;
+                                }
                                 $rekening = Rekening::find($rekeningId);
-                                if (!$rekening)
+                                if (! $rekening) {
                                     return false;
-                                if ($rekening->status_pegadaian)
+                                }
+                                if ($rekening->status_pegadaian) {
                                     return true;
+                                }
+
                                 return (bool) $get('is_new_pegadaian_registration');
                             }),
                     ])->columns(1),
@@ -189,17 +202,18 @@ class WithdrawRequestResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('withdraw_request.delete')),
+                    ->visible(fn () => hexa()->can('withdraw_request.delete')),
                 Tables\Actions\RestoreAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
             ])
-            ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()->visible(fn() => hexa()->can('withdraw_request.delete')),]),]);
+            ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()->visible(fn () => hexa()->can('withdraw_request.delete'))])]);
     }
 
     public static function getRelations(): array
     {
         return [];
     }
+
     public static function getPages(): array
     {
         return [
@@ -209,4 +223,3 @@ class WithdrawRequestResource extends Resource
         ];
     }
 }
-

@@ -60,6 +60,6 @@ class SampahRecordSetoranHarianTable extends BaseWidget
 
     public function getTableRecordKey(Model $record): string
     {
-        return 'record-harian-' . $record->getAttribute('tanggal');
+        return 'record-harian-'.$record->getAttribute('tanggal');
     }
 }

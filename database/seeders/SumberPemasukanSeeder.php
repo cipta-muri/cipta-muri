@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\SumberPemasukan;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\SumberPemasukan; // Pastikan model ini ada
+use Illuminate\Support\Facades\DB; // Pastikan model ini ada
 
 class SumberPemasukanSeeder extends Seeder
 {
@@ -19,7 +19,7 @@ class SumberPemasukanSeeder extends Seeder
         } else {
             DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         }
-        
+
         // Kosongkan tabel sebelum mengisi untuk menghindari duplikat
         SumberPemasukan::truncate();
 

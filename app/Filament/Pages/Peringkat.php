@@ -15,6 +15,7 @@ class Peringkat extends Page
             'peringkat.index' => __('Lihat Peringkat Nasabah'),
         ];
     }
+
     protected static ?string $navigationIcon = 'heroicon-o-trophy';
 
     protected static string $view = 'filament.pages.peringkat';

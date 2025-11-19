@@ -2,24 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Sampah extends Model
 {
-    use HasUlids, SoftDeletes, HasFactory, LogsActivity;
+    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('sampah')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Sampah has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Sampah has been {$eventName}");
     }
 
     public $incrementing = false;
@@ -47,9 +47,10 @@ class Sampah extends Model
     public function updateBerat(): void
     {
         // Jika jenis sampah tidak menyimpan berat, stok selalu 0
-        if (!($this->simpan_berat ?? true)) {
+        if (! ($this->simpan_berat ?? true)) {
             $this->total_berat_terkumpul = 0;
             $this->saveQuietly();
+
             return;
         }
 
@@ -70,9 +71,10 @@ class Sampah extends Model
     public function recalculateTotalBerat(): void
     {
         // Jika jenis sampah tidak menyimpan berat, stok selalu 0
-        if (!($this->simpan_berat ?? true)) {
+        if (! ($this->simpan_berat ?? true)) {
             $this->total_berat_terkumpul = 0;
             $this->saveQuietly();
+
             return;
         }
 
@@ -93,7 +95,7 @@ class Sampah extends Model
     protected static function booted(): void
     {
         static::creating(function ($Sampah) {
-            if (!$Sampah->user_id && Auth::check()) {
+            if (! $Sampah->user_id && Auth::check()) {
                 $Sampah->user_id = Auth::id();
             }
         });

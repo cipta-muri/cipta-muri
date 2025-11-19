@@ -2,29 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class SampahKeluar extends Model
 {
-    use HasUlids, SoftDeletes, HasFactory, LogsActivity;
+    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('sampah_keluar')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Sampah Keluar has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Sampah Keluar has been {$eventName}");
     }
 
-
     protected $table = 'sampah_keluar';
-
 
     protected $guarded = ['id'];
 

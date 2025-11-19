@@ -16,14 +16,13 @@ class AdminPermintaanReminderNotification extends Notification implements Should
         protected Collection $tarik,
         protected Collection $setor,
         protected int $slaHours,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
         $channels = ['database'];
 
-        if (!empty($notifiable->email)) {
+        if (! empty($notifiable->email)) {
             $channels[] = 'mail';
         }
 
@@ -65,6 +64,6 @@ class AdminPermintaanReminderNotification extends Notification implements Should
             $parts[] = "{$this->setor->count()} setoran";
         }
 
-        return 'Rincian: ' . implode(' & ', $parts);
+        return 'Rincian: '.implode(' & ', $parts);
     }
 }

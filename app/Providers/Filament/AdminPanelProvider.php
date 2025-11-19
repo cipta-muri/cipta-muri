@@ -6,22 +6,20 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\UserMenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
-use Filament\Navigation\UserMenuItem;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Hexters\HexaLite\HexaLite;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
-use Rmsramos\Activitylog\ActivitylogPlugin; 
-
+use Rmsramos\Activitylog\ActivitylogPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -33,13 +31,19 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('Cipta Muri')
-            ->brandLogo(fn() => view('filament.admin.brand'))
+            ->brandLogo(fn () => view('filament.admin.brand'))
             ->brandLogoHeight('2.5rem')
             ->favicon(asset('favicon.ico'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => Color::Emerald,
+                'secondary' => Color::Amber,
+                'info' => Color::Teal,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
+                'danger' => Color::Red,
             ])
+            ->font('Inter')
             ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->spa() // Menambahkan SPA mode untuk mencegah reload yang menyebabkan kedip
             ->profile(isSimple: false)
@@ -53,8 +57,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 ActivitylogPlugin::make()
-                    ->resource(\App\Filament\Resources\ActivitylogResource::class)
-                ])
+                    ->resource(\App\Filament\Resources\ActivitylogResource::class),
+            ])
             ->plugin(
                 \App\Plugins\HexaLite::make()
             )
@@ -75,7 +79,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                    // Widget bawaan Filament dihapus
+                // Widget bawaan Filament dihapus
                 Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
             ])
@@ -102,6 +106,7 @@ class AdminPanelProvider extends PanelProvider
             ]);
 
     }
+
     public function boot(): void
     {
         app()->setLocale('id');

@@ -26,10 +26,10 @@ class NewsController extends Controller
             'tags' => $news->tags ?? [],
             'meta_title' => $news->meta_title,
             'meta_description' => $news->meta_description,
-            'author' => [
+            'author' => $news->author ? [
                 'id' => $news->author->id,
                 'name' => $news->author->name,
-            ],
+            ] : null,
         ];
     }
 
@@ -42,10 +42,10 @@ class NewsController extends Controller
         // Apply search filter
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('excerpt', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                    ->orWhere('excerpt', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%");
             });
         }
 
@@ -70,10 +70,10 @@ class NewsController extends Controller
         }
 
         $news = $query->paginate(9);
-        
+
         // Transform news data
         $transformedNews = [
-            'data' => $news->getCollection()->map(function($item) {
+            'data' => $news->getCollection()->map(function ($item) {
                 return $this->transformNews($item);
             }),
             'current_page' => $news->currentPage(),
@@ -88,7 +88,7 @@ class NewsController extends Controller
             ->orderBy('views_count', 'desc')
             ->take(6)
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return $this->transformNews($item);
             });
 
@@ -131,7 +131,7 @@ class NewsController extends Controller
             ->where('status', 'published')
             ->take(4)
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return $this->transformNews($item);
             });
 
@@ -173,10 +173,10 @@ class NewsController extends Controller
             ->orderBy('published_at', 'desc');
 
         $news = $query->paginate(9);
-        
+
         // Transform news data
         $transformedNews = [
-            'data' => $news->getCollection()->map(function($item) {
+            'data' => $news->getCollection()->map(function ($item) {
                 return $this->transformNews($item);
             }),
             'current_page' => $news->currentPage(),

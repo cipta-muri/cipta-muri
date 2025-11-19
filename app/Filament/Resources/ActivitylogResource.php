@@ -21,6 +21,7 @@ use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Hexters\HexaLite\HasHexaLite;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -36,8 +37,6 @@ use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use Rmsramos\Activitylog\Resources\ActivitylogResource\Pages\ListActivitylog;
 use Rmsramos\Activitylog\Resources\ActivitylogResource\Pages\ViewActivitylog;
 use Rmsramos\Activitylog\Traits\HasCustomActivityResource;
-use Hexters\HexaLite\HasHexaLite;
-
 use Spatie\Activitylog\Models\Activity;
 
 class ActivitylogResource extends Resource
@@ -72,7 +71,6 @@ class ActivitylogResource extends Resource
 
         return $hexaAllowed && $baseAllowed;
     }
-
 
     protected static ?string $slug = 'activitylogs';
 
@@ -129,13 +127,13 @@ class ActivitylogResource extends Resource
                     $resourceModel = $model->getFilamentActualResourceModel($record);
                     $resourcePluralName = ActivityLogHelper::getResourcePluralName($resourceModel);
 
-                    return route('filament.' . $panelID . '.resources.' . $resourcePluralName . '.edit', ['record' => $resourceModel->id]);
+                    return route('filament.'.$panelID.'.resources.'.$resourcePluralName.'.edit', ['record' => $resourceModel->id]);
                 }
 
                 // Fallback to a standard resource mapping
                 $resourcePluralName = ActivityLogHelper::getResourcePluralName($record->subject_type);
 
-                return route('filament.' . $panelID . '.resources.' . $resourcePluralName . '.edit', ['record' => $record->subject_id]);
+                return route('filament.'.$panelID.'.resources.'.$resourcePluralName.'.edit', ['record' => $record->subject_id]);
             } catch (Exception $e) {
                 // If there's any error generating the URL, return placeholder
                 return '#';
@@ -160,7 +158,7 @@ class ActivitylogResource extends Resource
                         TextInput::make('subject_type')
                             ->afterStateHydrated(function ($component, ?Model $record, $state) {
                                 /** @var Activity $record */
-                                return $state ? $component->state(Str::of($state)->afterLast('\\')->headline() . ' # ' . $record->subject_id) : $component->state('-');
+                                return $state ? $component->state(Str::of($state)->afterLast('\\')->headline().' # '.$record->subject_id) : $component->state('-');
                             })
                             ->label(__('activitylog::forms.fields.subject_type.label')),
 
@@ -180,7 +178,7 @@ class ActivitylogResource extends Resource
                         Placeholder::make('event')
                             ->content(function (?Model $record): string {
                                 /** @var Activity $record */
-                                return $record?->event ? ucwords(__('activitylog::action.event.' . $record->event)) : '-';
+                                return $record?->event ? ucwords(__('activitylog::action.event.'.$record->event)) : '-';
                             })
                             ->label(__('activitylog::forms.fields.event.label')),
 
@@ -188,7 +186,7 @@ class ActivitylogResource extends Resource
                             ->label(__('activitylog::forms.fields.created_at.label'))
                             ->content(function (?Model $record): string {
                                 /** @var Activity $record */
-                                if (!$record?->created_at) {
+                                if (! $record?->created_at) {
                                     return '-';
                                 }
 
@@ -206,22 +204,22 @@ class ActivitylogResource extends Resource
                             ->label(__('activitylog::action.restore'))
                             ->icon('heroicon-o-arrow-uturn-left')
                             ->color('primary')
-                            ->action(fn(Activity $record) => self::restoreActivity($record->id))
+                            ->action(fn (Activity $record) => self::restoreActivity($record->id))
                             ->visible(function (Activity $record): bool {
-                                return !ActivitylogPlugin::get()->getIsRestoreActionHidden() && $record->properties &&
+                                return ! ActivitylogPlugin::get()->getIsRestoreActionHidden() && $record->properties &&
                                     data_get($record->properties, 'old') !== null &&
                                     $record->subject !== null && $record->event !== 'deleted';
                             })
-                            ->authorize(fn() => auth()->user()?->can('restore_activitylog') ?? false)
+                            ->authorize(fn () => auth()->user()?->can('restore_activitylog') ?? false)
                             ->requiresConfirmation(),
 
                         Action::make('edit')
                             ->label(__('activitylog::action.edit'))
                             ->icon('heroicon-o-eye')
                             ->color('info')
-                            ->url(fn(Activity $record) => self::getResourceUrl($record))
-                            ->visible(fn() => !ActivitylogPlugin::get()->getIsResourceActionHidden())
-                            ->authorize(fn(Activity $record) => self::canViewResource($record)),
+                            ->url(fn (Activity $record) => self::getResourceUrl($record))
+                            ->visible(fn () => ! ActivitylogPlugin::get()->getIsResourceActionHidden())
+                            ->authorize(fn (Activity $record) => self::canViewResource($record)),
 
                         Action::make('restore_soft_delete')
                             ->label(__('activitylog::action.restore_soft_delete.label'))
@@ -233,16 +231,16 @@ class ActivitylogResource extends Resource
                             ->action(function (Activity $record) {
                                 static::restoreSubjectFromSoftDelete($record);
                             })
-                            ->authorize(fn() => auth()->user()?->can('restore_activitylog') ?? false)
+                            ->authorize(fn () => auth()->user()?->can('restore_activitylog') ?? false)
                             ->requiresConfirmation()
                             ->modalHeading(__('activitylog::action.restore_soft_delete.modal_heading'))
                             ->modalDescription(__('activitylog::action.restore_soft_delete.modal_description')),
                     ])
                     ->columns()
-                    ->visible(fn(?Model $record) => $record?->properties?->count() > 0)
+                    ->visible(fn (?Model $record) => $record?->properties?->count() > 0)
                     ->schema(function (?Model $record) {
                         /** @var Activity $record */
-                        if (!$record?->properties) {
+                        if (! $record?->properties) {
                             return [];
                         }
 
@@ -338,7 +336,7 @@ class ActivitylogResource extends Resource
     {
         return TextColumn::make('log_name')
             ->label(__('activitylog::tables.columns.log_name.label'))
-            ->formatStateUsing(fn($state) => $state ? ucwords($state) : '-')
+            ->formatStateUsing(fn ($state) => $state ? ucwords($state) : '-')
             ->searchable()
             ->sortable()
             ->badge();
@@ -348,9 +346,9 @@ class ActivitylogResource extends Resource
     {
         return TextColumn::make('event')
             ->label(__('activitylog::tables.columns.event.label'))
-            ->formatStateUsing(fn($state) => $state ? ucwords(__('activitylog::action.event.' . $state)) : '-')
+            ->formatStateUsing(fn ($state) => $state ? ucwords(__('activitylog::action.event.'.$state)) : '-')
             ->badge()
-            ->color(fn(?string $state): string => match ($state) {
+            ->color(fn (?string $state): string => match ($state) {
                 'draft' => 'gray',
                 'updated' => 'warning',
                 'created' => 'success',
@@ -368,11 +366,11 @@ class ActivitylogResource extends Resource
             ->label(__('activitylog::tables.columns.subject_type.label'))
             ->formatStateUsing(function ($state, Model $record) {
                 /** @var Activity $record */
-                if (!$state) {
+                if (! $state) {
                     return '-';
                 }
 
-                $subjectInfo = Str::of($state)->afterLast('\\')->headline() . ' # ' . $record->subject_id;
+                $subjectInfo = Str::of($state)->afterLast('\\')->headline().' # '.$record->subject_id;
 
                 if ($record->subject) {
                     if (method_exists($record->subject, 'trashed') && $record->subject->trashed()) {
@@ -385,7 +383,7 @@ class ActivitylogResource extends Resource
                 return $subjectInfo;
             })
             ->searchable()
-            ->hidden(fn(Livewire $livewire) => $livewire instanceof ActivitylogRelationManager);
+            ->hidden(fn (Livewire $livewire) => $livewire instanceof ActivitylogRelationManager);
     }
 
     public static function getCauserNameColumnComponent(): Column
@@ -434,7 +432,7 @@ class ActivitylogResource extends Resource
     {
         $field = DatePicker::make($label)
             ->format(ActivitylogPlugin::get()->getDateFormat())
-            ->label(__('activitylog::tables.filters.created_at.' . $label));
+            ->label(__('activitylog::tables.filters.created_at.'.$label));
 
         // Apply the custom callback if set
         $callback = ActivitylogPlugin::get()->getDatePickerCallback();
@@ -478,11 +476,11 @@ class ActivitylogResource extends Resource
                 return $query
                     ->when(
                         $data['created_from'] ?? null,
-                        fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                        fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                     )
                     ->when(
                         $data['created_until'] ?? null,
-                        fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                        fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                     );
             });
     }
@@ -494,7 +492,7 @@ class ActivitylogResource extends Resource
             ->options(
                 static::getModel()::distinct()
                     ->pluck('event', 'event')
-                    ->mapWithKeys(fn($value, $key) => [$key => __('activitylog::action.event.' . $value)])
+                    ->mapWithKeys(fn ($value, $key) => [$key => __('activitylog::action.event.'.$value)])
             );
     }
 
@@ -549,7 +547,7 @@ class ActivitylogResource extends Resource
     {
         $activity = Activity::find($key);
 
-        if (!$activity) {
+        if (! $activity) {
             Notification::make()
                 ->title(__('activitylog::notifications.activity_not_found'))
                 ->danger()
@@ -573,7 +571,7 @@ class ActivitylogResource extends Resource
         try {
             $record = $activity->subject;
 
-            if (!$record) {
+            if (! $record) {
                 Notification::make()
                     ->title(__('activitylog::notifications.subject_not_found'))
                     ->danger()
@@ -628,18 +626,18 @@ class ActivitylogResource extends Resource
             return false;
         }
 
-        if (!$record->subject) {
+        if (! $record->subject) {
             return false;
         }
 
         if (
-            !method_exists($record->subject, 'trashed') ||
-            !method_exists($record->subject, 'restore')
+            ! method_exists($record->subject, 'trashed') ||
+            ! method_exists($record->subject, 'restore')
         ) {
             return false;
         }
 
-        if (!$record->subject->trashed()) {
+        if (! $record->subject->trashed()) {
             return false;
         }
 
@@ -658,7 +656,7 @@ class ActivitylogResource extends Resource
 
     public static function restoreSubjectFromSoftDelete(Activity $record): void
     {
-        if (!static::canRestoreSubjectFromSoftDelete($record)) {
+        if (! static::canRestoreSubjectFromSoftDelete($record)) {
             Notification::make()
                 ->title(__('activitylog::notifications.unable_to_restore_this_model'))
                 ->danger()
@@ -712,7 +710,7 @@ class ActivitylogResource extends Resource
 
             Notification::make()
                 ->title(__('activitylog::notifications.error_restoring_model'))
-                ->body('Erro: ' . $e->getMessage())
+                ->body('Erro: '.$e->getMessage())
                 ->danger()
                 ->send();
         }

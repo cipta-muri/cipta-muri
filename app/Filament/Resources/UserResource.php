@@ -67,7 +67,7 @@ class UserResource extends Resource
                             ->relationship(
                                 'roles',
                                 'name',
-                                fn($query) => $query->where('name', '!=', 'Super Admin')
+                                fn ($query) => $query->where('name', '!=', 'Super Admin')
                             )
                             ->preload()
                             ->required()
@@ -75,7 +75,6 @@ class UserResource extends Resource
                                 'required' => 'Jabatan wajib diisi',
                             ])
                             ->label('Jabatan'),
-
 
                     ])
                     ->columns(2),
@@ -85,9 +84,9 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('password')
                             ->label('Password')
                             ->password()
-                            ->dehydrateStateUsing(fn($state) => Hash::make($state))
-                            ->dehydrated(fn($state) => filled($state))
-                            ->required(fn(string $context): bool => $context === 'create')
+                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->required(fn (string $context): bool => $context === 'create')
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('password_confirmation')
@@ -95,7 +94,7 @@ class UserResource extends Resource
                             ->password()
                             ->same('password')
                             ->maxLength(255)
-                            ->required(fn(string $context): bool => $context === 'create'),
+                            ->required(fn (string $context): bool => $context === 'create'),
                     ])
                     ->columns(2),
             ]);
@@ -110,7 +109,7 @@ class UserResource extends Resource
                     ->getStateUsing(function ($record) {
                         return $record->avatar_url ?: null; // kalau kosong, null
                     })
-                    ->default(fn($record) => "https://ui-avatars.com/api/?name=" . urlencode($record->name) . "&background=random")
+                    ->default(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name).'&background=random')
                     ->circular()
                     ->size(40),
 
@@ -144,6 +143,7 @@ class UserResource extends Resource
                         if (in_array('Admin', $roles, true)) {
                             return 'info';  // 🔵 biru
                         }
+
                         return 'success';       // 🟢 hijau (lainnya)
                     })
                     ->formatStateUsing(function ($state) {
@@ -154,11 +154,11 @@ class UserResource extends Resource
                         if (is_array($state)) {
                             return implode(', ', $state);
                         }
+
                         return $state;
                     })
                     ->searchable()
                     ->sortable(),
-
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
@@ -178,7 +178,7 @@ class UserResource extends Resource
                     ->relationship(
                         'roles',
                         'name',
-                        fn($query) => $query->where('name', '!=', 'Super Admin')
+                        fn ($query) => $query->where('name', '!=', 'Super Admin')
                     )
                     ->preload(),
             ])
@@ -186,15 +186,13 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->visible(
-                        fn($record) =>
-                        hexa()->can('user.update') &&
-                        !$record->roles()->where('name', 'Super Admin')->exists()
+                        fn ($record) => hexa()->can('user.update') &&
+                        ! $record->roles()->where('name', 'Super Admin')->exists()
                     ),
                 Tables\Actions\DeleteAction::make()
                     ->visible(
-                        fn($record) =>
-                        hexa()->can('user.delete') &&
-                        !$record->roles()->where('name', 'Super Admin')->exists()
+                        fn ($record) => hexa()->can('user.delete') &&
+                        ! $record->roles()->where('name', 'Super Admin')->exists()
                     )
                     ->before(function ($record, $action) {
                         if ($record->roles()->where('name', 'Super Admin')->exists()) {

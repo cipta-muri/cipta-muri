@@ -27,7 +27,7 @@ class NewsObserver
             $originalImage = $news->getOriginal('featured_image');
             if ($originalImage && Storage::disk('public')->exists($originalImage)) {
                 Storage::disk('public')->delete($originalImage);
-                
+
                 // Also delete thumbnails
                 $this->deleteThumbnails($originalImage);
             }
@@ -74,17 +74,17 @@ class NewsObserver
     {
         if ($news->featured_image && Storage::disk('public')->exists($news->featured_image)) {
             $fullPath = Storage::disk('public')->path($news->featured_image);
-            
+
             try {
                 // Optimize the image
                 ImageOptimizer::optimize($fullPath);
-                
+
                 // Generate different sized thumbnails
                 $this->generateThumbnails($news->featured_image);
-                
+
             } catch (\Exception $e) {
                 // Log error but don't break the flow
-                logger()->error('Image optimization failed: ' . $e->getMessage());
+                logger()->error('Image optimization failed: '.$e->getMessage());
             }
         }
     }
@@ -104,14 +104,14 @@ class NewsObserver
         $sourcePath = Storage::disk('public')->path($imagePath);
 
         foreach ($thumbnailSizes as $size) {
-            $thumbnailName = $pathInfo['filename'] . "_{$size['width']}x{$size['height']}." . $pathInfo['extension'];
-            $thumbnailPath = 'news/thumbnails/' . $thumbnailName;
+            $thumbnailName = $pathInfo['filename']."_{$size['width']}x{$size['height']}.".$pathInfo['extension'];
+            $thumbnailPath = 'news/thumbnails/'.$thumbnailName;
             $fullThumbnailPath = Storage::disk('public')->path($thumbnailPath);
 
             try {
                 // Create directory if not exists
                 $thumbnailDir = dirname($fullThumbnailPath);
-                if (!is_dir($thumbnailDir)) {
+                if (! is_dir($thumbnailDir)) {
                     mkdir($thumbnailDir, 0755, true);
                 }
 
@@ -126,7 +126,7 @@ class NewsObserver
                 ImageOptimizer::optimize($fullThumbnailPath);
 
             } catch (\Exception $e) {
-                logger()->error("Thumbnail generation failed for size {$size['width']}x{$size['height']}: " . $e->getMessage());
+                logger()->error("Thumbnail generation failed for size {$size['width']}x{$size['height']}: ".$e->getMessage());
             }
         }
     }
@@ -137,8 +137,8 @@ class NewsObserver
     private function deleteThumbnails(string $imagePath): void
     {
         $pathInfo = pathinfo($imagePath);
-        $thumbnailPattern = 'news/thumbnails/' . $pathInfo['filename'] . '_*.' . $pathInfo['extension'];
-        
+        $thumbnailPattern = 'news/thumbnails/'.$pathInfo['filename'].'_*.'.$pathInfo['extension'];
+
         $thumbnails = Storage::disk('public')->glob($thumbnailPattern);
         foreach ($thumbnails as $thumbnail) {
             Storage::disk('public')->delete($thumbnail);

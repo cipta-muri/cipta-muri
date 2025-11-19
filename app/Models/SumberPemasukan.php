@@ -2,24 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class SumberPemasukan extends Model
 {
-    use HasUlids, HasFactory, LogsActivity;
+    use HasFactory, HasUlids, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('sumber_pemasukan')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Sumber Pemasukan has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Sumber Pemasukan has been {$eventName}");
     }
-    
+
     protected $table = 'sumber_pemasukan';
 
     protected $guarded = ['id'];
@@ -28,5 +28,4 @@ class SumberPemasukan extends Model
     {
         return $this->belongsTo(Pemasukan::class, 'nama_pemasukan');
     }
-
 }

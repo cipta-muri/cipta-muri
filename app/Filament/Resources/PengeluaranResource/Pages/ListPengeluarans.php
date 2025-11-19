@@ -14,7 +14,7 @@ class ListPengeluarans extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-            ->visible(fn() => hexa()->can('pengeluaran.create')),
+                ->visible(fn () => hexa()->can('pengeluaran.create')),
         ];
     }
 }

@@ -3,27 +3,28 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SetorSampahResource\Pages;
-use App\Models\SetorSampah;
 use App\Models\Rekening;
 use App\Models\Sampah;
+use App\Models\SetorSampah;
 use Filament\Forms;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Repeater;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Support\HtmlString;
-use Illuminate\Database\Eloquent\Collection;
+use Filament\Tables\Table;
 use Hexters\HexaLite\HasHexaLite;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\HtmlString;
 
 class SetorSampahResource extends Resource
 {
     use HasHexaLite;
+
     protected static ?string $model = SetorSampah::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
@@ -62,18 +63,18 @@ class SetorSampahResource extends Resource
                                 'donasi' => 'Donasi',
                             ])
                             ->required()
-                            ->disabled(fn(string $context): bool => $context !== 'create') // Nonaktifkan jika sudah donasi
+                            ->disabled(fn (string $context): bool => $context !== 'create') // Nonaktifkan jika sudah donasi
                             ->default('rekening')
                             ->live(), // Live di sini aman karena hanya mengontrol satu field lain
 
                         Forms\Components\Select::make('rekening_id')
                             ->label('Pilih Rekening Nasabah')
-                            ->relationship('rekening', 'nama', modifyQueryUsing: fn($query) => $query->where('no_rekening', '!=', '00000000'))
-                            ->getOptionLabelFromRecordUsing(fn(Rekening $record) => "{$record->nama} - {$record->nik}")
+                            ->relationship('rekening', 'nama', modifyQueryUsing: fn ($query) => $query->where('no_rekening', '!=', '00000000'))
+                            ->getOptionLabelFromRecordUsing(fn (Rekening $record) => "{$record->nama} - {$record->nik}")
                             ->searchable(['nama', 'nik'])
                             ->preload()
-                            ->hidden(fn(Get $get) => $get('jenis_setoran') !== 'rekening')
-                            ->required(fn(Get $get) => $get('jenis_setoran') === 'rekening'),
+                            ->hidden(fn (Get $get) => $get('jenis_setoran') !== 'rekening')
+                            ->required(fn (Get $get) => $get('jenis_setoran') === 'rekening'),
 
                         Forms\Components\DatePicker::make('tanggal')
                             ->label('Tanggal Setoran')
@@ -111,7 +112,6 @@ class SetorSampahResource extends Resource
                                     ->default('masuk')
                                     ->dehydrated(true),
 
-
                             ])
                             ->columns(3)
                             // DIHAPUS: Atribut live() dan afterStateUpdated() untuk mencegah reload otomatis
@@ -144,7 +144,7 @@ class SetorSampahResource extends Resource
                                         // Penghitungan stok akan mengabaikan berat jika sampah.simpan_berat = false.
                                     }
                                     unset($item); // good practice setelah foreach by-ref
-                    
+
                                     return $data;
                                 }
 
@@ -168,7 +168,7 @@ class SetorSampahResource extends Resource
                                 // Penghitungan stok akan mengabaikan berat jika sampah.simpan_berat = false.
 
                                 return $data;
-                            })
+                            }),
 
                     ]),
 
@@ -191,17 +191,18 @@ class SetorSampahResource extends Resource
                                     // Validasi data sebelum perhitungan
                                     $items = $get('details');
 
-                                    if (!is_array($items) || empty($items)) {
+                                    if (! is_array($items) || empty($items)) {
                                         Notification::make()
                                             ->title('Data Belum Lengkap')
                                             ->body('Silakan tambahkan item sampah terlebih dahulu.')
                                             ->warning()
                                             ->send();
+
                                         return;
                                     }
 
                                     $validItems = array_filter($items, function ($item) {
-                                        return !empty($item['sampah_id']) && !empty($item['berat']) && is_numeric($item['berat']);
+                                        return ! empty($item['sampah_id']) && ! empty($item['berat']) && is_numeric($item['berat']);
                                     });
 
                                     if (empty($validItems)) {
@@ -210,13 +211,14 @@ class SetorSampahResource extends Resource
                                             ->body('Pastikan jenis sampah dan berat sudah diisi dengan benar.')
                                             ->danger()
                                             ->send();
+
                                         return;
                                     }
 
                                     // Lakukan perhitungan
                                     self::updateTotals($get, $set);
                                     $set('calculation_performed', true); // Set flag bahwa perhitungan sudah dilakukan
-                        
+
                                     // Notifikasi sukses
                                     Notification::make()
                                         ->title('Perhitungan Berhasil')
@@ -229,7 +231,7 @@ class SetorSampahResource extends Resource
                         // Placeholder rincian, hanya muncul SETELAH tombol 'Hitung' ditekan
                         Forms\Components\Placeholder::make('rincian_placeholder')
                             ->label('Rincian')
-                            ->visible(fn(Get $get) => (bool) $get('calculation_performed')) // <-- Hanya tampil jika perhitungan selesai
+                            ->visible(fn (Get $get) => (bool) $get('calculation_performed')) // <-- Hanya tampil jika perhitungan selesai
                             ->content(function (Get $get) {
                                 $items = $get('details');
                                 $jenisSetoran = $get('jenis_setoran');
@@ -238,16 +240,16 @@ class SetorSampahResource extends Resource
                                 \Log::info('Calculation Debug', [
                                     'items' => $items,
                                     'calculation_performed' => $get('calculation_performed'),
-                                    'jenis_setoran' => $jenisSetoran
+                                    'jenis_setoran' => $jenisSetoran,
                                 ]);
 
-                                if (!is_array($items) || empty($items)) {
+                                if (! is_array($items) || empty($items)) {
                                     return new HtmlString('<p class="text-sm text-red-500">Belum ada item sampah yang ditambahkan.</p>');
                                 }
 
                                 // Periksa apakah ada item yang valid
                                 $validItems = array_filter($items, function ($item) {
-                                    return !empty($item['sampah_id']) && !empty($item['berat']) && is_numeric($item['berat']);
+                                    return ! empty($item['sampah_id']) && ! empty($item['berat']) && is_numeric($item['berat']);
                                 });
 
                                 if (empty($validItems)) {
@@ -280,7 +282,7 @@ class SetorSampahResource extends Resource
         }
 
         // 2. Cek apakah perhitungan sudah dilakukan
-        if (!isset($data['calculation_performed']) || !$data['calculation_performed']) {
+        if (! isset($data['calculation_performed']) || ! $data['calculation_performed']) {
             Notification::make()
                 ->title('Perhitungan Belum Dilakukan')
                 ->body('Anda harus menekan tombol "Hitung Total" sebelum menyimpan data.')
@@ -293,7 +295,6 @@ class SetorSampahResource extends Resource
         }
 
         return $data;
-
 
     }
 
@@ -308,8 +309,9 @@ class SetorSampahResource extends Resource
         $hasSaldoOnDonasi = false;
 
         foreach ($items as $item) {
-            if (empty($item['sampah_id']) || empty($item['berat']) || !is_numeric($item['berat']))
+            if (empty($item['sampah_id']) || empty($item['berat']) || ! is_numeric($item['berat'])) {
                 continue;
+            }
 
             $sampah = $sampahData->get($item['sampah_id']);
             if ($sampah) {
@@ -319,16 +321,16 @@ class SetorSampahResource extends Resource
                     $hasNonStoredWeight = true;
                 }
                 // Untuk donasi, saldo hanya dihitung jika sampah tidak menyimpan berat
-                $includeSaldo = $isDonasi ? !($sampah->simpan_berat ?? true) : true;
+                $includeSaldo = $isDonasi ? ! ($sampah->simpan_berat ?? true) : true;
                 $saldo = $includeSaldo ? ($sampah->saldo_per_kg * $beratAsal) : 0;
                 if ($isDonasi && $includeSaldo && $saldo > 0) {
                     $hasSaldoOnDonasi = true;
                 }
                 $rows .= "<tr>
                             <td style='padding:6px;'>{$sampah->jenis_sampah}</td>
-                            <td style='padding:6px; text-align:center;'>{$beratEfektif} Kg" . (($beratEfektif === 0.0 && $beratAsal > 0) ? " <span style='color:#6b7280'>(tidak dihitung)</span>" : '') . "</td>
-                            " . (($jenisSetoran !== 'donasi' || $includeSaldo) ? "<td style='padding:6px; text-align:right;'>Rp " . number_format($saldo, 2, ',', '.') . "</td>" : '') . "
-                        </tr>";
+                            <td style='padding:6px; text-align:center;'>{$beratEfektif} Kg".(($beratEfektif === 0.0 && $beratAsal > 0) ? " <span style='color:#6b7280'>(tidak dihitung)</span>" : '').'</td>
+                            '.(($jenisSetoran !== 'donasi' || $includeSaldo) ? "<td style='padding:6px; text-align:right;'>Rp ".number_format($saldo, 2, ',', '.').'</td>' : '').'
+                        </tr>';
                 $totalSaldo += $saldo;
                 $totalBerat += $beratEfektif;
             }
@@ -336,17 +338,17 @@ class SetorSampahResource extends Resource
 
         $totalRow = "<tr style='font-weight:bold; border-top:2px solid #333;'>
                         <td style='padding:6px;'>Total</td>
-                        <td style='padding:6px; text-align:center;'>" . number_format($totalBerat, 2, ',', '.') . " Kg</td>
-                        " . (($jenisSetoran !== 'donasi' || $hasSaldoOnDonasi) ? "<td style='padding:6px; text-align:right;'>Rp " . number_format($totalSaldo, 2, ',', '.') . "</td>" : '') . "
-                    </tr>";
+                        <td style='padding:6px; text-align:center;'>".number_format($totalBerat, 2, ',', '.').' Kg</td>
+                        '.(($jenisSetoran !== 'donasi' || $hasSaldoOnDonasi) ? "<td style='padding:6px; text-align:right;'>Rp ".number_format($totalSaldo, 2, ',', '.').'</td>' : '').'
+                    </tr>';
 
         $header = "<thead>
                     <tr text-align:left;'>
                         <th style='padding:6px;'>Jenis Sampah</th>
                         <th style='padding:6px; text-align:center;'>Berat</th>
-                        " . (($jenisSetoran !== 'donasi' || $hasSaldoOnDonasi) ? "<th style='padding:6px; text-align:right;'>Saldo</th>" : '') . "
+                        ".(($jenisSetoran !== 'donasi' || $hasSaldoOnDonasi) ? "<th style='padding:6px; text-align:right;'>Saldo</th>" : '').'
                     </tr>
-                </thead>";
+                </thead>';
 
         $html = "<table style='width:100%; border-collapse:collapse;'>{$header}<tbody>{$rows}{$totalRow}</tbody></table>";
 
@@ -378,22 +380,22 @@ class SetorSampahResource extends Resource
         // Debug: Log data input
         \Log::info('UpdateTotals Debug', [
             'items' => $items,
-            'is_array' => is_array($items)
+            'is_array' => is_array($items),
         ]);
 
-        if (is_array($items) && !empty($items)) {
+        if (is_array($items) && ! empty($items)) {
             // Filter item yang valid
             $validItems = array_filter($items, function ($item) {
-                return !empty($item['sampah_id']) && !empty($item['berat']) && is_numeric($item['berat']);
+                return ! empty($item['sampah_id']) && ! empty($item['berat']) && is_numeric($item['berat']);
             });
 
-            if (!empty($validItems)) {
+            if (! empty($validItems)) {
                 $sampahIds = array_column($validItems, 'sampah_id');
                 $sampahData = Sampah::whereIn('id', $sampahIds)->get()->keyBy('id');
 
                 \Log::info('Sampah Data Found', [
                     'sampah_ids' => $sampahIds,
-                    'sampah_data_count' => $sampahData->count()
+                    'sampah_data_count' => $sampahData->count(),
                 ]);
 
                 foreach ($validItems as $item) {
@@ -403,7 +405,7 @@ class SetorSampahResource extends Resource
                         $beratEfektif = ($sampah->simpan_berat ?? true) ? $beratAsal : 0.0;
                         // Untuk donasi, saldo hanya dihitung untuk item yang TIDAK menyimpan berat.
                         // Untuk non-donasi, saldo dihitung dari semua item.
-                        $includeSaldo = $isDonasi ? !($sampah->simpan_berat ?? true) : true;
+                        $includeSaldo = $isDonasi ? ! ($sampah->simpan_berat ?? true) : true;
                         $saldoItem = $includeSaldo ? ($sampah->saldo_per_kg * $beratAsal) : 0;
                         $poinItem = ($sampah->poin_per_kg ?? 0) * $beratAsal;
 
@@ -420,7 +422,7 @@ class SetorSampahResource extends Resource
                             'poin_per_kg' => $sampah->poin_per_kg,
                             'saldo_item' => $saldoItem,
                             'include_saldo' => $includeSaldo,
-                            'poin_item' => $poinItem
+                            'poin_item' => $poinItem,
                         ]);
                     }
                 }
@@ -434,7 +436,7 @@ class SetorSampahResource extends Resource
         \Log::info('Final Totals', [
             'total_saldo' => $totalSaldo,
             'total_poin' => $totalPoin,
-            'total_berat' => $totalBerat
+            'total_berat' => $totalBerat,
         ]);
     }
 
@@ -447,9 +449,9 @@ class SetorSampahResource extends Resource
                     ->label('Nasabah / Jenis')
                     ->sortable()
                     ->searchable()
-                    ->formatStateUsing(fn($state, $record) => $record->isDonation() ? 'Donasi' : $state)
+                    ->formatStateUsing(fn ($state, $record) => $record->isDonation() ? 'Donasi' : $state)
                     ->badge()
-                    ->color(fn($record) => $record->isDonation() ? 'success' : 'gray'),
+                    ->color(fn ($record) => $record->isDonation() ? 'success' : 'gray'),
 
                 TextColumn::make('details.sampah.jenis_sampah')
                     ->label('Item Sampah')
@@ -467,14 +469,14 @@ class SetorSampahResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn() => hexa()->can('setor_sampah.update')),
+                    ->visible(fn () => hexa()->can('setor_sampah.update')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn() => hexa()->can('setor_sampah.delete')),
+                    ->visible(fn () => hexa()->can('setor_sampah.delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn() => hexa()->can('setor_sampah.delete')),
+                        ->visible(fn () => hexa()->can('setor_sampah.delete')),
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),

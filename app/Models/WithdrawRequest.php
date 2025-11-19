@@ -2,24 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class WithdrawRequest extends Model
 {
-    use HasUlids, SoftDeletes, HasFactory, LogsActivity;
+    use HasFactory, HasUlids, LogsActivity, SoftDeletes;
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('withdraw_request')
             ->logAll()
-            ->setDescriptionForEvent(fn(string $eventName) => "Penarikan Saldo has been {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Penarikan Saldo has been {$eventName}");
     }
 
     protected $table = 'withdraw_requests';
@@ -56,7 +56,7 @@ class WithdrawRequest extends Model
     protected static function booted(): void
     {
         static::creating(function ($withdrawRequest) {
-            if (!$withdrawRequest->user_id && Auth::check()) {
+            if (! $withdrawRequest->user_id && Auth::check()) {
                 $withdrawRequest->user_id = Auth::id();
             }
         });

@@ -3,8 +3,6 @@
 namespace App\Observers;
 
 use App\Models\SampahKeluar;
-use App\Models\Rekening;
-use APP\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class SampahKeluarObserver
@@ -14,7 +12,7 @@ class SampahKeluarObserver
      */
     public function creating(SampahKeluar $sampahKeluar): void
     {
-        if (!$sampahKeluar->user_id && Auth::check()) {
+        if (! $sampahKeluar->user_id && Auth::check()) {
             $sampahKeluar->user_id = Auth::id();
         }
     }

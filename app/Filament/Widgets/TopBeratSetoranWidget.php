@@ -60,14 +60,15 @@ class TopBeratSetoranWidget extends BaseWidget
                         $from = $data['from'] ?? null;
                         $until = $data['until'] ?? null;
                         if ($from || $until) {
-                            return 'Tanggal: ' . ($from ?: '...') . ' – ' . ($until ?: '...');
+                            return 'Tanggal: '.($from ?: '...').' – '.($until ?: '...');
                         }
+
                         return null;
                     })
                     ->query(function (Builder $query, array $data): Builder {
                         $from = $data['from'] ?? null;
                         $until = $data['until'] ?? null;
-                        if (!$from && !$until) {
+                        if (! $from && ! $until) {
                             return $query;
                         }
 
