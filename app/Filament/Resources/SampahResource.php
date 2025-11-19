@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Resources\Forms\Form;
 use Filament\Support\RawJs;
 use App\Filament\Resources\SampahResource\RelationManagers;
+use App\Filament\Resources\SampahResource\Widgets;
 use Filament\Resources\Tables\Table;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -118,6 +119,15 @@ class SampahResource extends Resource
     {
         return [
             RelationManagers\SampahTransactionsRelationManager::class,
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            Widgets\SampahStatsOverview::class,
+            Widgets\SampahSetoranChart::class,
+            Widgets\SampahSetoranHarianTable::class,
         ];
     }
 

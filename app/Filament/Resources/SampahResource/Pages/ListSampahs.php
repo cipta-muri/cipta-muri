@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\SampahResource\Pages;
 
 use App\Filament\Resources\SampahResource;
+use App\Filament\Resources\SampahResource\Widgets;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -14,6 +15,15 @@ class ListSampahs extends ListRecords
     {
         return [
             Actions\CreateAction::make()->visible(fn() => hexa()->can('sampah.create')),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            Widgets\SampahStatsOverview::class,
+            Widgets\SampahSetoranChart::class,
+            Widgets\SampahSetoranHarianTable::class,
         ];
     }
 }
