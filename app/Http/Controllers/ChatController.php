@@ -116,6 +116,31 @@ class ChatController extends Controller
     {
         $message = mb_strtolower($message);
 
+        $knowledgeKeywords = [
+            'cara daftar',
+            'bagaimana cara',
+            'tatacara',
+            'panduan',
+            'langkah',
+            'prosedur',
+            'syarat',
+            'cara setor',
+            'cara menabung',
+            'cara buka',
+            'cara registrasi',
+            'cara daftar nasabah',
+            'cara buka rekening',
+            'bagaimana setor',
+            'bagaimana daftar',
+            'proses pendaftaran',
+        ];
+
+        foreach ($knowledgeKeywords as $keyword) {
+            if (str_contains($message, $keyword)) {
+                return false;
+            }
+        }
+
         $primaryKeywords = [
             'database',
             'data',

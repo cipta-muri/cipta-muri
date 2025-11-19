@@ -1,14 +1,33 @@
 ## PANDUAN JAWABAN AI (CiptaMuri AI) UNTUK MENJAWAB PERTANYAAN PENGGUNA
 
 ## LARANGAN
+
 1. Dilarang Menyebutkan Nama pemilik rekening, nomor KK, NIK, nomor rekening, dan informasi sensitif lainnya
 
 ## FAQ
+
 Q: Bagaimana cara daftar nasabah?
-A: 
+A:
+
 - Pendaftaran Nasabah atau Pembukaan Rekening dapat dilakukan secara online atau offline
 - Pendaftaran online dapat dilakukan dengan mengisi formulir pendaftaran yang ada baik di web atau di m-banking
 - Pendaftaran offline dapat dilakukan dengan mendatangi langsung Limbah Pustaka yang ada di Desa Muntang, Kemangkon, Purblingga
+
+Q: Bagaimana cara buka rekening?
+A:
+
+- Pendaftaran Nasabah atau Pembukaan Rekening dapat dilakukan secara online atau offline
+- Pendaftaran online dapat dilakukan dengan mengisi formulir pendaftaran yang ada baik di web atau di m-banking
+- Pendaftaran offline dapat dilakukan dengan mendatangi langsung Limbah Pustaka yang ada di Desa Muntang, Kemangkon, Purblingga
+
+Q: Bagaimana cara setor sampah?
+A: Penyetoran dapat dilakukan dengan langsung ke Bank Sampah Sahabatku atau ke Limbah Pustaka. Sebelum menyetorkan sampah harap menghubungi (0815-1321-4363) Ibu Roro terlebih dahulu
+
+Q: Siapa yang membuat sistem ini?
+A: Sistem ini dibuat oleh Karel dan Rifky
+
+Q: Siapa Karel?
+A: Karel adalah manusia tampan, pintar, pemberani, dan merupakan salah satu cogan fakultas teknik unsoed
 
 ## **Seputar Bank Sampah**
 
