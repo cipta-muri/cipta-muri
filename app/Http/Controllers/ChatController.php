@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 class ChatController extends Controller
 {
     protected $gemini;
+    protected string $knowledgeFile;
 
     /**
      * Additional descriptions for important tables to guide the LLM.
@@ -38,6 +39,7 @@ class ChatController extends Controller
     public function __construct(GeminiService $gemini)
     {
         $this->gemini = $gemini;
+        $this->knowledgeFile = base_path('docs/ai-knowledge.md');
     }
 
     public function sendMessage(Request $request)
@@ -53,6 +55,7 @@ class ChatController extends Controller
             $message,
             $conversation
         );
+        $history = $this->prependKnowledgeContext($history);
 
         $isCorrection = $this->isCorrectionMessage($message);
         $normalizedMessage = $isCorrection ? $this->normalizeCorrectionMessage($message) : $message;
@@ -93,8 +96,8 @@ class ChatController extends Controller
                     $response = "Saya tidak dapat membuat query yang aman untuk permintaan tersebut. (Query: $sql)";
                 }
             } catch (\Exception $e) {
-                Log::error('Chat DB Error: '.$e->getMessage());
-                $response = 'Terjadi kesalahan ketika mengakses database: '.$e->getMessage();
+                Log::error('Chat DB Error: ' . $e->getMessage());
+                $response = 'Terjadi kesalahan ketika mengakses database: ' . $e->getMessage();
             }
         } else {
             $response = $this->gemini->generateContent($normalizedMessage, $history);
@@ -114,15 +117,59 @@ class ChatController extends Controller
         $message = mb_strtolower($message);
 
         $primaryKeywords = [
-            'database', 'data', 'saldo', 'setoran', 'setor', 'berat', 'transaksi', 'rekap', 'riwayat', 'tarik saldo',
-            'poin', 'permintaan', 'nasabah', 'rekening', 'users', 'logs', 'activity', 'laporan', 'statistik',
-            'jenis sampah', 'kategori sampah', 'penjemputan', 'permintaan setor', 'permintaan tarik', 'mutasi', 'deposit'
+            'database',
+            'data',
+            'saldo',
+            'setoran',
+            'setor',
+            'berat',
+            'transaksi',
+            'rekap',
+            'riwayat',
+            'tarik saldo',
+            'poin',
+            'permintaan',
+            'nasabah',
+            'rekening',
+            'users',
+            'logs',
+            'activity',
+            'laporan',
+            'statistik',
+            'jenis sampah',
+            'kategori sampah',
+            'penjemputan',
+            'permintaan setor',
+            'permintaan tarik',
+            'mutasi',
+            'deposit'
         ];
 
         $contextualIndicators = [
-            'berapa', 'jumlah', 'total', 'list', 'daftar', 'show', 'how many', 'average', 'report', 'history',
-            'trend', 'statistik', 'rekap', 'perubahan', 'grafik', 'rangking', 'terbanyak', 'paling banyak',
-            'paling sedikit', 'detail', 'jenis', 'tipe', 'sebutkan', 'tampilkan'
+            'berapa',
+            'jumlah',
+            'total',
+            'list',
+            'daftar',
+            'show',
+            'how many',
+            'average',
+            'report',
+            'history',
+            'trend',
+            'statistik',
+            'rekap',
+            'perubahan',
+            'grafik',
+            'rangking',
+            'terbanyak',
+            'paling banyak',
+            'paling sedikit',
+            'detail',
+            'jenis',
+            'tipe',
+            'sebutkan',
+            'tampilkan'
         ];
 
         $questionIndicators = ['siapa', 'apa', 'kapan', 'dimana', 'bagaimana', 'mengapa'];
@@ -150,10 +197,34 @@ class ChatController extends Controller
             $columns = Schema::getColumnListing($table);
             $readable = Str::headline($table);
             $description = $this->tableDescriptions[$table] ?? "Data terkait {$readable}.";
-            $schema .= "Tabel: {$table} ({$readable})\nDeskripsi: {$description}\nKolom: ".implode(', ', $columns)."\n\n";
+            $schema .= "Tabel: {$table} ({$readable})\nDeskripsi: {$description}\nKolom: " . implode(', ', $columns) . "\n\n";
         }
 
         return $schema;
+    }
+
+    private function prependKnowledgeContext(array $history): array
+    {
+        $context = $this->getKnowledgeContext();
+        if ($context) {
+            array_unshift($history, [
+                'role' => 'system',
+                'content' => "Informasi internal yang wajib diikuti:\n" . $context,
+            ]);
+        }
+
+        return $history;
+    }
+
+    private function getKnowledgeContext(): ?string
+    {
+        if (!file_exists($this->knowledgeFile)) {
+            return null;
+        }
+
+        $content = trim(file_get_contents($this->knowledgeFile));
+
+        return $content !== '' ? $content : null;
     }
 
     private function resolveConversation(Request $request): AiConversation
@@ -175,7 +246,7 @@ class ChatController extends Controller
             ->take($limit)
             ->get()
             ->sortBy('id')
-            ->map(fn (AiMessage $message) => [
+            ->map(fn(AiMessage $message) => [
                 'role' => $message->role,
                 'content' => $message->content,
             ])
@@ -194,7 +265,7 @@ class ChatController extends Controller
             ->take(8)
             ->get()
             ->filter(function (AiMemory $memory) use ($message) {
-                if (! $memory->topic) {
+                if (!$memory->topic) {
                     return true;
                 }
 
@@ -205,7 +276,7 @@ class ChatController extends Controller
         foreach ($memories as $memory) {
             array_unshift($history, [
                 'role' => 'system',
-                'content' => 'Catatan penting: '.$memory->content,
+                'content' => 'Catatan penting: ' . $memory->content,
             ]);
         }
 
@@ -214,7 +285,7 @@ class ChatController extends Controller
 
     private function isCorrectionMessage(string $message): bool
     {
-        return (bool) preg_match('/^(koreksi|catatan|note)\s*:/i', $message);
+        return (bool) preg_match('/^(koreksi|catatan|note|ingat|lupa|camkan|catat)\s*:/i', $message);
     }
 
     private function normalizeCorrectionMessage(string $message): string
