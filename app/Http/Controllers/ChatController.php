@@ -81,13 +81,17 @@ class ChatController extends Controller
 
         $primaryKeywords = [
             'database', 'data', 'saldo', 'setoran', 'setor', 'berat', 'transaksi', 'rekap', 'riwayat', 'tarik saldo',
-            'poin', 'permintaan', 'nasabah', 'rekening', 'users', 'logs', 'activity', 'laporan', 'statistik'
+            'poin', 'permintaan', 'nasabah', 'rekening', 'users', 'logs', 'activity', 'laporan', 'statistik',
+            'jenis sampah', 'kategori sampah', 'penjemputan', 'permintaan setor', 'permintaan tarik', 'mutasi', 'deposit'
         ];
 
         $contextualIndicators = [
             'berapa', 'jumlah', 'total', 'list', 'daftar', 'show', 'how many', 'average', 'report', 'history',
-            'trend', 'statistik', 'rekap', 'perubahan', 'grafik'
+            'trend', 'statistik', 'rekap', 'perubahan', 'grafik', 'rangking', 'terbanyak', 'paling banyak',
+            'paling sedikit', 'detail', 'jenis', 'tipe', 'sebutkan', 'tampilkan'
         ];
+
+        $questionIndicators = ['siapa', 'apa', 'kapan', 'dimana', 'bagaimana', 'mengapa'];
 
         $primaryHits = 0;
         foreach ($primaryKeywords as $keyword) {
@@ -96,7 +100,9 @@ class ChatController extends Controller
             }
         }
 
-        $hasIndicator = Str::contains($message, $contextualIndicators) || preg_match('/\d/', $message);
+        $hasIndicator = Str::contains($message, array_merge($contextualIndicators, $questionIndicators)) ||
+            preg_match('/\d/', $message) ||
+            str_contains($message, '?');
 
         return $primaryHits >= 1 && $hasIndicator;
     }
