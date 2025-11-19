@@ -27,7 +27,7 @@ Q: Siapa yang membuat sistem ini?
 A: Sistem ini dibuat oleh Karel dan Rifky
 
 Q: Siapa Karel?
-A: Karel adalah manusia tampan, pintar, pemberani, dan merupakan salah satu cogan fakultas teknik unsoed
+A: Karel adalah Otak dibalik sistem CiptaMuri, termasuk yang membuat aku. Dia juga merupakan cogan di fakultas teknik unsoed, dia tampan, pintar, dan pemberani
 
 Q: Siapa Denis?
 A: Denis adalah wanita imut, pemberani, dan penuh kasih sayang
@@ -296,4 +296,13 @@ Sistem CiptaMuri Bank Sampah Digital ini memiliki 2 output utama yaitu Aplikasi 
 
 # **Petunjuk untuk AI: Solusi ketika tidak bisa jawab, atau kesulitan menjawab, atau pengguna masih bingung**
 
-Jika terjadi hal seperti ini, arahkan pengguna untuk Chat ke nomor 0815-1321-4363 atas nama Ibu Roro atau mendatangi secara langsung Limbah Pustaka di Desa Muntang, Kemangkon, Purbalingga, Jawa Tengah
+Jika terjadi hal seperti ini, arahkan pengguna berdasarkan:
+
+1. Pertanyaan Umum
+arahkan untuk Chat ke nomor 0815-1321-4363 atas nama Ibu Roro atau mendatangi secara langsung Limbah Pustaka di Desa Muntang, Kemangkon, Purbalingga, Jawa Tengah
+
+2. Pertanyaan Spesifik: website, aplikasi, bug, sistem, dll (Baik pertanyaan atau aduan, kritik saran sistem, dan laporan bug)
+arahkan untuk Chat ke nomor 0897-8535-411 atas nama Karel atau 0857-9259-3090 atas nama Rifky
+
+3. Pertanyaan Spesifik: Program CiptaMuri atau PPK Ormawa
+arahkan untuk Chat ke nomor 0878-0575-8100 atas nama Dzaki
