@@ -77,19 +77,28 @@ class ChatController extends Controller
 
     private function checkIfNeedsDb(string $message): bool
     {
-        $keywords = [
-            // English keywords
-            'count', 'list', 'show', 'how many', 'who', 'what', 'where', 'find', 'search', 'data', 'database', 'users', 'logs', 'activity', 'total', 'sum', 'average', 'report',
-            // Indonesian keywords
-            'berapa', 'jumlah', 'total', 'daftar', 'tampilkan', 'siapa', 'apa', 'dimana', 'cari', 'data', 'database', 'pengguna', 'log', 'aktivitas', 'statistik', 'laporan', 'riwayat', 'transaksi', 'saldo', 'berat', 'sampah'
+        $message = mb_strtolower($message);
+
+        $primaryKeywords = [
+            'database', 'data', 'saldo', 'setoran', 'setor', 'berat', 'transaksi', 'rekap', 'riwayat', 'tarik saldo',
+            'poin', 'permintaan', 'nasabah', 'rekening', 'users', 'logs', 'activity', 'laporan', 'statistik'
         ];
-        foreach ($keywords as $keyword) {
-            if (stripos($message, $keyword) !== false) {
-                return true;
+
+        $contextualIndicators = [
+            'berapa', 'jumlah', 'total', 'list', 'daftar', 'show', 'how many', 'average', 'report', 'history',
+            'trend', 'statistik', 'rekap', 'perubahan', 'grafik'
+        ];
+
+        $primaryHits = 0;
+        foreach ($primaryKeywords as $keyword) {
+            if (str_contains($message, $keyword)) {
+                $primaryHits++;
             }
         }
 
-        return false;
+        $hasIndicator = Str::contains($message, $contextualIndicators) || preg_match('/\d/', $message);
+
+        return $primaryHits >= 1 && $hasIndicator;
     }
 
     private function getDatabaseSchema(): string
