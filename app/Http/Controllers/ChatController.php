@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AiConversation;
+use App\Models\AiMemory;
+use App\Models\AiMessage;
 use App\Services\GeminiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -40,27 +44,51 @@ class ChatController extends Controller
     {
         $request->validate([
             'message' => 'required|string',
-            'history' => 'array',
         ]);
 
-        $message = $request->input('message');
-        $history = $request->input('history', []);
+        $message = trim($request->input('message'));
+        $conversation = $this->resolveConversation($request);
+        $history = $this->injectMemories(
+            $this->buildHistoryFromConversation($conversation),
+            $message,
+            $conversation
+        );
+
+        $isCorrection = $this->isCorrectionMessage($message);
+        $normalizedMessage = $isCorrection ? $this->normalizeCorrectionMessage($message) : $message;
+
+        $userMessage = $conversation->messages()->create([
+            'role' => 'user',
+            'content' => $normalizedMessage,
+            'is_correction' => $isCorrection,
+        ]);
+
+        if ($isCorrection) {
+            $this->storeMemory($conversation, $normalizedMessage);
+            $ack = 'Catatan sudah saya simpan. Terima kasih atas koreksinya!';
+            $conversation->messages()->create([
+                'role' => 'model',
+                'content' => $ack,
+            ]);
+            $conversation->update(['last_message_at' => now()]);
+
+            return response()->json(['response' => $ack]);
+        }
 
         // Simple heuristic to decide if we need DB access
-        // In a real app, we might ask the AI to classify the intent first.
-        $needsDb = $this->checkIfNeedsDb($message);
+        $needsDb = $this->checkIfNeedsDb($normalizedMessage);
 
         if ($needsDb) {
             try {
                 $schema = $this->getDatabaseSchema();
-                $sql = $this->gemini->generateSql($message, $schema);
+                $sql = $this->gemini->generateSql($normalizedMessage, $schema);
 
                 // Clean up SQL (remove markdown code blocks if present)
                 $sql = preg_replace('/^```sql\s*|```\s*$/', '', trim($sql));
 
                 if (str_starts_with(strtoupper($sql), 'SELECT')) {
                     $results = DB::select($sql);
-                    $response = $this->gemini->interpretResults($message, $results);
+                    $response = $this->gemini->interpretResults($normalizedMessage, $results);
                 } else {
                     $response = "Saya tidak dapat membuat query yang aman untuk permintaan tersebut. (Query: $sql)";
                 }
@@ -69,8 +97,14 @@ class ChatController extends Controller
                 $response = 'Terjadi kesalahan ketika mengakses database: '.$e->getMessage();
             }
         } else {
-            $response = $this->gemini->generateContent($message, $history);
+            $response = $this->gemini->generateContent($normalizedMessage, $history);
         }
+
+        $conversation->messages()->create([
+            'role' => 'model',
+            'content' => $response,
+        ]);
+        $conversation->update(['last_message_at' => now()]);
 
         return response()->json(['response' => $response]);
     }
@@ -120,5 +154,98 @@ class ChatController extends Controller
         }
 
         return $schema;
+    }
+
+    private function resolveConversation(Request $request): AiConversation
+    {
+        $sessionId = $request->session()->getId();
+        $attributes = [
+            'session_id' => $sessionId,
+            'user_id' => Auth::id(),
+        ];
+
+        return AiConversation::firstOrCreate($attributes, ['last_message_at' => now()]);
+    }
+
+    private function buildHistoryFromConversation(AiConversation $conversation, int $limit = 10): array
+    {
+        return $conversation->messages()
+            ->where('is_correction', false)
+            ->latest()
+            ->take($limit)
+            ->get()
+            ->sortBy('id')
+            ->map(fn (AiMessage $message) => [
+                'role' => $message->role,
+                'content' => $message->content,
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function injectMemories(array $history, string $message, AiConversation $conversation): array
+    {
+        $memories = AiMemory::query()
+            ->where(function ($query) use ($conversation) {
+                $query->whereNull('ai_conversation_id')
+                    ->orWhere('ai_conversation_id', $conversation->id);
+            })
+            ->latest()
+            ->take(8)
+            ->get()
+            ->filter(function (AiMemory $memory) use ($message) {
+                if (! $memory->topic) {
+                    return true;
+                }
+
+                return Str::contains(mb_strtolower($message), mb_strtolower($memory->topic));
+            })
+            ->reverse(); // so oldest memories are prepended first
+
+        foreach ($memories as $memory) {
+            array_unshift($history, [
+                'role' => 'system',
+                'content' => 'Catatan penting: '.$memory->content,
+            ]);
+        }
+
+        return $history;
+    }
+
+    private function isCorrectionMessage(string $message): bool
+    {
+        return (bool) preg_match('/^(koreksi|catatan|note)\s*:/i', $message);
+    }
+
+    private function normalizeCorrectionMessage(string $message): string
+    {
+        return trim(preg_replace('/^(koreksi|catatan|note)\s*:/i', '', $message));
+    }
+
+    private function storeMemory(AiConversation $conversation, string $content): AiMemory
+    {
+        [$topic, $body] = $this->extractMemoryTopicAndBody($content);
+
+        return AiMemory::create([
+            'ai_conversation_id' => $conversation->id,
+            'user_id' => Auth::id(),
+            'topic' => $topic,
+            'content' => $body,
+        ]);
+    }
+
+    private function extractMemoryTopicAndBody(string $content): array
+    {
+        $delimiters = ['|', '-', '—', ':'];
+
+        foreach ($delimiters as $delimiter) {
+            if (str_contains($content, $delimiter)) {
+                [$topic, $body] = array_map('trim', explode($delimiter, $content, 2));
+
+                return [$topic ?: null, $body ?: $content];
+            }
+        }
+
+        return [Str::limit($content, 60), $content];
     }
 }
