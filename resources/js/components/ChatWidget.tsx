@@ -13,8 +13,8 @@ export default function ChatWidget() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [showIntro, setShowIntro] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const isIdle = !isOpen;
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -23,12 +23,6 @@ export default function ChatWidget() {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isOpen]);
-
-    useEffect(() => {
-        if (isOpen) {
-            setShowIntro(false);
-        }
-    }, [isOpen]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -152,37 +146,39 @@ export default function ChatWidget() {
                 )}
             </AnimatePresence>
 
-            <div className="pointer-events-auto relative">
+            <motion.div
+                drag
+                dragConstraints={{ left: -window.innerWidth + 100, right: 0, top: -window.innerHeight + 100, bottom: 0 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="pointer-events-auto relative"
+            >
                 <AnimatePresence>
-                    {showIntro && !isOpen && (
+                    {isIdle && (
                         <motion.div
-                            key="intro-ring"
-                            initial={{ opacity: 0, scale: 0.6 }}
-                            animate={{ opacity: [0, 0.3, 0], scale: [0.8, 2.4, 1] }}
+                            key="idle-ring"
+                            initial={{ opacity: 0, scale: 0.4 }}
+                            animate={{ opacity: [0, 0.3, 0], scale: [0.8, 2.5, 1.2] }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
-                            className="absolute inset-0 m-auto h-16 w-16 rounded-full bg-emerald-300 blur-3xl"
+                            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                            className="absolute inset-0 m-auto h-16 w-16 rounded-full bg-emerald-300/80 blur-3xl"
                         />
                     )}
                 </AnimatePresence>
                 <AnimatePresence>
-                    {showIntro && !isOpen && (
+                    {isIdle && (
                         <motion.div
-                            key="intro-glow"
+                            key="idle-glow"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: [0.2, 1, 0.2], scale: [0.9, 1.05, 0.95] }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 1.2, repeat: Infinity, repeatType: 'loop' }}
+                            transition={{ duration: 1.3, repeat: Infinity, repeatType: 'loop' }}
                             className="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 shadow-lg"
                         />
                     )}
                 </AnimatePresence>
-                <motion.button
-                    drag
-                    dragConstraints={{ left: -window.innerWidth + 100, right: 0, top: -window.innerHeight + 100, bottom: 0 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setIsOpen(!isOpen)}
+                <button
+                    onClick={() => setIsOpen((prev) => !prev)}
                     className="relative z-10 flex h-16 w-16 items-center justify-center rounded-[26px] border border-white/30 bg-gradient-to-br from-emerald-500 via-green-500 to-lime-400 text-white shadow-[0_20px_40px_rgba(16,185,129,0.45)] transition-shadow hover:shadow-[0_25px_50px_rgba(16,185,129,0.55)]"
                 >
                     {isOpen ? (
@@ -192,8 +188,8 @@ export default function ChatWidget() {
                             AI
                         </div>
                     )}
-                </motion.button>
-            </div>
+                </button>
+            </motion.div>
         </div>
     );
 }
