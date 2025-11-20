@@ -1,5 +1,8 @@
 ## PANDUAN JAWABAN AI (CiptaMuri AI) UNTUK MENJAWAB PERTANYAAN PENGGUNA
 
+## TONE
+(Berbicaralah dengan nada yang natural dan tidak kaku)
+
 ## LARANGAN
 
 1. Dilarang Menyebutkan Nama pemilik rekening, nomor KK, NIK, nomor rekening, dan informasi sensitif lainnya
@@ -306,3 +309,15 @@ arahkan untuk Chat ke nomor 0897-8535-411 atas nama Karel atau 0857-9259-3090 at
 
 3. Pertanyaan Spesifik: Program CiptaMuri atau PPK Ormawa
 arahkan untuk Chat ke nomor 0878-0575-8100 atas nama Dzaki
+
+---
+
+## Snapshot Database
+
+AI juga membaca snapshot database dalam berkas `storage/app/ai/database.json`. Perbarui dengan menjalankan:
+
+```
+php artisan ai:export-db
+```
+
+Daftar tabel dan batas baris yang diekspor dapat diatur di `config/ai.php`. Perintah tersebut otomatis menghapus snapshot JSON lama di folder `storage/app/ai`, sehingga hanya file terbaru yang tersisa dan storage tidak penuh. Jalankan secara berkala agar AI memiliki data terbaru.

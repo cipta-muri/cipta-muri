@@ -21,10 +21,21 @@ class GeminiService
         $contents = [];
 
         foreach ($history as $msg) {
-            $role = $msg['role'] === 'user' ? 'user' : 'model';
+            $role = $msg['role'] ?? 'user';
+            $text = $msg['content'] ?? '';
+
+            if ($role === 'system') {
+                $contents[] = [
+                    'role' => 'user',
+                    'parts' => [['text' => "[INSTRUKSI SISTEM]\n".$text]],
+                ];
+
+                continue;
+            }
+
             $contents[] = [
-                'role' => $role,
-                'parts' => [['text' => $msg['content']]],
+                'role' => $role === 'model' ? 'model' : 'user',
+                'parts' => [['text' => $text]],
             ];
         }
 
@@ -56,31 +67,22 @@ class GeminiService
         return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Tidak ada respons yang dihasilkan.';
     }
 
-    public function generateSql(string $prompt, string $schemaContext)
+    public function answerFromSnapshot(string $prompt, array $snapshot): string
     {
-        $systemPrompt = "Kamu adalah analis data dan pakar SQL untuk sistem Bank Sampah Cipta Muri. Gunakan informasi skema berikut untuk menjawab pertanyaan pengguna.\n\n".
-            "Skema Database & Deskripsi:\n".$schemaContext."\n\n".
-            "Instruksi penting:\n".
-            "- Gunakan nama tabel persis seperti yang tercantum (misalnya 'setor_sampah', 'saldo_transactions').\n".
-            "- Pertanyaan bisa dalam Bahasa Indonesia atau Inggris. Pahami maksudnya, lalu buat query SQL yang sesuai.\n".
-            "- Jika diminta total/riwayat setoran, kolom berat dan total_harga berada pada tabel 'setor_sampah'.\n".
-            "- Jika diminta saldo nasabah, gunakan tabel 'rekening' dan/atau 'saldo_transactions'.\n".
-            "- Jika diminta catatan permintaan tarik saldo, gunakan tabel 'permintaan_tarik_saldo'.\n".
-            "- Hanya gunakan perintah SELECT; jangan gunakan INSERT/UPDATE/DELETE.\n".
-            "- Kembalikan hanya query SQL tanpa markdown. Jika data tidak lengkap, buat query SELECT terbaik yang paling mendekati kebutuhan (jangan balas 'ERROR').\n\n".
-            'Pertanyaan pengguna: '.$prompt;
+        $tables = $snapshot['tables'] ?? $snapshot;
+        $metadata = $snapshot['generated_at'] ?? now()->toIso8601String();
+        $maxRows = $snapshot['max_rows_per_table'] ?? 'tidak diketahui';
 
-        // For SQL generation, we don't need history, just the direct prompt
-        return $this->generateContent($systemPrompt);
-    }
+        $context = "Kamu adalah analis data Bank Sampah Cipta Muri. Data berikut adalah snapshot JSON database yang harus kamu gunakan untuk menjawab.\n".
+            "Tanggal snapshot: {$metadata}\n".
+            "Maksimal baris per tabel: {$maxRows}\n".
+            "Jika data yang diminta tidak ditemukan pada snapshot, jawab dengan jujur berdasarkan apa yang tersedia tanpa mengarang.\n".
+            "JSON Data:\n".json_encode($tables, JSON_UNESCAPED_UNICODE);
 
-    public function interpretResults(string $originalQuery, array $results)
-    {
-        $resultsJson = json_encode($results);
-        $prompt = "Pengguna bertanya: \"$originalQuery\".\n".
-            "Database mengembalikan data JSON berikut:\n".$resultsJson."\n\n".
-            "Berikan ringkasan dalam bahasa alami untuk menjawab pertanyaan pengguna.";
+        $history = [
+            ['role' => 'system', 'content' => $context],
+        ];
 
-        return $this->generateContent($prompt);
+        return $this->generateContent($prompt, $history);
     }
 }
