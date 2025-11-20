@@ -312,13 +312,3 @@ Jika terjadi hal seperti ini, arahkan pengguna berdasarkan:
    arahkan untuk Chat ke nomor 0878-0575-8100 atas nama Dzaki
 
 ---
-
-## Snapshot Database
-
-AI juga membaca snapshot database dalam berkas `storage/app/ai/database.json`. Perbarui dengan menjalankan:
-
-```
-php artisan ai:export-db
-```
-
-Daftar tabel dan batas baris yang diekspor dapat diatur di `config/ai.php`. Perintah tersebut otomatis menghapus snapshot JSON lama di folder `storage/app/ai`, sehingga hanya file terbaru yang tersisa dan storage tidak penuh. Jalankan secara berkala agar AI memiliki data terbaru.

@@ -67,22 +67,30 @@ class GeminiService
         return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Tidak ada respons yang dihasilkan.';
     }
 
-    public function answerFromSnapshot(string $prompt, array $snapshot): string
+    public function generateSql(string $prompt, string $schemaContext)
     {
-        $tables = $snapshot['tables'] ?? $snapshot;
-        $metadata = $snapshot['generated_at'] ?? now()->toIso8601String();
-        $maxRows = $snapshot['max_rows_per_table'] ?? 'tidak diketahui';
+        $systemPrompt = "Kamu adalah analis data dan pakar SQL untuk sistem Bank Sampah Cipta Muri. Gunakan informasi skema berikut untuk menjawab pertanyaan pengguna.\n\n".
+            "Skema Database & Deskripsi:\n".$schemaContext."\n\n".
+            "Instruksi penting:\n".
+            "- Gunakan nama tabel persis seperti yang tercantum (misalnya 'setor_sampah', 'saldo_transactions').\n".
+            "- Pertanyaan bisa dalam Bahasa Indonesia atau Inggris. Pahami maksudnya, lalu buat query SQL yang sesuai.\n".
+            "- Jika diminta total/riwayat setoran, kolom berat dan total_harga berada pada tabel 'setor_sampah'.\n".
+            "- Jika diminta saldo nasabah, gunakan tabel 'rekening' dan/atau 'saldo_transactions'.\n".
+            "- Jika diminta catatan permintaan tarik saldo, gunakan tabel 'permintaan_tarik_saldo'.\n".
+            "- Hanya gunakan perintah SELECT; jangan gunakan INSERT/UPDATE/DELETE.\n".
+            "- Kembalikan hanya query SQL tanpa markdown. Jika data tidak lengkap, buat query SELECT terbaik yang paling mendekati kebutuhan (jangan balas 'ERROR').\n\n".
+            'Pertanyaan pengguna: '.$prompt;
 
-        $context = "Kamu adalah analis data Bank Sampah Cipta Muri. Data berikut adalah snapshot JSON database yang harus kamu gunakan untuk menjawab.\n".
-            "Tanggal snapshot: {$metadata}\n".
-            "Maksimal baris per tabel: {$maxRows}\n".
-            "Jika data yang diminta tidak ditemukan pada snapshot, jawab dengan jujur berdasarkan apa yang tersedia tanpa mengarang.\n".
-            "JSON Data:\n".json_encode($tables, JSON_UNESCAPED_UNICODE);
+        return $this->generateContent($systemPrompt);
+    }
 
-        $history = [
-            ['role' => 'system', 'content' => $context],
-        ];
+    public function interpretResults(string $originalQuery, array $results)
+    {
+        $resultsJson = json_encode($results);
+        $prompt = "Pengguna bertanya: \"$originalQuery\".\n".
+            "Database mengembalikan data JSON berikut:\n".$resultsJson."\n\n".
+            'Berikan ringkasan dalam bahasa alami untuk menjawab pertanyaan pengguna.';
 
-        return $this->generateContent($prompt, $history);
+        return $this->generateContent($prompt);
     }
 }

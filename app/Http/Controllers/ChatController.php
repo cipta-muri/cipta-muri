@@ -8,19 +8,38 @@ use App\Models\AiMessage;
 use App\Services\GeminiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ChatController extends Controller
 {
     protected $gemini;
     protected string $knowledgeFile;
-    protected string $snapshotPath;
+
+    /**
+     * Additional descriptions for important tables to guide the LLM.
+     *
+     * @var array<string, string>
+     */
+    protected array $tableDescriptions = [
+        'setor_sampah' => 'Riwayat setoran sampah. Gunakan kolom berat, berat_total, tanggal_setor, rekening_id, user_id, total_harga.',
+        'sampah_transactions' => 'Rincian item sampah per transaksi setoran. Kolom jumlah, berat, harga, kategori.',
+        'rekening' => 'Data rekening / nasabah bank sampah. Kolom balance, points_balance, status_desa, status_lengkap.',
+        'saldo_transactions' => 'Mutasi saldo rekening (credit/debit). Kolom amount, type, rekening_id, description.',
+        'poin_transactions' => 'Mutasi poin pengguna. Kolom amount, rekening_id, description.',
+        'permintaan_tarik_saldo' => 'Permintaan penarikan saldo yang diajukan nasabah. Kolom amount, status, rekening_id.',
+        'permintaan_setor_sampah' => 'Permintaan penjemputan/setoran sampah. Kolom berat_estimasi, status, rekening_id.',
+        'users' => 'Akun pengguna internal/admin.',
+        'news' => 'Konten berita / publikasi.',
+        'activity_log' => 'Log aktivitas sistem.',
+    ];
 
     public function __construct(GeminiService $gemini)
     {
         $this->gemini = $gemini;
         $this->knowledgeFile = base_path('docs/ai-knowledge.md');
-        $this->snapshotPath = storage_path('app/'.(config('ai.data_export.path') ?? 'ai/database.json'));
     }
 
     public function sendMessage(Request $request)
@@ -63,11 +82,21 @@ class ChatController extends Controller
         $needsDb = $this->checkIfNeedsDb($normalizedMessage);
 
         if ($needsDb) {
-            $snapshot = $this->getSnapshotData();
-            if (! $snapshot) {
-                $response = 'Maaf, data terbaru belum tersedia. Jalankan perintah `php artisan ai:export-db` untuk memperbarui snapshot.';
-            } else {
-                $response = $this->gemini->answerFromSnapshot($normalizedMessage, $snapshot);
+            try {
+                $schema = $this->getDatabaseSchema();
+                $sql = $this->gemini->generateSql($normalizedMessage, $schema);
+
+                $sql = preg_replace('/^```sql\s*|```\s*$/', '', trim($sql));
+
+                if (str_starts_with(strtoupper($sql), 'SELECT')) {
+                    $results = DB::select($sql);
+                    $response = $this->gemini->interpretResults($normalizedMessage, $results);
+                } else {
+                    $response = "Saya tidak dapat membuat query yang aman untuk permintaan tersebut. (Query: $sql)";
+                }
+            } catch (\Exception $e) {
+                Log::error('Chat DB Error: '.$e->getMessage());
+                $response = 'Terjadi kesalahan ketika mengakses database: '.$e->getMessage();
             }
         } else {
             $response = $this->gemini->generateContent($normalizedMessage, $history);
@@ -183,20 +212,19 @@ class ChatController extends Controller
         return $primaryHits >= 1 && $hasIndicator;
     }
 
-    private function getSnapshotData(): ?array
+    private function getDatabaseSchema(): string
     {
-        if (! file_exists($this->snapshotPath)) {
-            return null;
+        $tables = Schema::getTableListing();
+        $schema = '';
+
+        foreach ($tables as $table) {
+            $columns = Schema::getColumnListing($table);
+            $readable = Str::headline($table);
+            $description = $this->tableDescriptions[$table] ?? "Data terkait {$readable}.";
+            $schema .= "Tabel: {$table} ({$readable})\nDeskripsi: {$description}\nKolom: ".implode(', ', $columns)."\n\n";
         }
 
-        $content = file_get_contents($this->snapshotPath);
-        if ($content === false) {
-            return null;
-        }
-
-        $decoded = json_decode($content, true);
-
-        return is_array($decoded) ? $decoded : null;
+        return $schema;
     }
 
     private function prependKnowledgeContext(array $history): array
