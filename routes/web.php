@@ -26,6 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::post('/admin/chat-pro', [App\Http\Controllers\Admin\ChatProController::class, 'sendMessage'])
+        ->name('chat.pro');
 });
 
 Route::post('/api/chat', [App\Http\Controllers\ChatController::class, 'sendMessage'])

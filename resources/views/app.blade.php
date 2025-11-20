@@ -39,5 +39,7 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        @include('components.global-chat-widget')
     </body>
 </html>

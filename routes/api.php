@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PermintaanController;
 use App\Http\Controllers\Api\RankingController;
+use App\Http\Controllers\Api\SampahStatsController;
 use App\Models\News;
 use App\Models\Rekening;
 use App\Models\SaldoTransaction;
@@ -93,6 +94,8 @@ Route::middleware('auth:rekening')->group(function () {
         ]);
     });
 
+    Route::get('/setor-sampah/statistik-jenis', [SampahStatsController::class, 'index']);
+
     Route::post('/permintaan/setor-sampah', [PermintaanController::class, 'createSetorSampah']);
     Route::post('/permintaan/tarik-saldo', [PermintaanController::class, 'createTarikSaldo']);
 
@@ -178,3 +181,8 @@ Route::get('/tes-api', function () {
 
 // Ranking (publik) — hasil gabungan Top Berat & Top Jumlah
 Route::get('/ranking', [RankingController::class, 'index']);
+
+
+
+
+

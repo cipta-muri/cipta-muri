@@ -8,7 +8,11 @@ interface Message {
     content: string;
 }
 
-export default function ChatWidget() {
+interface ChatWidgetProps {
+    endpoint?: string;
+}
+
+export default function ChatWidget({ endpoint = '/api/chat' }: ChatWidgetProps = {}) {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
@@ -34,7 +38,7 @@ export default function ChatWidget() {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('/api/chat', {
+            const response = await axios.post(endpoint, {
                 message: userMessage,
                 history: messages.map(m => ({ role: m.role, content: m.content }))
             });

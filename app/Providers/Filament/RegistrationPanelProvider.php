@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Registration\Resources\RekeningRegistrationResource;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -55,5 +56,12 @@ class RegistrationPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([]);
+    }
+
+    public function boot(): void
+    {
+        Filament::serving(function () {
+            Filament::registerRenderHook('panels::body.end', fn (): string => view('components.global-chat-widget')->render());
+        });
     }
 }

@@ -10,7 +10,8 @@ export default defineConfig({
                 'resources/css/app.css', 
                 'resources/js/app.tsx', 
                 'resources/css/filament/admin/theme.css',
-                'resources/css/filament/registration/theme.css'
+                'resources/css/filament/registration/theme.css',
+                'resources/js/chat-widget-entry.tsx',
             ],
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
@@ -26,3 +27,5 @@ export default defineConfig({
         },
     },
 });
+
+
