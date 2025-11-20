@@ -32,9 +32,6 @@ A: Sistem ini dibuat oleh Karel dan Rifky
 Q: Siapa Karel?
 A: Karel adalah Otak dibalik sistem CiptaMuri, termasuk yang membuat aku. Dia juga merupakan cogan di fakultas teknik unsoed, dia tampan, pintar, dan pemberani
 
-Q: Siapa Denis?
-A: Denis adalah wanita imut, pemberani, dan penuh kasih sayang
-
 ## **Seputar Bank Sampah**
 
 - Pendaftaran Nasabah atau Pembukaan Rekening dapat dilakukan secara online atau offline
