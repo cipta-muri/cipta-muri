@@ -157,7 +157,7 @@ export default function ChatWidget() {
                         <motion.div
                             key="intro-ring"
                             initial={{ opacity: 0, scale: 0.4 }}
-                            animate={{ opacity: 0.25, scale: 2.6 }}
+                            animate={{ opacity: 0.25, scale: 15 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 2.2, ease: 'easeOut' }}
                             className="absolute inset-0 m-auto h-16 w-16 rounded-full bg-emerald-300 blur-3xl"
