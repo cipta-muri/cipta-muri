@@ -48,7 +48,7 @@ export default function ChatWidget() {
         }
     };
 
-    return (
+    const renderMessageContent = (content: string) =>\n        content\n            .split(/\\n{2,}/)\n            .map((paragraph, index) => (\n                <p key={index} className={`leading-relaxed ${index > 0 ? 'mt-1.5' : ''}`}>\n                    {paragraph.trim()}\n                </p>\n            ));\n\n    return (
         <div className="pointer-events-none fixed bottom-6 right-6 z-50 flex flex-col items-end">
             <AnimatePresence>
                 {isOpen && (
@@ -103,7 +103,7 @@ export default function ChatWidget() {
                                                         : 'rounded-bl-md border border-white/40 bg-white/60 text-emerald-900 shadow-sm backdrop-blur-lg'
                                                 }`}
                                             >
-                                                {msg.content}
+                                                {renderMessageContent(msg.content)}
                                             </div>
                                         </div>
                                     ))}
