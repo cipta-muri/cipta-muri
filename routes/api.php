@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PermintaanController;
 use App\Http\Controllers\Api\RankingController;
 use App\Http\Controllers\Api\SampahStatsController;
+use App\Http\Controllers\Api\SampahController;
 use App\Models\News;
 use App\Models\Rekening;
 use App\Models\SaldoTransaction;
@@ -157,23 +158,8 @@ Route::get('/berita/{slug}', function (string $slug) {
 });
 
 // Sampah (publik)
-Route::get('/sampah', function () {
-    $data = Sampah::orderBy('jenis_sampah')->get();
-
-    return response()->json([
-        'success' => true,
-        'data' => $data,
-    ]);
-});
-
-Route::get('/sampah/{id}', function (string $id) {
-    $item = Sampah::findOrFail($id);
-
-    return response()->json([
-        'success' => true,
-        'data' => $item,
-    ]);
-});
+Route::get('/sampah', [SampahController::class, 'index']);
+Route::get('/sampah/{sampah}', [SampahController::class, 'show']);
 
 Route::get('/tes-api', function () {
     return response()->json(['message' => 'API aktif ✅.']);
