@@ -25,9 +25,10 @@ export default function ChatWidget() {
     }, [messages, isOpen]);
 
     useEffect(() => {
-        const timer = setTimeout(() => setShowIntro(false), 2600);
-        return () => clearTimeout(timer);
-    }, []);
+        if (isOpen) {
+            setShowIntro(false);
+        }
+    }, [isOpen]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -156,10 +157,10 @@ export default function ChatWidget() {
                     {showIntro && !isOpen && (
                         <motion.div
                             key="intro-ring"
-                            initial={{ opacity: 0, scale: 0.4 }}
-                            animate={{ opacity: 0.25, scale: 15 }}
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            animate={{ opacity: [0, 0.3, 0], scale: [0.8, 2.4, 1] }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 2.2, ease: 'easeOut' }}
+                            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
                             className="absolute inset-0 m-auto h-16 w-16 rounded-full bg-emerald-300 blur-3xl"
                         />
                     )}
@@ -169,9 +170,9 @@ export default function ChatWidget() {
                         <motion.div
                             key="intro-glow"
                             initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                            animate={{ opacity: [0.2, 1, 0.2], scale: [0.9, 1.05, 0.95] }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.8, repeat: 1, repeatType: 'reverse' }}
+                            transition={{ duration: 1.2, repeat: Infinity, repeatType: 'loop' }}
                             className="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-gradient-to-r from-lime-400 to-emerald-500 shadow-lg"
                         />
                     )}
