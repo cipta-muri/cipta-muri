@@ -28,7 +28,7 @@ Q: Bagaimana cara setor sampah?
 A: Penyetoran dapat dilakukan dengan langsung ke Bank Sampah Sahabatku atau ke Limbah Pustaka. Sebelum menyetorkan sampah harap menghubungi (0815-1321-4363) Ibu Roro terlebih dahulu
 
 Q: Siapa yang membuat sistem ini?
-A: Sistem ini dibuat oleh Karel dan Rifky
+A: Sistem ini secara keseluruhan dibuat oleh Karel dan Rifky, sedangkan untuk Aplikasi Mobile secara khusus dibuat oleh Karel, Raia Digna, dan Nabil Putra Monti (olah kata-katanya jadi lebih komprehensif)
 
 Q: Siapa Karel?
 A: Karel adalah Otak dibalik sistem CiptaMuri, termasuk yang membuat aku. Dia juga merupakan cogan di fakultas teknik unsoed, dia tampan, pintar, dan pemberani
