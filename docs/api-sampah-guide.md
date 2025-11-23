@@ -1,13 +1,16 @@
 # API Sampah untuk Mobile Kotlin
 
-Dokumen ini menjelaskan cara memakai endpoint sampah publik pada aplikasi Android (Kotlin + OkHttp/Moshi).
+Dokumen ini menjelaskan seluruh endpoint sampah yang perlu diintegrasikan oleh aplikasi Android (Kotlin + OkHttp/Moshi), baik yang publik maupun yang memerlukan token rekening.
 
-## Endpoint
+## Daftar Endpoint
 
-| Method | Path                  | Deskripsi                            |
-| ------ | --------------------- | ------------------------------------ |
-| GET    | /api/sampah           | Daftar semua jenis sampah (opsional query `q`). |
-| GET    | /api/sampah/{id}      | Detail satu jenis sampah berdasar ID. |
+| Akses  | Method | Path                             | Deskripsi |
+| ------ | ------ | -------------------------------- | --------- |
+| Publik | GET    | /api/sampah                      | Daftar semua jenis sampah (opsional query `q`). |
+| Publik | GET    | /api/sampah/{id}                 | Detail satu jenis sampah berdasar ID. |
+| Token  | GET    | /api/setor-sampah/statistik-jenis| Total berat sampah per jenis milik nasabah login. |
+
+## Endpoint Publik `/api/sampah`
 
 ### Contoh Response `GET /api/sampah`
 ```json
@@ -110,3 +113,34 @@ class SampahViewModel(private val repository: SampahRepository) : ViewModel() {
 - Gunakan query `q` untuk pencarian (misal "plastik").
 
 Dengan API ini, aplikasi Android dapat menampilkan daftar jenis sampah dengan detail harga, kategori, dan total berat yang tersedia di sistem.
+
+## Endpoint Statistik Berat per Jenis `/api/setor-sampah/statistik-jenis`
+
+Endpoint ini membutuhkan token Sanctum rekening (`Authorization: Bearer <token>`). Response berisi daftar jenis sampah beserta total berat (netto masuk - keluar) yang pernah dicatat untuk nasabah yang sedang login.
+
+### Contoh Response
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "sampah_id": "sampah-001",
+      "jenis_sampah": "Plastik PET",
+      "kode_sampah": "PET",
+      "total_berat": "12.50"
+    }
+  ]
+}
+```
+
+### Catatan
+- Data diambil dari tabel `sampah_transactions` dan otomatis mengurangi transaksi bertipe `keluar`.
+- Hanya transaksi dengan `rekening_id` milik token aktif yang dihitung.
+- Jika sebuah jenis sampah belum pernah disetorkan oleh nasabah tersebut, tidak akan muncul.
+
+### Konsumsi di Android
+1. Login untuk mendapatkan token nasabah.
+2. Sertakan header `Authorization` dan `Accept: application/json`.
+3. Tampilkan daftar jenis + berat per jenis (mis. untuk grafik atau kartu ringkasan).
+
+Dengan menggabungkan endpoint publik dan terautentikasi ini, aplikasi Android dapat menampilkan katalog sampah umum dan statistik pribadi nasabah pada satu modul integrasi.

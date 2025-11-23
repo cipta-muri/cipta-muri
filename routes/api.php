@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\PermintaanController;
 use App\Http\Controllers\Api\RankingController;
 use App\Http\Controllers\Api\SampahStatsController;
 use App\Http\Controllers\Api\SampahController;
+use App\Http\Controllers\Api\SampahTransactionController;
 use App\Models\News;
 use App\Models\Rekening;
 use App\Models\SaldoTransaction;
@@ -96,6 +97,7 @@ Route::middleware('auth:rekening')->group(function () {
     });
 
     Route::get('/setor-sampah/statistik-jenis', [SampahStatsController::class, 'index']);
+    Route::get('/sampah-transactions', [SampahTransactionController::class, 'index']);
 
     Route::post('/permintaan/setor-sampah', [PermintaanController::class, 'createSetorSampah']);
     Route::post('/permintaan/tarik-saldo', [PermintaanController::class, 'createTarikSaldo']);
