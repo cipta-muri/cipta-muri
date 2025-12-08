@@ -71,7 +71,7 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'nik',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         
         ],

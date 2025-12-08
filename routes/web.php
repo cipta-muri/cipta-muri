@@ -10,22 +10,34 @@ use Inertia\Inertia;
 // Public landing page
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// News routes
-Route::prefix('berita')->name('news.')->group(function () {
-    Route::get('/', [NewsController::class, 'index'])->name('index');
-    Route::get('/search', [NewsController::class, 'search'])->name('search');
-    Route::get('/kategori/{category}', [NewsController::class, 'category'])->name('category');
-    Route::get('/{news:slug}', [NewsController::class, 'show'])->name('show');
-});
-
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('dashboard', function () {
+        $user = auth()->user();
+        
+        // Tentukan role berdasarkan NIK atau kriteria lain
+        // Misalnya admin jika NIK diawali dengan '1234'
+        $isAdmin = str_starts_with($user->nik, '1234');
+        
+        if ($isAdmin) {
+            return Inertia::render('admin-dashboard', [
+                'user' => [
+                    'name' => $user->name,
+                    'nik' => $user->nik,
+                    'role' => 'admin'
+                ]
+            ]);
+        } else {
+            return Inertia::render('nasabah-dashboard', [
+                'user' => [
+                    'name' => $user->name,
+                    'nik' => $user->nik,
+                    'role' => 'nasabah'
+                ],
+                'saldo' => 'Rp 110.000,00', // Data dummy, nanti ambil dari database
+                'points' => '10 MP'
+            ]);
+        }
+    })->name('dashboard');
 });
 
 require __DIR__.'/auth.php';
