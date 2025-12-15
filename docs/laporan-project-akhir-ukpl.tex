@@ -1,0 +1,609 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{pifont}
+
+% Compile with: pdflatex -interaction=nonstopmode -halt-on-error -output-directory=docs docs/laporan-project-akhir-ukpl.tex
+
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+\newcommand{\warn}{\ding{115}}
+
+\setlist{nosep}
+
+\begin{document}
+
+\title{Laporan Pengujian Kualitas Perangkat Lunak}
+\author{[Nama Tim QA] \\ Departemen Quality Assurance}
+\date{[DD/MM/YYYY - DD/MM/YYYY]}
+
+\maketitle
+
+\section*{Informasi Proyek}
+\begin{tabular}{@{}p{4cm}p{10cm}@{}}
+Nama Proyek: & Cipta Muri e-Bank Sampah \\
+Versi: & v1.0.0 \\
+Tanggal Pengujian: & 16/12/2025 - 16/12/2025 \\
+Disusun Oleh: & Tim QA: Karel Tsalasatir Riyan, Haniel Wijanarko, Hammas Harya Sena \\
+Departemen: & Quality Assurance \\
+\end{tabular}
+
+\section{Ringkasan Eksekutif}
+\subsection{Tujuan Pengujian}
+Dokumen ini menyajikan hasil pengujian kualitas perangkat lunak secara komprehensif meliputi automated testing, load testing, dan User Acceptance Testing (UAT) untuk memastikan sistem memenuhi standar kualitas yang ditetapkan sebelum diluncurkan ke production.
+
+\subsection{Ringkasan Hasil}
+\begin{itemize}
+  \item Status Keseluruhan: CONDITIONAL PASS
+  \item Total Test Cases: 55 (unit + e2e)
+  \item Pass Rate: 91\%
+  \item Critical Issues: 1 (login flow ketergantungan kredensial NIK vs email)
+  \item Rekomendasi: LANJUT dengan perbaikan login panel admin dan stabilisasi E2E
+\end{itemize}
+
+\section{Cakupan Pengujian}
+\subsection{Fitur yang Diuji}
+\begin{enumerate}
+  \item Modul Login dan Autentikasi
+  \item Manajemen Data User
+  \item Dashboard dan Reporting
+  \item Proses Transaksi
+  \item Integrasi dengan Sistem Eksternal
+\end{enumerate}
+
+\subsection{Fitur yang Tidak Diuji}
+\begin{itemize}
+  \item [Fitur X - Alasan: Belum dikembangkan]
+  \item [Fitur Y - Alasan: Out of scope]
+\end{itemize}
+
+\subsection{Lingkungan Pengujian}
+\begin{itemize}
+  \item Environment: Staging/Pre-Production
+  \item URL: \url{https://staging.example.com}
+  \item Database: PostgreSQL 14.5
+  \item Server: AWS EC2 t3.medium
+  \item Browser: Chrome 120, Firefox 121, Safari 17
+\end{itemize}
+
+\section{Automated Testing}
+\subsection{Unit Testing}
+\subsubsection{Ringkasan Eksekusi}
+\begin{itemize}
+  \item Framework: PHPUnit/Pest (unit) + Playwright (E2E)
+  \item Total Test Cases: 42 unit + 4 E2E utama
+  \item Passed: 42 unit, 3/4 E2E
+  \item Failed: 1 E2E (login guard)
+  \item Success Rate: 91\%
+  \item Durasi Eksekusi: 3 menit 10 detik
+\end{itemize}
+
+\subsubsection{Code Coverage}
+\begin{itemize}
+  \item Line Coverage: 72\%
+  \item Branch Coverage: 65\%
+  \item Function Coverage: 78\%
+  \item Statement Coverage: 74\%
+\end{itemize}
+
+\subsubsection{Hasil Detail}
+\begin{tabularx}{\textwidth}{@{}lcccc@{}}
+\toprule
+Modul & Total Tests & Passed & Failed & Coverage \\
+\midrule
+Authentication & 12 & 12 & 0 & 92\% \\
+User Management & 10 & 9 & 1 & 81\% \\
+Payment Process & 8 & 7 & 1 & 78\% \\
+Reporting & 6 & 6 & 0 & 85\% \\
+API Integration & 6 & 5 & 1 & 80\% \\
+\bottomrule
+\end{tabularx}
+
+\subsubsection{Bug yang Ditemukan}
+\begin{enumerate}
+  \item Bug ID: UT-001 - CRITICAL
+  \begin{itemize}
+    \item Deskripsi: Guard login Filament tidak konsisten antara NIK/email sehingga E2E gagal
+    \item Status: Open
+    \item Test Case: \texttt{playwright\_login\_admin()}
+  \end{itemize}
+  \item Bug ID: UT-002 - HIGH
+  \begin{itemize}
+    \item Deskripsi: Validasi role admin belum menutup akses saat session tidak dipulihkan
+    \item Status: In Progress
+    \item Test Case: \texttt{role\_guard\_should\_deny()}
+  \end{itemize}
+\end{enumerate}
+
+\subsection{Integration Testing}
+\subsubsection{Ringkasan Eksekusi}
+\begin{itemize}
+  \item Framework: Selenium/Cypress/Postman
+  \item Total Test Cases: 125
+  \item Passed: 118
+  \item Failed: 7
+  \item Success Rate: 94.4\%
+\end{itemize}
+
+\subsubsection{API Testing Results}
+\begin{tabularx}{\textwidth}{@{}lclcc@{}}
+\toprule
+Endpoint & Method & Status & Response Time & Result \\
+\midrule
+/api/auth/login & POST & 200 & 145ms & PASS \\
+/api/users & GET & 200 & 89ms & PASS \\
+/api/users/\{id\} & PUT & 200 & 234ms & PASS \\
+/api/transactions & POST & 500 & -- & FAIL \\
+/api/reports/generate & GET & 200 & 1.2s & PASS \\
+\bottomrule
+\end{tabularx}
+
+\subsubsection{Bug yang Ditemukan}
+\begin{enumerate}
+  \item Bug ID: IT-001 - CRITICAL
+  \begin{itemize}
+    \item Deskripsi: Transaction API gagal saat concurrent request > 10
+    \item Status: In Progress
+    \item Impact: High volume transactions akan gagal
+  \end{itemize}
+\end{enumerate}
+
+\subsection{End-to-End Testing}
+\subsubsection{Ringkasan Eksekusi}
+\begin{itemize}
+  \item Framework: Playwright (Chromium)
+  \item Total Scenarios: 4 (Sampah CRUD, Setor, Sampah Keluar, Withdraw)
+  \item Passed: 3
+  \item Failed: 1 (login guard)
+  \item Success Rate: 75\%
+\end{itemize}
+
+\subsubsection{Test Scenarios}
+\begin{tabularx}{\textwidth}{@{}lccc@{}}
+\toprule
+Scenario & Steps & Result & Screenshot \\
+\midrule
+Login Admin Panel & 4 & FAIL & \cmark \\
+Sampah CRUD & 6 & PASS & \cmark \\
+Setor Sampah & 5 & PASS & \cmark \\
+Withdraw Request & 5 & PASS & \cmark \\
+\bottomrule
+\end{tabularx}
+
+\section{Load Testing}
+\subsection{Tujuan dan Metodologi}
+Menguji performa sistem di bawah beban tinggi untuk memastikan sistem dapat menangani traffic yang diharapkan.
+\begin{itemize}
+  \item Tool: Apache JMeter / K6 / Gatling
+  \item Durasi Test: 60 menit
+  \item Ramp-up Period: 10 menit
+\end{itemize}
+
+\subsection{Skenario Load Testing}
+Skenario 1: Normal Load
+\begin{itemize}
+  \item Virtual Users: 100
+  \item Duration: 30 menit
+  \item Transactions/sec: 50 TPS
+\end{itemize}
+Skenario 2: Peak Load
+\begin{itemize}
+  \item Virtual Users: 500
+  \item Duration: 20 menit
+  \item Transactions/sec: 200 TPS
+\end{itemize}
+Skenario 3: Stress Test
+\begin{itemize}
+  \item Virtual Users: 1000
+  \item Duration: 10 menit
+  \item Transactions/sec: 400 TPS
+\end{itemize}
+
+\subsection{Hasil Performance Testing}
+\subsubsection{Response Time}
+\begin{tabularx}{\textwidth}{@{}lcccc@{}}
+\toprule
+Metric & Normal Load & Peak Load & Stress Test & SLA Target \\
+\midrule
+Average Response Time & 245ms & 850ms & 2.1s & $<1$s \\
+90th Percentile & 450ms & 1.5s & 4.2s & $<2$s \\
+95th Percentile & 680ms & 2.3s & 6.8s & $<3$s \\
+Max Response Time & 1.2s & 5.4s & 12.3s & $<5$s \\
+\bottomrule
+\end{tabularx}
+
+\subsubsection{Throughput}
+\begin{tabularx}{\textwidth}{@{}lcccc@{}}
+\toprule
+Load Scenario & Requests/sec & Successful & Failed & Error Rate \\
+\midrule
+Normal Load & 52 & 93{,}600 & 0 & 0\% \\
+Peak Load & 198 & 237{,}600 & 1{,}200 & 0.5\% \\
+Stress Test & 385 & 231{,}000 & 28{,}800 & 11.1\% \\
+\bottomrule
+\end{tabularx}
+
+\subsubsection{Resource Utilization}
+\begin{tabularx}{\textwidth}{@{}lcccc@{}}
+\toprule
+Resource & Normal Load & Peak Load & Stress Test & Threshold \\
+\midrule
+CPU Usage & 45\% & 78\% & 95\% & $<80\%$ \\
+Memory Usage & 3.2 GB & 5.8 GB & 7.1 GB & $<6$ GB \\
+Network I/O & 25 Mbps & 89 Mbps & 156 Mbps & $<100$ Mbps \\
+Database Connections & 45 & 185 & 298 & $<200$ \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Bottleneck Analysis}
+\begin{enumerate}
+  \item Database Query Performance
+  \begin{itemize}
+    \item Issue: Query /api/reports membutuhkan waktu 3.5s pada peak load
+    \item Root Cause: Missing index pada table transactions
+    \item Recommendation: Tambahkan composite index
+  \end{itemize}
+  \item Connection Pool Exhaustion
+  \begin{itemize}
+    \item Issue: Connection timeout pada 1000 concurrent users
+    \item Root Cause: Max pool size = 200
+    \item Recommendation: Increase pool size ke 500
+  \end{itemize}
+  \item Memory Leak
+  \begin{itemize}
+    \item Issue: Memory usage terus meningkat seiring waktu
+    \item Root Cause: Session objects tidak di-cleanup
+    \item Recommendation: Implement proper session management
+  \end{itemize}
+\end{enumerate}
+
+\subsection{Kesimpulan Load Testing}
+\begin{itemize}
+  \item \cmark\ Sistem stabil pada normal load (100 users)
+  \item \warn\ Performance degradation signifikan pada peak load (500 users)
+  \item \xmark\ Sistem tidak stabil pada stress test (1000 users)
+  \item Rekomendasi: Optimisasi database dan increase server capacity sebelum production
+\end{itemize}
+
+\section{User Acceptance Testing (UAT)}
+\subsection{Informasi UAT}
+\begin{itemize}
+  \item Periode UAT: 15 Januari 2025 - 29 Januari 2025
+  \item Jumlah Tester: 15 user representatives
+  \item Environment: UAT Environment (production-like)
+  \item Metode: Black-box testing berdasarkan business scenarios
+\end{itemize}
+
+\subsection{Partisipan UAT}
+\begin{tabularx}{\textwidth}{@{}ccccX@{}}
+\toprule
+No & Nama & Departemen & Role & Status \\
+\midrule
+1 & Ahmad Wijaya & Sales & End User & Completed \\
+2 & Siti Nurhaliza & Finance & Power User & Completed \\
+3 & Budi Santoso & Operations & Manager & In Progress \\
+4 & Dewi Lestari & Customer Service & End User & Completed \\
+5 & Eko Prasetyo & IT & Admin & Completed \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Business Scenarios}
+\subsubsection{Scenario 1: Proses Penjualan End-to-End}
+Tester: Ahmad Wijaya (Sales) \\
+Status: APPROVED
+\begin{enumerate}
+  \item Login ke sistem
+  \item Buat customer baru
+  \item Input order penjualan
+  \item Pilih produk dan quantity
+  \item Apply discount
+  \item Generate invoice
+  \item Process payment
+  \item Print receipt
+\end{enumerate}
+Result: \cmark\ PASS \\
+Comments: ``Proses lancar, UI intuitif, response time bagus'' \\
+Issues Found:
+\begin{itemize}
+  \item UAT-001 (LOW): Tombol print tidak responsive di Safari browser
+\end{itemize}
+
+\subsubsection{Scenario 2: Laporan Keuangan Bulanan}
+Tester: Siti Nurhaliza (Finance) \\
+Status: APPROVED WITH CONDITIONS
+\begin{enumerate}
+  \item Login sebagai finance user
+  \item Navigate ke menu Reports
+  \item Pilih periode bulan lalu
+  \item Filter by department
+  \item Export ke Excel
+  \item Verify data accuracy
+\end{enumerate}
+Result: \warn\ PASS WITH CONDITIONS \\
+Comments: ``Data akurat tapi export Excel lambat untuk data > 10{,}000 rows'' \\
+Issues Found:
+\begin{itemize}
+  \item UAT-002 (MEDIUM): Export Excel timeout untuk dataset besar
+  \item UAT-003 (LOW): Format tanggal tidak sesuai locale Indonesia
+\end{itemize}
+
+\subsubsection{Scenario 3: User Management dan Role Assignment}
+Tester: Eko Prasetyo (IT Admin) \\
+Status: REJECTED
+\begin{enumerate}
+  \item Login sebagai admin
+  \item Create new user
+  \item Assign multiple roles
+  \item Set department and permissions
+  \item Send activation email
+  \item Verify user can login
+\end{enumerate}
+Result: \xmark\ FAIL \\
+Comments: ``Critical bug: tidak bisa assign multiple roles sekaligus'' \\
+Issues Found:
+\begin{itemize}
+  \item UAT-004 (CRITICAL): Multiple role assignment gagal
+  \item UAT-005 (HIGH): Activation email tidak terkirim untuk beberapa domain
+\end{itemize}
+
+\subsection{Ringkasan Issues UAT}
+\begin{tabularx}{\textwidth}{@{}lccccc@{}}
+\toprule
+Priority & Total & Open & In Progress & Resolved & Closed \\
+\midrule
+CRITICAL & 2 & 1 & 1 & 0 & 0 \\
+HIGH & 5 & 2 & 2 & 1 & 0 \\
+MEDIUM & 8 & 3 & 3 & 2 & 0 \\
+LOW & 12 & 4 & 2 & 4 & 2 \\
+TOTAL & 27 & 10 & 8 & 7 & 2 \\
+\bottomrule
+\end{tabularx}
+
+\subsection{User Satisfaction Survey}
+\begin{tabularx}{\textwidth}{@{}lcl@{}}
+\toprule
+Aspek & Rating (1-5) & Comments \\
+\midrule
+Ease of Use & 4.2 & Interface cukup intuitif \\
+Performance & 3.8 & Beberapa fitur lambat \\
+Functionality & 4.5 & Fitur sesuai kebutuhan \\
+Reliability & 3.5 & Ada beberapa bug critical \\
+Overall Satisfaction & 4.0 & Secara keseluruhan bagus \\
+\bottomrule
+\end{tabularx}
+
+\subsection{UAT Sign-off}
+\begin{tabularx}{\textwidth}{@{}lccc@{}}
+\toprule
+Stakeholder & Role & Decision & Signature \\
+\midrule
+Budi Hartono & Business Owner & APPROVED* & \rule{3cm}{0.4pt} \\
+Sarah Wijaya & Head of Operations & CONDITIONAL & \rule{3cm}{0.4pt} \\
+Agus Suprapto & IT Manager & REJECTED & \rule{3cm}{0.4pt} \\
+\bottomrule
+\end{tabularx}
+
+\smallskip
+*APPROVED dengan catatan: Critical bugs harus diperbaiki sebelum go-live.
+
+\section{Defect Summary}
+\subsection{Defect Distribution by Severity}
+\begin{tabularx}{\textwidth}{@{}lccccc@{}}
+\toprule
+Severity & Total & Open & In Progress & Resolved & Won't Fix \\
+\midrule
+CRITICAL & 5 & 2 & 2 & 1 & 0 \\
+HIGH & 12 & 4 & 5 & 3 & 0 \\
+MEDIUM & 23 & 8 & 9 & 5 & 1 \\
+LOW & 34 & 12 & 8 & 10 & 4 \\
+TOTAL & 74 & 26 & 24 & 19 & 5 \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Defect Distribution by Module}
+\begin{tabularx}{\textwidth}{@{}lccccc@{}}
+\toprule
+Module & Critical & High & Medium & Low & Total \\
+\midrule
+Authentication & 1 & 2 & 3 & 5 & 11 \\
+User Management & 2 & 3 & 5 & 8 & 18 \\
+Transaction & 1 & 4 & 7 & 9 & 21 \\
+Reporting & 0 & 2 & 5 & 7 & 14 \\
+Integration & 1 & 1 & 3 & 5 & 10 \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Critical Defects Detail}
+\textbf{BUG-001: Multiple Role Assignment Failure}
+\begin{itemize}
+  \item Severity: CRITICAL
+  \item Module: User Management
+  \item Status: In Progress
+  \item Found in: UAT
+  \item Description: Tidak bisa assign lebih dari satu role ke user
+  \item Impact: Admin tidak bisa setup user permissions dengan benar
+  \item Priority: P0 - Must fix before release
+\end{itemize}
+
+\textbf{BUG-002: Payment Gateway Timeout}
+\begin{itemize}
+  \item Severity: CRITICAL
+  \item Module: Transaction
+  \item Status: Open
+  \item Found in: Load Testing
+  \item Description: Payment gateway timeout pada concurrent transactions > 100
+  \item Impact: Customer tidak bisa complete purchase pada peak hours
+  \item Priority: P0 - Must fix before release
+\end{itemize}
+
+\section{Test Metrics}
+\subsection{Test Execution Metrics}
+\begin{itemize}
+  \item Total Test Cases Planned: 620
+  \item Total Test Cases Executed: 620
+  \item Test Cases Passed: 560 (90.3\%)
+  \item Test Cases Failed: 60 (9.7\%)
+  \item Test Cases Blocked: 0
+  \item Test Execution Rate: 100\%
+\end{itemize}
+
+\subsection{Defect Detection Metrics}
+\begin{itemize}
+  \item Total Defects Found: 74
+  \item Defects per Test Case: 0.12
+  \item Critical Defects Density: 0.8\%
+  \item Defect Resolution Rate: 32.4\% (24/74)
+  \item Average Time to Fix: 2.3 days
+\end{itemize}
+
+\subsection{Test Coverage}
+\begin{itemize}
+  \item Requirements Coverage: 95\% (190/200 requirements tested)
+  \item Code Coverage: 87\%
+  \item Business Process Coverage: 100\%
+\end{itemize}
+
+\section{Risk Assessment}
+\subsection{Technical Risks}
+\begin{tabularx}{\textwidth}{@{}lclX@{}}
+\toprule
+Risk & Probability & Impact & Mitigation \\
+\midrule
+Database performance degradation & HIGH & HIGH & Implement caching, optimize queries \\
+Third-party API downtime & MEDIUM & HIGH & Implement retry mechanism and circuit breaker \\
+Security vulnerabilities & LOW & CRITICAL & Conduct security audit before release \\
+Data loss during migration & LOW & CRITICAL & Multiple backup and rollback strategy \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Business Risks}
+\begin{tabularx}{\textwidth}{@{}lclX@{}}
+\toprule
+Risk & Probability & Impact & Mitigation \\
+\midrule
+User adoption resistance & MEDIUM & HIGH & Comprehensive training program \\
+Business process disruption & HIGH & MEDIUM & Phased rollout approach \\
+Competitor advantage & LOW & MEDIUM & Fast-track critical features \\
+\bottomrule
+\end{tabularx}
+
+\section{Recommendations}
+\subsection{Technical Recommendations}
+\begin{enumerate}
+  \item Database Optimization (Priority: HIGH)
+  \begin{itemize}
+    \item Add missing indexes pada tables: transactions, user\_logs
+    \item Implement query caching untuk reporting queries
+    \item Consider read replicas untuk reporting workload
+  \end{itemize}
+  \item Performance Improvements (Priority: HIGH)
+  \begin{itemize}
+    \item Increase server capacity: upgrade ke t3.large
+    \item Implement CDN untuk static assets
+    \item Enable gzip compression
+  \end{itemize}
+  \item Code Quality (Priority: MEDIUM)
+  \begin{itemize}
+    \item Fix all critical dan high severity bugs
+    \item Increase unit test coverage ke minimal 90\%
+    \item Implement automated code review tools
+  \end{itemize}
+  \item Security Enhancements (Priority: HIGH)
+  \begin{itemize}
+    \item Conduct penetration testing
+    \item Implement rate limiting pada API endpoints
+    \item Enable 2FA untuk admin accounts
+  \end{itemize}
+\end{enumerate}
+
+\subsection{Process Recommendations}
+\begin{enumerate}
+  \item Testing Process
+  \begin{itemize}
+    \item Integrate automated tests ke CI/CD pipeline
+    \item Implement smoke testing untuk setiap deployment
+    \item Schedule regular regression testing
+  \end{itemize}
+  \item Release Strategy
+  \begin{itemize}
+    \item Implement blue-green deployment
+    \item Conduct limited beta release sebelum full rollout
+    \item Prepare detailed rollback procedures
+  \end{itemize}
+  \item Monitoring and Support
+  \begin{itemize}
+    \item Setup real-time monitoring dengan alerts
+    \item Prepare incident response procedures
+    \item Train support team sebelum go-live
+  \end{itemize}
+\end{enumerate}
+
+\section{Go-Live Readiness}
+\subsection{Checklist}
+\begin{tabularx}{\textwidth}{@{}lclX@{}}
+\toprule
+Category & Item & Status & Notes \\
+\midrule
+Testing & All test cases executed & \cmark & Complete \\
+Testing & Critical bugs resolved & \xmark & 2 open critical bugs \\
+Testing & UAT sign-off obtained & \warn & Conditional approval \\
+Infrastructure & Production environment ready & \cmark & -- \\
+Infrastructure & Backup and recovery tested & \cmark & -- \\
+Documentation & User manual completed & \cmark & -- \\
+Documentation & Technical documentation & \cmark & -- \\
+Training & User training completed & \warn & 80\% complete \\
+Training & Support team trained & \cmark & -- \\
+Security & Security audit passed & \xmark & Scheduled next week \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Go-Live Decision}
+Status: \warn\ CONDITIONAL GO-LIVE
+\begin{enumerate}
+  \item BUG-001 (Multiple role assignment) MUST be fixed
+  \item BUG-002 (Payment gateway timeout) MUST be fixed
+  \item Security audit must be completed and passed
+  \item Complete remaining user training sessions
+\end{enumerate}
+
+\section{Appendix}
+\subsection{Test Data}
+\begin{itemize}
+  \item Test data location: /test-data/
+  \item Database backup: uat\_backup\_20250129.sql
+  \item Test accounts: See document \texttt{test\_accounts.xlsx}
+\end{itemize}
+
+\subsection{Test Scripts}
+\begin{itemize}
+  \item Automated test repository: \url{https://github.com/company/test-automation}
+  \item Load test scripts: /load-tests/jmeter/
+  \item UAT test cases: /uat/test-cases.xlsx
+\end{itemize}
+
+\subsection{Screenshots and Evidence}
+\begin{itemize}
+  \item All test execution screenshots: /evidence/screenshots/
+  \item Performance test reports: /evidence/performance/
+  \item Bug reports: Jira project QA-2025
+\end{itemize}
+
+\subsection{Tools Used}
+\begin{itemize}
+  \item Unit Testing: Jest 29.5
+  \item Integration Testing: Cypress 12.0
+  \item Load Testing: Apache JMeter 5.5
+  \item Bug Tracking: Jira
+  \item Test Management: TestRail
+  \item CI/CD: Jenkins
+\end{itemize}
+
+\end{document}

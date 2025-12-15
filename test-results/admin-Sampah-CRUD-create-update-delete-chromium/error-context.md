@@ -1,0 +1,49 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - main [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - link "Cipta Muri Logo Cipta Muri e-Bank Sampah" [ref=e9] [cursor=pointer]:
+            - /url: http://localhost:8000
+            - img "Cipta Muri Logo" [ref=e10]
+            - generic [ref=e11]:
+              - generic [ref=e12]: Cipta Muri
+              - generic [ref=e13]: e-Bank Sampah
+          - heading "Masuk ke akun Anda" [level=1] [ref=e14]
+        - link "Kembali ke Beranda" [ref=e16] [cursor=pointer]:
+          - /url: http://localhost:8000
+          - img [ref=e17]
+          - generic [ref=e19]: Kembali ke Beranda
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - generic [ref=e24]:
+              - generic [ref=e27]:
+                - text: Alamat email
+                - superscript [ref=e28]: "*"
+              - textbox "Alamat email*" [active] [ref=e32]
+            - generic [ref=e35]:
+              - generic [ref=e38]:
+                - text: Kata sandi
+                - superscript [ref=e39]: "*"
+              - generic [ref=e41]:
+                - textbox "Kata sandi*" [ref=e43]
+                - button "Tampilkan kata sandi" [ref=e46] [cursor=pointer]:
+                  - generic [ref=e47]: Tampilkan kata sandi
+                  - img [ref=e48]
+            - generic [ref=e55]:
+              - checkbox "Ingat saya" [ref=e56]
+              - generic [ref=e57]: Ingat saya
+          - button "Masuk" [ref=e60] [cursor=pointer]:
+            - generic [ref=e61]: Masuk
+      - generic:
+        - dialog
+      - generic:
+        - dialog
+      - generic:
+        - dialog
+  - generic:
+    - status
+```

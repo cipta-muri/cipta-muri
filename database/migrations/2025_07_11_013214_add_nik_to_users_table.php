@@ -15,10 +15,20 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('nik', 16)->nullable()->after('name')->comment('Nomor Induk Kependudukan');
         });
-        
+
         // Update existing users with temporary NIK values
-        DB::statement("UPDATE users SET nik = CONCAT('temp', LPAD(id, 12, '0')) WHERE nik IS NULL OR nik = ''");
-        
+        if (DB::getDriverName() === 'sqlite') {
+            $users = DB::table('users')->get(['id', 'nik']);
+            foreach ($users as $user) {
+                if (empty($user->nik)) {
+                    $tempNik = 'temp' . str_pad((string) $user->id, 12, '0', STR_PAD_LEFT);
+                    DB::table('users')->where('id', $user->id)->update(['nik' => $tempNik]);
+                }
+            }
+        } else {
+            DB::statement("UPDATE users SET nik = CONCAT('temp', LPAD(id, 12, '0')) WHERE nik IS NULL OR nik = ''");
+        }
+
         // Now make NIK unique
         Schema::table('users', function (Blueprint $table) {
             $table->string('nik', 16)->unique()->change();

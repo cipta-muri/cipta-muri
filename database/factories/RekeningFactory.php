@@ -38,16 +38,10 @@ class RekeningFactory extends Factory
             'Pedagang', 'Guru', 'Pensiunan', 'Ibu Rumah Tangga', 'Mahasiswa'
         ];
 
-        // Nama dusun yang realistis untuk Indonesia
-        $dusun = [
-            'Krajan', 'Sumber', 'Kauman', 'Ngabean', 'Ketapang', 'Rejoso',
-            'Wringin', 'Tanggul', 'Kebalen', 'Patihan', 'Kaliwungu'
-        ];
-
         return [
             'no_rekening' => $noRekening,
             'nama' => fake()->name(),
-            'dusun' => fake()->randomElement($dusun),
+            'dusun' => str_pad((string) fake()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
             'rt' => str_pad(fake()->numberBetween(1, 20), 2, '0', STR_PAD_LEFT),
             'rw' => str_pad(fake()->numberBetween(1, 10), 2, '0', STR_PAD_LEFT),
             'gender' => fake()->randomElement($genders),
@@ -55,9 +49,9 @@ class RekeningFactory extends Factory
             'nik' => $nik,
             'tanggal_lahir' => fake()->dateTimeBetween('-70 years', '-17 years'),
             'pendidikan' => fake()->randomElement($pendidikan),
-            'pekerjaan' => fake()->randomElement($pekerjaan),
             'alamat' => fake()->streetAddress(),
-            'no_telepon' => fake()->phoneNumber(),
+            'telepon' => fake()->phoneNumber(),
+            'status_desa' => fake()->boolean(),
             'balance' => fake()->randomFloat(2, 0, 500000), // Saldo 0 - 500k
             'points_balance' => fake()->numberBetween(0, 10000), // Poin 0 - 10k
             'user_id' => User::factory(),
@@ -72,16 +66,17 @@ class RekeningFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'no_rekening' => '00000000',
             'nama' => 'Tabungan Bank Sampah',
-            'dusun' => '-',
-            'rt' => '-',
-            'rw' => '-',
+            'dusun' => '000',
+            'rt' => '00',
+            'rw' => '00',
             'gender' => '-',
             'no_kk' => '0000000000000000',
             'nik' => '0000000000000000',
+            'tanggal_lahir' => now(),
             'pendidikan' => '-',
-            'pekerjaan' => '-',
             'alamat' => '-',
-            'no_telepon' => '-',
+            'telepon' => '-',
+            'status_desa' => true,
             'balance' => 0,
             'points_balance' => 0,
             'user_id' => null,

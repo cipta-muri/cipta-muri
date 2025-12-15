@@ -189,9 +189,12 @@ class WithdrawRequestResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('withdraw_request.delete')),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
+                ->visible(fn() => hexa()->can('withdraw_request.delete'))
+                ->extraAttributes(['dusk' => 'withdraw-delete-action']),
+                Tables\Actions\RestoreAction::make()
+                    ->extraAttributes(['dusk' => 'withdraw-restore-action']),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->extraAttributes(['dusk' => 'withdraw-force-delete-action']),
             ])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()->visible(fn() => hexa()->can('withdraw_request.delete')),]),]);
     }
@@ -209,4 +212,3 @@ class WithdrawRequestResource extends Resource
         ];
     }
 }
-

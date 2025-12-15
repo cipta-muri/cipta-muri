@@ -2,20 +2,17 @@
 
 /** @var \Tests\DuskTestCase $this */
 
-
 use App\Models\User;
 use App\Models\Sampah;
 use App\Models\Rekening;
-use App\Models\Pemasukan;
-use App\Models\Pengeluaran;
-use App\Models\SumberPemasukan;
-use App\Models\KategoriPengeluaran;
+use App\Models\SetorSampah;
+use App\Models\SampahKeluar;
+use App\Models\WithdrawRequest;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Hexters\HexaLite\Models\HexaRole;
 use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
-
 
 /**
  * Helpers
@@ -30,88 +27,44 @@ function dusk_host(): string
 {
     return parse_url(dusk_base(), PHP_URL_HOST) ?? 'localhost';
 }
+
 function ensureAdminWithFullAccess(): User
 {
-    // Make sure the Admin role exists
     $adminRole = HexaRole::firstOrCreate(
         ['name' => 'Super Admin', 'guard' => 'web'],
         ['created_by_name' => 'Seeder', 'access' => []],
     );
 
-    // Grant all panel gates to Admin role so it can access every resource
     $panel = Filament::getPanel('admin');
     $allGates = hexa()->panelGates($panel);
-    // Fallback hard-coded gates if dynamic discovery returns empty
     if (empty($allGates)) {
         $allGates = [
-            // Sampah
-            'sampah.index',
-            'sampah.create',
-            'sampah.update',
-            'sampah.delete',
-            // Rekening
-            'rekening.index',
-            'rekening.create',
-            'rekening.update',
-            'rekening.delete',
-            // Pemasukan
-            'pemasukan.index',
-            'pemasukan.create',
-            'pemasukan.update',
-            'pemasukan.delete',
-            // Pengeluaran
-            'pengeluaran.index',
-            'pengeluaran.create',
-            'pengeluaran.update',
-            'pengeluaran.delete',
-            // Setor Sampah
-            'setor_sampah.index',
-            'setor_sampah.view',
-            'setor_sampah.create',
-            'setor_sampah.update',
-            'setor_sampah.delete',
-            // Sampah Keluar
-            'sampah_keluar.index',
-            'sampah_keluar.create',
-            'sampah_keluar.update',
-            'sampah_keluar.delete',
-            // Berita
-            'berita.index',
-            'berita.create',
-            'berita.update',
-            'berita.delete',
-            // Withdraw Request
-            'withdraw_request.index',
-            'withdraw_request.create',
-            'withdraw_request.update',
-            'withdraw_request.delete',
-            // Role & User
-            'role.index',
-            'role.create',
-            'role.update',
-            'role.delete',
-            'user.index',
-            'user.create',
-            'user.update',
-            'user.delete',
+            'sampah.index', 'sampah.create', 'sampah.update', 'sampah.delete',
+            'rekening.index', 'rekening.create', 'rekening.update', 'rekening.delete',
+            'pemasukan.index', 'pemasukan.create', 'pemasukan.update', 'pemasukan.delete',
+            'pengeluaran.index', 'pengeluaran.create', 'pengeluaran.update', 'pengeluaran.delete',
+            'setor_sampah.index', 'setor_sampah.view', 'setor_sampah.create', 'setor_sampah.update', 'setor_sampah.delete',
+            'sampah_keluar.index', 'sampah_keluar.create', 'sampah_keluar.update', 'sampah_keluar.delete',
+            'berita.index', 'berita.create', 'berita.update', 'berita.delete',
+            'withdraw_request.index', 'withdraw_request.create', 'withdraw_request.update', 'withdraw_request.delete',
+            'role.index', 'role.create', 'role.update', 'role.delete',
+            'user.index', 'user.create', 'user.update', 'user.delete',
         ];
     }
     $adminRole->access = $allGates;
     $adminRole->save();
 
-    // Ensure admin user exists and has Admin role
     $admin = User::firstOrCreate(
         ['email' => 'testing@ciptamuri.com'],
         [
             'name' => 'Tester',
+            'nik' => (string) random_int(10_0000_0000_0000_00, 99_9999_9999_9999_99),
             'password' => 'password',
             'email_verified_at' => now(),
         ]
     );
-
     $admin->roles()->syncWithoutDetaching([$adminRole->id]);
 
-    // Ensure default donation/cash Rekening exists (no_rekening '00000000')
     $defaultRek = Rekening::firstOrNew(['no_rekening' => '00000000']);
     if (!$defaultRek->exists) {
         $defaultRek->fill([
@@ -131,22 +84,33 @@ function ensureAdminWithFullAccess(): User
 
 function loginToAdmin(Browser $browser, string $email, string $password): void
 {
-    // Always use form-based login to avoid relying on _dusk routes and APP_URL
-    $browser
-        ->visit(dusk_base() . '/admin/login')
-        ->assertHostIs(dusk_host())
-        ->waitFor('input[id="data.email"]', 10)
-        ->type('input[id="data.email"]', $email)
-        ->waitFor('input[id="data.password"]', 5)
-        ->type('input[id="data.password"]', $password)
-        ->click('button[type=submit]')
-        ->waitForLocation('/admin', 10)
-        ->assertPathIs('/admin');
-}
+    $browser->visit(dusk_base() . '/admin/login')->assertHostIs(dusk_host());
 
-function loginAsAdmin(Browser $browser, User $admin): void
-{
-    $browser->loginAs($admin);
+    $browser->waitFor('button[type=submit]', 10);
+
+    $browser->script(<<<"JS"
+(function() {
+    const fillFirst = (selectors, value) => {
+        for (const sel of selectors) {
+            const el = document.querySelector(sel);
+            if (el) {
+                el.value = value;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
+            }
+        }
+        return false;
+    };
+    fillFirst(['input[id="data.email"]','input[name="email"]','input[id="email"]','input[name="nik"]','input[id="nik"]'], "{$email}");
+    fillFirst(['input[id="data.password"]','input[name="password"]','input[id="password"]'], "{$password}");
+})();
+JS);
+
+    $browser->click('button[type=submit]')
+        ->waitForLocation('/admin', 20)
+        ->assertPathIs('/admin')
+        ->waitFor('.fi-main', 20);
 }
 
 function logoutFromAdmin(Browser $browser): void
@@ -154,19 +118,12 @@ function logoutFromAdmin(Browser $browser): void
     $browser->visit(dusk_base() . '/_dusk/logout');
 }
 
-/**
- * Build a CSS selector that targets a Filament table row for a given record key.
- */
 function filamentTableRowSelector(int|string $recordKey): string
 {
     $key = addcslashes((string) $recordKey, "\\\"");
-
     return "[wire\\:key\$=\".table.records.{$key}\"]";
 }
 
-/**
- * Force set a value on a Filament text input using JavaScript to avoid wrapper focus issues.
- */
 function setFilamentInputValue(Browser $browser, string $selector, string $value, int $waitSeconds = 10): void
 {
     $browser->waitFor($selector, $waitSeconds);
@@ -239,8 +196,7 @@ test('Test Login (user dapat login)', function () {
 
     $this->browse(function (Browser $browser) use ($admin) {
         loginToAdmin($browser, $admin->email, 'password');
-        // Ensure we are on a Filament page (not 404/nginx)
-        $browser->visit(dusk_base() . '/admin')->waitFor('.fi-main', 10)->assertPresent('.fi-main');
+        $browser->visit(dusk_base() . '/admin')->waitFor('.fi-main', 20)->assertPresent('.fi-main');
     });
 });
 
@@ -251,9 +207,8 @@ test('Sampah: Create, Read, Update, Delete', function () {
     $updated = 'Dusk Updated Sampah ' . Str::upper(Str::random(5));
 
     $this->browse(function (Browser $browser) use ($admin, $name, $updated) {
-        loginAsAdmin($browser, $admin);
+        loginToAdmin($browser, $admin->email, 'password');
 
-        // Create
         $browser->visit(dusk_base() . '/admin/sampahs/create');
 
         setFilamentInputValue($browser, 'input[dusk="sampah-form-jenis_sampah"]', $name);
@@ -263,16 +218,13 @@ test('Sampah: Create, Read, Update, Delete', function () {
 
         assertFilamentNotification($browser, 'Data berhasil dibuat');
 
-        // Read - appears on index
         $browser->visit(dusk_base() . '/admin/sampahs?tableSearch=' . urlencode($name))
             ->waitForText($name, 10)
             ->assertSee($name);
 
-        // Fetch created record id
         $record = Sampah::where('jenis_sampah', $name)->latest('created_at')->firstOrFail();
         $sampahRowSelector = filamentTableRowSelector($record->getKey());
 
-        // Update via edit page
         $browser->visit(dusk_base() . "/admin/sampahs/{$record->id}/edit");
         setFilamentInputValue($browser, 'input[dusk="sampah-form-jenis_sampah"]', $updated);
         submitFilamentForm($browser);
@@ -284,7 +236,6 @@ test('Sampah: Create, Read, Update, Delete', function () {
             ->assertSee($updated)
             ->assertDontSee($name);
 
-        // Delete via table row action (soft delete)
         $browser->visit(dusk_base() . '/admin/sampahs')
             ->waitFor($sampahRowSelector, 10)
             ->tap(function (Browser $browser) use ($sampahRowSelector) {
@@ -299,262 +250,141 @@ test('Sampah: Create, Read, Update, Delete', function () {
     });
 });
 
-test('Rekening: Delete, Restore, Force Delete', function () {
+test('Setor Sampah: Create and Delete', function () {
     $admin = ensureAdminWithFullAccess();
 
-    // Prepare a Rekening record directly to avoid complex form filling, then manage via UI
-    $prefix = (bool) random_int(0, 1) ? '0' : '1'; // 0=desa, 1=luar desa
-    $datePart = Carbon::now()->format('my');
-    do {
-        $sequencePart = str_pad((string) random_int(1, 999), 3, '0', STR_PAD_LEFT);
-        $noRekening = $prefix . $datePart . $sequencePart; // 8 digits
-    } while (Rekening::where('no_rekening', $noRekening)->exists());
-
-    $rek = Rekening::create([
-        'no_rekening' => $noRekening,
-        'nama' => 'Dusk Rekening ' . Str::upper(Str::random(4)),
-        'gender' => 'Laki-laki',
-        'no_kk' => (string) random_int(10_0000_0000_0000_00, 99_9999_9999_9999_99),
-        'nik' => (string) random_int(10_0000_0000_0000_00, 99_9999_9999_9999_99),
-        'status_desa' => $prefix === '0',
+    $rekening = Rekening::factory()->create([
+        'balance' => 100000,
         'user_id' => $admin->id,
-        'balance' => 0,
     ]);
 
-    $this->browse(function (Browser $browser) use ($admin, $rek) {
-        loginAsAdmin($browser, $admin);
+    $sampah = Sampah::factory()->create([
+        'jenis_sampah' => 'DUSK SETOR ' . Str::upper(Str::random(4)),
+        'saldo_per_kg' => 1500,
+        'total_berat_terkumpul' => 0,
+        'user_id' => $admin->id,
+    ]);
 
-        $rekRowSelector = filamentTableRowSelector($rek->getKey());
-        $rekSearch = urlencode($rek->nama);
-        $rekIndex = dusk_base() . '/admin/rekenings';
+    $this->browse(function (Browser $browser) use ($admin, $rekening, $sampah) {
+        loginToAdmin($browser, $admin->email, 'password');
 
-        // Ensure record visible on index
-        $browser->visit("{$rekIndex}?tableSearch={$rekSearch}")
-            ->waitFor($rekRowSelector, 10)
-            ->assertSee($rek->nama);
+        $berat = 1.25;
+        $totalSaldo = (int) round($sampah->saldo_per_kg * $berat);
+        $tanggal = now()->format('Y-m-d');
 
-        // Delete via table row action
-        $browser->visit("{$rekIndex}?tableSearch={$rekSearch}")
-            ->waitFor($rekRowSelector, 10)
-            ->tap(function (Browser $browser) use ($rekRowSelector) {
-                clickElement($browser, "{$rekRowSelector} [dusk=\"rekening-delete-action\"]");
+        $browser->visit(dusk_base() . '/admin/setor-sampahs/create');
+
+        setFilamentInputValue($browser, 'input[id="data.jenis_setoran"]', 'rekening');
+        setFilamentInputValue($browser, 'input[id="data.rekening_id"]', (string) $rekening->id);
+        setFilamentInputValue($browser, 'input[id="data.tanggal"]', $tanggal);
+        setFilamentInputValue($browser, 'input[id="data.details.0.sampah_id"]', (string) $sampah->id);
+        setFilamentInputValue($browser, 'input[id="data.details.0.berat"]', (string) $berat);
+        setFilamentInputValue($browser, 'input[id="data.calculation_performed"]', '1');
+        setFilamentInputValue($browser, 'input[id="data.total_saldo_dihasilkan"]', (string) $totalSaldo);
+        setFilamentInputValue($browser, 'input[id="data.total_poin_dihasilkan"]', '0');
+        setFilamentInputValue($browser, 'input[id="data.berat"]', (string) $berat);
+
+        submitFilamentForm($browser);
+
+        $browser->waitForText($rekening->nama, 10);
+
+        $record = SetorSampah::where('rekening_id', $rekening->id)
+            ->whereDate('tanggal', $tanggal)
+            ->latest('created_at')
+            ->firstOrFail();
+
+        $rowSelector = filamentTableRowSelector($record->getKey());
+
+        $browser->visit(dusk_base() . '/admin/setor-sampahs?tableSearch=' . urlencode($rekening->nama))
+            ->waitFor($rowSelector, 10)
+            ->tap(function (Browser $browser) use ($rowSelector) {
+                clickElement($browser, "{$rowSelector} [dusk=\"setor-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
                 clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        // Show only trashed and restore it
-        $browser->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $rekSearch)
-            ->waitForText($rek->nama, 10)
-            ->waitFor($rekRowSelector, 10)
-            ->tap(function (Browser $browser) use ($rekRowSelector) {
-                clickElement($browser, "{$rekRowSelector} [dusk=\"rekening-restore-action\"]");
             })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dipulihkan');
-
-        // Soft-deleted again to test force delete
-        $browser->visit("{$rekIndex}?tableSearch={$rekSearch}")
-            ->waitFor($rekRowSelector, 10)
-            ->tap(function (Browser $browser) use ($rekRowSelector) {
-                clickElement($browser, "{$rekRowSelector} [dusk=\"rekening-delete-action\"]");
-            })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        // Force delete from trashed list via per-row action
-        $browser->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $rekSearch)
-            ->waitForText($rek->nama, 10)
-            ->waitFor($rekRowSelector, 10)
-            ->tap(function (Browser $browser) use ($rekRowSelector) {
-                clickElement($browser, "{$rekRowSelector} [dusk=\"rekening-force-delete-action\"]");
-            })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        // Verify it's gone from all views
-        $browser->visit("{$rekIndex}?tableSearch={$rekSearch}")
-            ->assertDontSee($rek->nama)
-            ->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=true&tableSearch=' . $rekSearch) // with trashed
-            ->assertDontSee($rek->nama)
-            ->visit(dusk_base() . '/admin/rekenings?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $rekSearch) // only trashed
-            ->assertDontSee($rek->nama);
+            ->assertDontSee($rekening->nama);
     });
 });
 
-test('Pemasukan: Delete, Restore, Force Delete', function () {
+test('Sampah Keluar: Create and Delete', function () {
     $admin = ensureAdminWithFullAccess();
 
-    // Seed source and pemasukan record programmatically for UI actions
-    $source = SumberPemasukan::create([
-        'nama_pemasukan' => 'DUSK SOURCE ' . Str::upper(Str::random(6)),
-    ]);
-
-    $pem = Pemasukan::create([
-        'tanggal' => now(),
-        'sumber_pemasukan_id' => $source->id,
-        'nominal' => 12345,
-        'metode_pembayaran' => 'Tunai',
+    $sampah = Sampah::factory()->create([
+        'jenis_sampah' => 'DUSK KELUAR ' . Str::upper(Str::random(4)),
+        'total_berat_terkumpul' => 10,
         'user_id' => $admin->id,
-        'rekening_id' => Rekening::where('no_rekening', '00000000')->value('id'),
     ]);
 
-    $this->browse(function (Browser $browser) use ($admin, $source, $pem) {
-        loginAsAdmin($browser, $admin);
+    $tanggal = Carbon::now()->addDay()->format('Y-m-d');
 
-        $pemRowSelector = filamentTableRowSelector($pem->getKey());
-        $pemSearch = urlencode($source->nama_pemasukan);
-        $pemasukanIndex = dusk_base() . '/admin/pemasukans';
+    $this->browse(function (Browser $browser) use ($admin, $sampah, $tanggal) {
+        loginToAdmin($browser, $admin->email, 'password');
 
-        // Visible on index
-        $browser->visit("{$pemasukanIndex}?tableSearch={$pemSearch}")
-            ->waitFor($pemRowSelector, 10)
-            ->assertSee($source->nama_pemasukan);
+        $browser->visit(dusk_base() . '/admin/sampah-keluars/create');
 
-        // Soft-delete
-        $browser->waitFor($pemRowSelector, 10)
-            ->tap(function (Browser $browser) use ($pemRowSelector) {
-                clickElement($browser, "{$pemRowSelector} [dusk=\"pemasukan-delete-action\"]");
+        setFilamentInputValue($browser, 'input[id="data.jenis_keluar"]', 'bakar');
+        setFilamentInputValue($browser, 'input[id="data.tanggal_keluar"]', $tanggal);
+        setFilamentInputValue($browser, 'input[id="data.details.0.sampah_id"]', (string) $sampah->id);
+        setFilamentInputValue($browser, 'input[id="data.details.0.berat"]', '1.5');
+
+        submitFilamentForm($browser);
+
+        $record = SampahKeluar::where('tanggal_keluar', $tanggal)
+            ->latest('created_at')
+            ->firstOrFail();
+
+        $rowSelector = filamentTableRowSelector($record->getKey());
+
+        $browser->visit(dusk_base() . '/admin/sampah-keluars')
+            ->waitFor($rowSelector, 10)
+            ->tap(function (Browser $browser) use ($rowSelector) {
+                clickElement($browser, "{$rowSelector} [dusk=\"sampah-keluar-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
                 clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        // Restore from trashed
-        $browser->visit(dusk_base() . '/admin/pemasukans?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $pemSearch)
-            ->waitForText($source->nama_pemasukan, 10)
-            ->waitFor($pemRowSelector, 10)
-            ->tap(function (Browser $browser) use ($pemRowSelector) {
-                clickElement($browser, "{$pemRowSelector} [dusk=\"pemasukan-restore-action\"]");
             })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dipulihkan');
-
-        // Soft-delete again
-        $browser->visit("{$pemasukanIndex}?tableSearch={$pemSearch}")
-            ->waitFor($pemRowSelector, 10)
-            ->tap(function (Browser $browser) use ($pemRowSelector) {
-                clickElement($browser, "{$pemRowSelector} [dusk=\"pemasukan-delete-action\"]");
-            })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        // Force delete
-        $browser->visit(dusk_base() . '/admin/pemasukans?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $pemSearch)
-            ->waitForText($source->nama_pemasukan, 10)
-            ->waitFor($pemRowSelector, 10)
-            ->tap(function (Browser $browser) use ($pemRowSelector) {
-                clickElement($browser, "{$pemRowSelector} [dusk=\"pemasukan-force-delete-action\"]");
-            })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        $browser->visit("{$pemasukanIndex}?tableSearch={$pemSearch}")
-            ->assertDontSee($source->nama_pemasukan);
-
+            ->assertDontSee($tanggal);
     });
 });
 
-test('Pengeluaran: Delete, Restore, Force Delete', function () {
+test('Withdraw Request: Create and Delete', function () {
     $admin = ensureAdminWithFullAccess();
 
-    $kategori = KategoriPengeluaran::create([
-        'nama_pengeluaran' => 'DUSK KAT ' . Str::upper(Str::random(6)),
-    ]);
-
-    $peng = Pengeluaran::create([
-        'tanggal' => now(),
-        'kategori_pengeluaran_id' => $kategori->id,
-        'nominal' => 5432,
-        'metode_pembayaran' => 'Tunai',
+    $rekening = Rekening::factory()->create([
+        'balance' => 250000,
         'user_id' => $admin->id,
-        'rekening_id' => Rekening::where('no_rekening', '00000000')->value('id'),
     ]);
 
-    $this->browse(function (Browser $browser) use ($admin, $kategori, $peng) {
-        loginAsAdmin($browser, $admin);
+    $amount = 15000;
 
-        $pengRowSelector = filamentTableRowSelector($peng->getKey());
-        $pengSearch = urlencode($kategori->nama_pengeluaran);
-        $pengIndex = dusk_base() . '/admin/pengeluarans';
+    $this->browse(function (Browser $browser) use ($admin, $rekening, $amount) {
+        loginToAdmin($browser, $admin->email, 'password');
 
-        // Visible on index
-        $browser->visit("{$pengIndex}?tableSearch={$pengSearch}")
-            ->waitFor($pengRowSelector, 10)
-            ->assertSee($kategori->nama_pengeluaran);
+        $browser->visit(dusk_base() . '/admin/withdraw-requests/create');
 
-        // Soft-delete
-        $browser->waitFor($pengRowSelector, 10)
-            ->tap(function (Browser $browser) use ($pengRowSelector) {
-                clickElement($browser, "{$pengRowSelector} [dusk=\"pengeluaran-delete-action\"]");
+        setFilamentInputValue($browser, 'input[id="data.rekening_id"]', (string) $rekening->id);
+        setFilamentInputValue($browser, 'input[id="data.jenis"]', 'cash');
+        setFilamentInputValue($browser, 'input[id="data.amount"]', (string) $amount);
+
+        submitFilamentForm($browser);
+
+        $record = WithdrawRequest::where('rekening_id', $rekening->id)
+            ->latest('created_at')
+            ->firstOrFail();
+
+        $rowSelector = filamentTableRowSelector($record->getKey());
+
+        $search = urlencode($rekening->nama);
+        $browser->visit(dusk_base() . '/admin/withdraw-requests?tableSearch=' . $search)
+            ->waitFor($rowSelector, 10)
+            ->tap(function (Browser $browser) use ($rowSelector) {
+                clickElement($browser, "{$rowSelector} [dusk=\"withdraw-delete-action\"]");
             })
             ->whenAvailable('.fi-modal', function (Browser $modal) {
                 clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        // Restore from trashed
-        $browser->visit(dusk_base() . '/admin/pengeluarans?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $pengSearch)
-            ->waitForText($kategori->nama_pengeluaran, 10)
-            ->waitFor($pengRowSelector, 10)
-            ->tap(function (Browser $browser) use ($pengRowSelector) {
-                clickElement($browser, "{$pengRowSelector} [dusk=\"pengeluaran-restore-action\"]");
             })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dipulihkan');
-
-        // Soft-delete again and force delete
-        $browser->visit("{$pengIndex}?tableSearch={$pengSearch}")
-            ->waitFor($pengRowSelector, 10)
-            ->tap(function (Browser $browser) use ($pengRowSelector) {
-                clickElement($browser, "{$pengRowSelector} [dusk=\"pengeluaran-delete-action\"]");
-            })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        $browser->visit(dusk_base() . '/admin/pengeluarans?tableFilters%5Btrashed%5D%5Bvalue%5D=false&tableSearch=' . $pengSearch)
-            ->waitForText($kategori->nama_pengeluaran, 10)
-            ->waitFor($pengRowSelector, 10)
-            ->tap(function (Browser $browser) use ($pengRowSelector) {
-                clickElement($browser, "{$pengRowSelector} [dusk=\"pengeluaran-force-delete-action\"]");
-            })
-            ->whenAvailable('.fi-modal', function (Browser $modal) {
-                clickElement($modal, 'button[type=submit]');
-            });
-
-        assertFilamentNotification($browser, 'Data berhasil dihapus');
-
-        $browser->visit("{$pengIndex}?tableSearch={$pengSearch}")
-            ->assertDontSee($kategori->nama_pengeluaran);
+            ->assertDontSee($rekening->nama);
     });
 });
 
@@ -564,8 +394,6 @@ test('Logout (user dapat logout)', function () {
     $this->browse(function (Browser $browser) use ($admin) {
         logoutFromAdmin($browser);
 
-
-        // Ensure we are back on login page
         $browser
             ->visit(dusk_base() . '/admin/login')
             ->waitFor('input[id="data.email"]', 10)

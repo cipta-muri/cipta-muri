@@ -87,4 +87,19 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->getAttribute('nik');
     }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return null;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->roles()->where('name', 'Super Admin')->exists();
+    }
 }

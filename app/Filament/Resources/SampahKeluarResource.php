@@ -314,9 +314,11 @@ class SampahKeluarResource extends Resource
             ->defaultSort('tanggal_keluar', 'desc')
             ->actions([
                 Tables\Actions\EditAction::make()
-                ->visible(fn() => hexa()->can('sampah_keluar.update')),
+                ->visible(fn() => hexa()->can('sampah_keluar.update'))
+                ->extraAttributes(['dusk' => 'sampah-keluar-edit-action']),
                 Tables\Actions\DeleteAction::make()
-                ->visible(fn() => hexa()->can('sampah_keluar.delete')),
+                ->visible(fn() => hexa()->can('sampah_keluar.delete'))
+                ->extraAttributes(['dusk' => 'sampah-keluar-delete-action']),
                 ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

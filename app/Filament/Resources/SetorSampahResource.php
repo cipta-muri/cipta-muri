@@ -467,9 +467,11 @@ class SetorSampahResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn() => hexa()->can('setor_sampah.update')),
+                    ->visible(fn() => hexa()->can('setor_sampah.update'))
+                    ->extraAttributes(['dusk' => 'setor-edit-action']),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn() => hexa()->can('setor_sampah.delete')),
+                    ->visible(fn() => hexa()->can('setor_sampah.delete'))
+                    ->extraAttributes(['dusk' => 'setor-delete-action']),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
