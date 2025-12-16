@@ -34,6 +34,8 @@ if (empty($allGates)) {
         'sampah_keluar.index', 'sampah_keluar.create', 'sampah_keluar.update', 'sampah_keluar.delete',
         'berita.index', 'berita.create', 'berita.update', 'berita.delete',
         'withdraw_request.index', 'withdraw_request.create', 'withdraw_request.update', 'withdraw_request.delete',
+        // misc pages/resources
+        'peringkat.index',
         'role.index', 'role.create', 'role.update', 'role.delete',
         'user.index', 'user.create', 'user.update', 'user.delete',
     ];

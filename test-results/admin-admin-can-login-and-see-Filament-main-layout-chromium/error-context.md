@@ -7,14 +7,14 @@
       - generic [ref=e6]:
         - generic [ref=e7]:
           - link "Cipta Muri Logo Cipta Muri e-Bank Sampah" [ref=e9] [cursor=pointer]:
-            - /url: http://localhost:8000
+            - /url: http://127.0.0.1:8000
             - img "Cipta Muri Logo" [ref=e10]
             - generic [ref=e11]:
               - generic [ref=e12]: Cipta Muri
               - generic [ref=e13]: e-Bank Sampah
           - heading "Masuk ke akun Anda" [level=1] [ref=e14]
         - link "Kembali ke Beranda" [ref=e16] [cursor=pointer]:
-          - /url: http://localhost:8000
+          - /url: http://127.0.0.1:8000
           - img [ref=e17]
           - generic [ref=e19]: Kembali ke Beranda
         - generic [ref=e20]:

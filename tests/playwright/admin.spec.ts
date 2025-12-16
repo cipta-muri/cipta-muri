@@ -16,6 +16,8 @@ async function loginAsAdmin(page) {
   // Remove verbose output if it becomes noisy.
   // eslint-disable-next-line no-console
   console.log(await page.context().cookies());
+  // eslint-disable-next-line no-console
+  console.log('current url', await page.url());
   await expect(page.locator('.fi-main')).toBeVisible({ timeout: 20_000 });
 }
 

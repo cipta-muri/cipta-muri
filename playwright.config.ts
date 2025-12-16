@@ -9,7 +9,7 @@ export default defineConfig({
     timeout: 15_000,
   },
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:8000',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:8000',
     headless: true,
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
@@ -21,8 +21,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'php artisan serve --env=dusk.local --host=127.0.0.1 --port=8000',
-    url: 'http://localhost:8000',
+    command: 'php artisan serve --host=127.0.0.1 --port=8000',
+    url: 'http://127.0.0.1:8000',
     reuseExistingServer: true,
     timeout: 120_000,
   },
