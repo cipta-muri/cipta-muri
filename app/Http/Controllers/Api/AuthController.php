@@ -9,21 +9,39 @@ use Illuminate\Http\Request;
 class AuthController extends Controller
 {
     /**
-     * Login nasabah menggunakan NIK dan tanggal lahir sebagai PIN.
+     * Login nasabah menggunakan NIK, no_rekening, atau telepon + tanggal lahir sebagai PIN.
      */
     public function login(Request $request)
     {
         $request->validate([
-            'nik' => 'required',
+            'nik' => 'nullable',
+            'no_rekening' => 'nullable',
+            'telepon' => 'nullable',
             'tanggal_lahir' => 'required',
         ]);
 
-        $nasabah = Rekening::where('nik', $request->nik)->first();
+        if (! $request->nik && ! $request->no_rekening && ! $request->telepon) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Harap isi minimal satu: NIK, No. Rekening, atau Telepon',
+            ], 422);
+        }
+
+        $nasabah = null;
+        if ($request->nik) {
+            $nasabah = Rekening::where('nik', $request->nik)->first();
+        }
+        if (! $nasabah && $request->no_rekening) {
+            $nasabah = Rekening::where('no_rekening', $request->no_rekening)->first();
+        }
+        if (! $nasabah && $request->telepon) {
+            $nasabah = Rekening::where('telepon', $request->telepon)->first();
+        }
 
         if (! $nasabah) {
             return response()->json([
                 'success' => false,
-                'message' => 'NIK tidak ditemukan',
+                'message' => 'Data nasabah tidak ditemukan',
             ], 404);
         }
 

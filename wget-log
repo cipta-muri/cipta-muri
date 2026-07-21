@@ -1,0 +1,36 @@
+--2026-07-21 10:22:00--  https://update.code.visualstudio.com/commit:4fe60c8b1cdac1c4c174f2fb180d0d758272d713/server-linux-x64/stable
+Resolving update.code.visualstudio.com (update.code.visualstudio.com)... 150.171.110.103, 2603:1061:14:167::1
+Connecting to update.code.visualstudio.com (update.code.visualstudio.com)|150.171.110.103|:443... connected.
+HTTP request sent, awaiting response... No data received.
+Retrying.
+
+--2026-07-21 10:22:28--  (try: 2)  https://update.code.visualstudio.com/commit:4fe60c8b1cdac1c4c174f2fb180d0d758272d713/server-linux-x64/stable
+Connecting to update.code.visualstudio.com (update.code.visualstudio.com)|150.171.110.103|:443... connected.
+HTTP request sent, awaiting response... No data received.
+Retrying.
+
+--2026-07-21 10:22:41--  (try: 3)  https://update.code.visualstudio.com/commit:4fe60c8b1cdac1c4c174f2fb180d0d758272d713/server-linux-x64/stable
+Connecting to update.code.visualstudio.com (update.code.visualstudio.com)|150.171.110.103|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://vscode.download.prss.microsoft.com/dbazure/download/stable/4fe60c8b1cdac1c4c174f2fb180d0d758272d713/vscode-server-linux-x64.tar.gz [following]
+--2026-07-21 10:22:46--  https://vscode.download.prss.microsoft.com/dbazure/download/stable/4fe60c8b1cdac1c4c174f2fb180d0d758272d713/vscode-server-linux-x64.tar.gz
+Resolving vscode.download.prss.microsoft.com (vscode.download.prss.microsoft.com)... 202.152.128.26, 202.152.128.19, 2600:1413:a000::172c:5c2, ...
+Connecting to vscode.download.prss.microsoft.com (vscode.download.prss.microsoft.com)|202.152.128.26|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 182164876 (174M) [application/octet-stream]
+Saving to: ‘/home/karel/.vscode-server/bin/4fe60c8b1cdac1c4c174f2fb180d0d758272d713-1784604108.tar.gz’
+
+     0K .......... .......... .......... .......... ..........  0% 1.66M 1m45s
+    50K .......... .......... .......... .......... ..........  0%  846K 2m37s
+   100K .......... .......... .......... .......... ..........  0%  834K 2m56s
+   150K .......... .......... .......... .......... ..........  0%  153K 7m2s
+   200K .......... .......... .......... .......... ..........  0%  490M 5m38s
+   250K .......... .......... .......... .......... ..........  0% 1.11M 5m7s
+   300K .......... .......... .......... .......... ..........  0%  185K 6m40s
+   350K .......... .......... .......... .......... ..........  0%  763K 6m19s
+   400K .......... .......... .......... .......... ..........  0%  259K 6m53s
+   450K .......... .......... .......... .......... ..........  0% 22.1K 19m36s
+   500K .......... .......... .......... .......... ..........  0% 20.6K 30m52s
+   550K .......... .......... .......... .......... ..........  0% 46.1K 33m38s
+   600K .......... .......... .......... .......... ..........  0% 39.0M 31m3s
+   650K .......... .......... .......... .......... ..

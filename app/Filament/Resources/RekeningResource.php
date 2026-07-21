@@ -79,6 +79,7 @@ class RekeningResource extends Resource
                     TextInput::make('nik')
                         ->label('Nomor Induk Kependudukan (NIK)')
                         ->length(16)
+                        ->nullable()
                         ->rule('regex:/^\d+$/')
                         ->unique(ignoreRecord: true)
                         ->validationMessages([

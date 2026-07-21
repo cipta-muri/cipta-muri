@@ -72,7 +72,7 @@ class RekeningRegistrationResource extends Resource
             ->values()
             ->all();
 
-        $requiredFields = ['no_kk', 'nik', 'tanggal_lahir', 'pendidikan'];
+        $requiredFields = ['no_kk', 'tanggal_lahir', 'pendidikan'];
 
         foreach ($filtered as $component) {
             static::applyRequiredFields($component, $requiredFields);
